@@ -17,5 +17,5 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
   - ShotLines are indexed very simply by their object number; this should be replaced by using UUIDs. Otherwise, deleting multiple shotlines can result in unexpected and unintended deletions. 
 
 ## DEPENDENCIES
-- Fountain Parser GDExt
--   This is a wrapper for my also-WIP `fountain-parser-rs` ; this simply provides very basic fountain parsing.
+- [Fountain Parser GDExt](https://github.com/richardmrodriguez/fountain-parser-gdext)
+  - This is a wrapper for my also-WIP `fountain-parser-rs` ; this simply provides very basic fountain parsing.
