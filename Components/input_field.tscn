@@ -1,0 +1,41 @@
+[gd_scene load_steps=2 format=3 uid="uid://r6hdqtpifh83"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/input_field.gd" id="1_oe260"]
+
+[node name="InputField" type="Control"]
+custom_minimum_size = Vector2(120, 70)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+script = ExtResource("1_oe260")
+field_label = "Scene #"
+field_placeholder = "1"
+
+[node name="VBox" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="VBox"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Shot Type"
+vertical_alignment = 2
+max_lines_visible = 1
+
+[node name="LineEdit" type="LineEdit" parent="VBox"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+placeholder_text = "fdsfds"
+select_all_on_focus = true
+
+[connection signal="gui_input" from="VBox/LineEdit" to="." method="_on_line_edit_gui_input"]

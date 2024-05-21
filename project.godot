@@ -11,12 +11,28 @@ config_version=5
 [application]
 
 config/name="ShotLiner"
+run/main_scene="res://EditorView/EditorView.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[debug]
+
+gdscript/warnings/unassigned_variable=2
+gdscript/warnings/untyped_declaration=2
+gdscript/warnings/deprecated_keyword=2
+
+[display]
+
+window/size/viewport_width=900
+window/size/viewport_height=900
 
 [dotnet]
 
 project/assembly_name="ShotLiner"
+
+[gui]
+
+theme/custom_font="res://Fonts/Courier Prime.ttf"
 
 [rendering]
 

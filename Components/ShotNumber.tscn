@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://caj7qefxpanxu"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/ShotNumberLabel.gd" id="1_bew3w"]
+[ext_resource type="FontFile" uid="uid://blylnjw5ovoc8" path="res://Fonts/Courier Prime Bold.ttf" id="1_mjfn0"]
+
+[node name="ShotNumber" type="Label"]
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_mjfn0")
+theme_override_font_sizes/font_size = 12
+text = "3.14"
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("1_bew3w")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.870588, 0.87451, 0.960784, 0.768627)

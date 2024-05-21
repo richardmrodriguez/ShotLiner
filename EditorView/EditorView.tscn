@@ -1,0 +1,72 @@
+[gd_scene load_steps=5 format=3 uid="uid://dj5cpbv55pd4i"]
+
+[ext_resource type="PackedScene" uid="uid://ciildxrlfiuf5" path="res://Components/PageView/ScreenplayPageElements/screenplay_page.tscn" id="1_nkjii"]
+[ext_resource type="Script" path="res://Scripts/Node Scripts/EditorView.gd" id="1_ygaef"]
+[ext_resource type="PackedScene" uid="uid://buckmobb4nbc7" path="res://Components/ToolBar.tscn" id="2_v6cvs"]
+[ext_resource type="PackedScene" uid="uid://cqtoel052gq32" path="res://Components/InspectorPanel.tscn" id="3_72tf4"]
+
+[node name="EditorView" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ygaef")
+
+[node name="VBoxContainer" type="VSplitContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+split_offset = -285
+dragger_visibility = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_bottom = 8
+
+[node name="ToolBar" parent="VBoxContainer/MarginContainer" instance=ExtResource("2_v6cvs")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 4.1
+split_offset = -270
+
+[node name="PageMarginContainer" type="MarginContainer" parent="VBoxContainer/HSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_neighbor_right = NodePath("../MarginContainer")
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="ScreenplayPage" parent="VBoxContainer/HSplitContainer/PageMarginContainer" instance=ExtResource("1_nkjii")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/HSplitContainer"]
+layout_mode = 2
+focus_neighbor_left = NodePath("../PageMarginContainer")
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="InspectorPanel" parent="VBoxContainer/HSplitContainer/MarginContainer" instance=ExtResource("3_72tf4")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[connection signal="toolbar_button_pressed" from="VBoxContainer/MarginContainer/ToolBar" to="." method="_on_tool_bar_toolbar_button_pressed"]
+[connection signal="gui_input" from="VBoxContainer/HSplitContainer/PageMarginContainer/ScreenplayPage" to="." method="_on_screenplay_page_gui_input"]
+[connection signal="last_hovered_line_idx" from="VBoxContainer/HSplitContainer/PageMarginContainer/ScreenplayPage" to="." method="_on_screenplay_page_last_hovered_line_idx"]

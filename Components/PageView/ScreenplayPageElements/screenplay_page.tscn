@@ -1,0 +1,65 @@
+[gd_scene load_steps=4 format=3 uid="uid://ciildxrlfiuf5"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/screenplay_page.gd" id="1_0ob0q"]
+[ext_resource type="Script" path="res://Scripts/Node Scripts/ScreenplayPageContentVBox.gd" id="2_n17d7"]
+[ext_resource type="Script" path="res://Scripts/Node Scripts/ScreenplayPagePanel.gd" id="2_ykdv6"]
+
+[node name="ScreenplayPage" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_0ob0q")
+raw_screenplay_content = "INT. HOUSE - DAY
+
+Lilian plays the piano gently, softly.
+
+A SHADOW scatters across the back wall."
+SP_FONT_SIZE = 12
+
+[node name="ScreenplayPagePanel" type="Panel" parent="."]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("2_ykdv6")
+
+[node name="ColorRect" type="ColorRect" parent="ScreenplayPagePanel"]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0846899, 0.0846899, 0.0846899, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="ScreenplayPagePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 60
+theme_override_constants/margin_bottom = 40
+
+[node name="ScreenplayPageContentVBox" type="VBoxContainer" parent="ScreenplayPagePanel/MarginContainer"]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 2
+mouse_force_pass_scroll_events = false
+theme_override_constants/separation = 0
+script = ExtResource("2_n17d7")
+
+[connection signal="screenplay_line_hovered_over" from="ScreenplayPagePanel/MarginContainer/ScreenplayPageContentVBox" to="." method="_on_screenplay_page_content_v_box_screenplay_line_hovered_over"]

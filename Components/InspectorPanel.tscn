@@ -1,0 +1,89 @@
+[gd_scene load_steps=3 format=3 uid="uid://cqtoel052gq32"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/InspectorPanel.gd" id="1_uert4"]
+[ext_resource type="PackedScene" uid="uid://r6hdqtpifh83" path="res://Components/input_field.tscn" id="1_xv7la"]
+
+[node name="InspectorPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_uert4")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FlowContainer" type="HFlowContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/FlowContainer"]
+layout_mode = 2
+
+[node name="SceneNum" parent="VBoxContainer/FlowContainer/HBoxContainer" instance=ExtResource("1_xv7la")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+focus_next = NodePath("../ShotNum")
+focus_previous = NodePath("../../../Group")
+
+[node name="Dot" type="Label" parent="VBoxContainer/FlowContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 1
+text = "."
+vertical_alignment = 2
+
+[node name="ShotNum" parent="VBoxContainer/FlowContainer/HBoxContainer" instance=ExtResource("1_xv7la")]
+unique_name_in_owner = true
+layout_mode = 2
+focus_next = NodePath("../../Shot Type")
+focus_previous = NodePath("../SceneNum")
+field_label = "Shot #"
+field_category = 1
+
+[node name="Shot Type" parent="VBoxContainer/FlowContainer" instance=ExtResource("1_xv7la")]
+unique_name_in_owner = true
+layout_mode = 2
+field_label = "Shot Type"
+field_placeholder = "WS"
+field_category = 2
+
+[node name="Shot Subtype" parent="VBoxContainer/FlowContainer" instance=ExtResource("1_xv7la")]
+unique_name_in_owner = true
+layout_mode = 2
+field_label = "Subtype"
+field_placeholder = "2S"
+field_category = 3
+
+[node name="Setup #" parent="VBoxContainer" instance=ExtResource("1_xv7la")]
+unique_name_in_owner = true
+layout_mode = 2
+field_label = "Setup #"
+field_placeholder = "..."
+field_category = 4
+
+[node name="Group" parent="VBoxContainer" instance=ExtResource("1_xv7la")]
+unique_name_in_owner = true
+layout_mode = 2
+focus_next = NodePath("../FlowContainer/HBoxContainer/SceneNum")
+field_label = "Group"
+field_placeholder = "..."
+field_category = 5
+
+[node name="Tags" parent="VBoxContainer" instance=ExtResource("1_xv7la")]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(120, 140)
+layout_mode = 2
+size_flags_horizontal = 1
+size_flags_vertical = 3
+field_label = "Tags"
+field_placeholder = "..."
+field_category = 6
+chosen_field_type = 1

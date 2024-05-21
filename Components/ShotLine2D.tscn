@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://b51jgp8xdibk5"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/ShotLine2D.gd" id="1_ykvo7"]
+[ext_resource type="PackedScene" uid="uid://caj7qefxpanxu" path="res://Components/ShotNumber.tscn" id="2_nrk40"]
+
+[node name="ShotLine2d" type="Line2D"]
+points = PackedVector2Array(0, 0, 0, 20)
+script = ExtResource("1_ykvo7")
+
+[node name="ShotNumber" parent="." instance=ExtResource("2_nrk40")]
+offset_left = -24.0
+offset_top = -21.0
+offset_right = 24.0
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = -5.0
+offset_right = 5.0
+offset_bottom = 20.0
+color = Color(0.729412, 0, 0.462745, 0.466667)

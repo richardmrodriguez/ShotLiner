@@ -1,0 +1,52 @@
+[gd_scene load_steps=4 format=3 uid="uid://co03p85pjbj07"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/EditorView.gd" id="1_kknca"]
+[ext_resource type="PackedScene" uid="uid://buckmobb4nbc7" path="res://Components/ToolBar.tscn" id="2_mx2cs"]
+[ext_resource type="PackedScene" path="res://Components/PageView/ScreenplayPageElements/screenplay_page_viewport.tscn" id="3_l68pi"]
+
+[node name="TestScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_kknca")
+
+[node name="VBoxContainer" type="VSplitContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+split_offset = -285
+dragger_visibility = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_bottom = 8
+
+[node name="ToolBar" parent="VBoxContainer/MarginContainer" instance=ExtResource("2_mx2cs")]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 4.1
+split_offset = -270
+
+[node name="PageMarginContainer" type="SubViewportContainer" parent="VBoxContainer/HSplitContainer"]
+layout_mode = 2
+stretch = true
+
+[node name="ScreenplayPage" parent="VBoxContainer/HSplitContainer/PageMarginContainer" instance=ExtResource("3_l68pi")]
+handle_input_locally = false
+size = Vector2i(900, 850)
+size_2d_override = Vector2i(200, 200)
+raw_screenplay_content = "INT. HOUSE - DAY"
+debug_spacer_colors = true
+SP_FONT_SIZE = 20
