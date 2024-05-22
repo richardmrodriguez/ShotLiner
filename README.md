@@ -19,3 +19,4 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
 ## DEPENDENCIES
 - [Fountain Parser GDExt](https://github.com/richardmrodriguez/fountain-parser-gdext)
   - This is a wrapper for my also-WIP `fountain-parser-rs` ; this simply provides very basic fountain parsing.
+- [godot-uuid](https://github.com/binogure-studio/godot-uuid)
