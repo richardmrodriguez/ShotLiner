@@ -12,17 +12,20 @@
 - [x] Show a Shot Number at the top of each Shotline2D
 - [x] Shotlines are now assigned a UUID to ensure we are always addressing the correct Shotline objects in the code
 - [ ] Implement ShotLine modification ability
-  - [ ] Add different grab regions to a shotline
-	- Top endpoint
-	- Bottom endpoint
-	- Body (middle, default)
+  - [x] Add different grab regions to a shotline
+  	- Top endpoint
+  	- Bottom endpoint
+  	- Body (middle, default)
   - [ ] Add custom Endcaps to ShotLine2D to visually show where Lines either hard stop, continue on to the next page, or are continuing from a previous page
-	- Flat Butt for a hard stop
-	- Inverted Triangle at the top or bottom endpoint to indicate a line which starts on a previous page or ends on a later page
+  	- Flat Butt for a hard stop
+  	- Inverted Triangle at the top or bottom endpoint to indicate a line which starts on a previous page or ends on a later page
+	- [x] Endcaps are just Line2Ds which are children of the EndcapGrabRegion nodes
+  	- [ ] Implement some logic so that a ShotLine2D can chose either an EndCapLine2D or an OpenEndCapLine2D 
+	- [x] Shotlines structs are organized at the top EditorView level instead of by the ScreenplayPage node, all previous functionality appears to be working 
+  - [ ] Make Shotlines able to be multipage
   - [ ] Add ability to move shotlines horizontally and vertically (horizontally will be somewhat trivial, vertically a tad tricker)
   - [ ] Add ability to resize shotlines by clicking and dragging top or bottom endpoints
   - [ ] Add ability to create squiggle sections in the middle of lines (unfilmed areas, useful for OTS / shot-reverse shot)
-  - [ ] Make Shotlines able to be multipage
 	- [ ] ShotLines are extended to the next page by dragging a shotline's endpoint down past the final line of the page and into the margin
 	  - Maybe have a ColorRect which appears at the bottom of the page when dragging, to indicate to the user that they are about to make a multipage line
 	  - When user lets go of line, the page automatically changes to the next page so the user can continue dragging the line
@@ -52,8 +55,9 @@
   -  This could actually be significant for either speed and efficiency or accessibilty
 
 # QUALITY OF LIFE / BONUS
+- [ ] Have ShotLines automatically space themselves apart horizontally so they don't overlap
 - [ ] Draw "preview" Line2D as the user is drawing with the mouse
-- [ ] Have ShotLines width be skinny by default, but fatter when focused or hovering over
+- [x] Have ShotLines width be skinny by default, but fatter when focused or hovering over
 - [ ] When drawing Shotlines, have new lines be automatically numbered by the scene number of the above Scene Heading
   - i.e. if I draw a new line underneath a scene heading INT. HOUSE - NIGHT, and that's scene 2, the new shotline will automatically have the scene number 2
 - [ ] Highlight all `Label`s that are encompassed by the currently highlighted ShotLine
@@ -70,6 +74,14 @@
 - [ ] Image support
   - [ ] Ability to create storyboard from shotliines file
   - [ ] Ability to drag-drop images onto ShotLiner ( or manually add from file explorer) to create ShotLines with attached storyboard images
+- [ ] "On-Set" Mode
+  - [ ] "ghost editing" like racing a mario kart ghost
+	- You can choose to simply check off pre-drawn ShotLines or add your own as you go
+	- You can see where you may be deviating from your pre-lined script with your new lining
+  - [ ] Quick lining controls (see the Quality of Life section)
+	- [ ] Gamepad support
+	- [ ] Touch Screen support
+- [ ] Android / iOS tablet support (tricky with godot-rust, might have to do a full rewrite of the fountain parser in gdscript)
 
 # SOFTWARE / UX LANGUAGE
 

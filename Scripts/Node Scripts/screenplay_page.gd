@@ -1,8 +1,6 @@
 extends Control
 
 @export_multiline var raw_screenplay_content: String = "INT. HOUSE - DAY"
-# debug var
-@export var debug_spacer_colors: bool = false
 @export var SP_ACTION_WIDTH: int = 61
 @export var SP_DIALOGUE_WIDTH: int = 36
 @export var SP_FONT_SIZE: int = 20
@@ -15,14 +13,13 @@ extends Control
 
 const uuid_util = preload ("res://addons/uuid/uuid.gd")
 
-var shotline_2D_scene := preload ("res://Components/ShotLine2D.tscn")
-
 var current_page_number: int = 0
 var shotlines_for_pages: Dictionary = {}
 
 signal created_new_shotline(shotline_struct: Shotline)
 signal shotline_clicked
 signal last_hovered_line_idx(last_ine_idx: int)
+signal page_lines_populated
 
 # TODO
 # - This logic needs to be abstracted into another file;
@@ -52,9 +49,14 @@ func replace_current_page(page_content: PageContent, new_page_number: int=0) -> 
 			page_panel.remove_child(shotline)
 			shotline.queue_free()
 			#print("lmao", shotline)
-	populate_container_with_page_and_shotlines(page_content, new_page_number)
+	#await get_tree().process_frame
+	# ^^^ There appear to be rendering issues when navigating back and forth
+	# between pages. Even though there are other parts of relevant functions
+	# which already have an await get_tree().process_frame line,
+	# it appears to be not quite enough sometimes. It appears random.
+	populate_container_with_page_lines(page_content, new_page_number)
 
-func populate_container_with_page_and_shotlines(cur_page_content: PageContent, page_number: int=0) -> void:
+func populate_container_with_page_lines(cur_page_content: PageContent, page_number: int=0) -> void:
 	current_page_number = page_number
 	var line_counter: int = 0
 	for fnline: FNLineGD in cur_page_content.lines:
@@ -75,91 +77,8 @@ func populate_container_with_page_and_shotlines(cur_page_content: PageContent, p
 		line_bg.z_index = 1
 		line_bg.visible = false
 		line_counter += 1
-	
-	if shotlines_for_pages.has(current_page_number):
-		await get_tree().process_frame
-		#await get_tree().process_frame
-		var cur_page_shotlines: Array = shotlines_for_pages[current_page_number]
-		print("funny shotline constructiond")
-		
-		for sl: Shotline in cur_page_shotlines:
-			print("Adding this shotline: ", sl)
-			page_panel.add_child(construct_shotline(sl))
 
-# TODO: these two funcs are confusingly named and structured;
-# constructing the shotline should constitute putting the metadata into a Shotline struct
-# adding the shotline to the page should create the Line2D
-# Also, the Line2D
-func add_new_shotline_to_page(start_idx: int, end_idx: int, last_mouse_pos: Vector2) -> void:
-	if not shotlines_for_pages.has(current_page_number):
-		var empty_shotlines_dict: Array = []
-		shotlines_for_pages[current_page_number] = empty_shotlines_dict
-	var cur_shotlines: Array = shotlines_for_pages[current_page_number]
-	var cur_shotline: Shotline = Shotline.new()
-	var new_shotline_id: String = uuid_util.v4()
-	cur_shotline.shotline_uuid = new_shotline_id
-	cur_shotline.start_index = start_idx
-	cur_shotline.end_index = end_idx
-	cur_shotline.x_position = last_mouse_pos.x
-	cur_shotlines.append(cur_shotline)
-	await get_tree().process_frame
-	page_panel.add_child(construct_shotline(cur_shotline))
-	created_new_shotline.emit(cur_shotline)
-
-func construct_shotline(shotline: Shotline) -> ShotLine2D:
-	var start_idx: int = shotline.start_index
-	var end_idx: int = shotline.end_index
-	var last_mouse_pos: float = shotline.x_position
-
-	var real_start: int
-	var real_end: int
-	# This bit ensures that lines are always oriented to start at the top and end at the bottom
-	if start_idx > end_idx:
-		real_start = end_idx
-		real_end = start_idx
-	else:
-		real_start = start_idx
-		real_end = end_idx
-	var screenplay_lines: Array = page_container.get_children()
-	var screenplay_line_start: Label
-	var screenplay_line_end: Label
-
-	for spl: Label in screenplay_lines:
-		if spl is Label:
-			if spl.line_index == real_start:
-				screenplay_line_start = spl
-				print("start line: ", spl.fnline.fn_type, " | ", spl.text, )
-			if spl.line_index == real_end:
-				screenplay_line_end = spl
-
-	var screenplay_line_vertical_size: float = screenplay_line_start.get_rect().size.y
-
-	# TODO: I don't know why the shotlines' vertical position is off by like 3 lines,
-	# But it is and so, it needs the following offsets. Must investigate further.
-	# However, I do like the effect of having there being 0.5x line height of
-	# overhang for the start and end;
-	var start_pos: Vector2 = Vector2(
-		last_mouse_pos,
-		screenplay_line_start.global_position.y - 4.5 * screenplay_line_vertical_size
-		)
-	var end_pos: Vector2 = Vector2(
-		last_mouse_pos,
-		screenplay_line_end.global_position.y - 3.5 * screenplay_line_vertical_size
-		)
-
-	print("Current shotline positions: ", start_pos.y, ", ", end_pos.y)
-
-	var new_line2D: Line2D = shotline_2D_scene.instantiate()
-	new_line2D.shotline_struct_reference = shotline
-	new_line2D.width = 6.0
-	new_line2D.default_color = Color.SEA_GREEN
-	new_line2D.begin_cap_mode = Line2D.LINE_CAP_ROUND
-	new_line2D.end_cap_mode = Line2D.LINE_CAP_ROUND
-	new_line2D.set_points([start_pos, end_pos])
-
-	shotline.shotline_node = new_line2D
-
-	return new_line2D
+	page_lines_populated.emit()
 
 func construct_screenplay_line(fnline: FNLineGD, idx: int) -> Label:
 
@@ -273,6 +192,8 @@ func recursive_line_splitter(line: String, max_length: int) -> Array:
 			final_arr.append(nl)
 		 
 	return final_arr
+
+# ------------ SIGNAL HANDLING ---------
 
 func _on_screenplay_page_content_v_box_screenplay_line_hovered_over(last_line_idx: int) -> void:
 	last_hovered_line_idx.emit(last_line_idx)

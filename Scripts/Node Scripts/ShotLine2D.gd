@@ -2,53 +2,122 @@ extends Line2D
 
 class_name ShotLine2D
 
-var shotline_struct_reference: Shotline
 @onready var shot_number_label: Label = $ShotNumber
-
 @onready var screenplay_page_panel: Panel = get_parent()
+@onready var line_body_grab_region: ColorRect = $ColorRect
+@onready var begin_cap_grab_region: ColorRect = %BeginCapGrabRegion
+@onready var end_cap_grab_region: ColorRect = %EndCapGrabRegion
 
-@onready var color_rect: ColorRect = $ColorRect
+@export var color_rect_width: float = 12
+@export var cap_grab_region_height: float = 8
+@export var hover_line_width: float = 10
+@export var line_width: float = 4
+
+var shotline_struct_reference: Shotline
+var is_hovered_over: bool = false
+var cap_line_width_offset: float = 8
+
+var true_start_pos: Vector2 = Vector2(0, 0)
+var true_end_pos: Vector2 = Vector2(0, 0)
 
 signal mouse_clicked_on_shotline(shotline2D: ShotLine2D, button_index: int)
 signal mouse_released_on_shotline(shotline2D: ShotLine2D, button_index: int)
 
-# TODO: the color rect is a useful simple way to detect mouse movement, 
-# and the Line2D can be used to create squiggly lines;
-# This requires more functions that use the set_points function from the Line2D
+func _init() -> void:
+	visible = false
 
 func _ready() -> void:
-    await align_mouse_detection_color_rect()
-    await align_shot_number_label()
-    update_shot_number_label()
-    color_rect.color = Color.TRANSPARENT
-    color_rect.gui_input.connect(_on_shape_input)
-    mouse_clicked_on_shotline.connect(screenplay_page_panel._on_shotline_clicked)
-    #mouse_released_on_shotline.connect(screenplay_page_panel._on_shotline_released)
+	await get_tree().process_frame
+	if visible == false:
+		visible = true
+	align_grab_regions()
+	align_shot_number_label()
+	update_shot_number_label()
+	width = line_width
+
+	#end_cap_mode = Line2D.LINE_CAP_BOX
+	#begin_cap_mode = Line2D.LINE_CAP_BOX
+	line_body_grab_region.color = Color.TRANSPARENT
+	begin_cap_grab_region.color = Color.TRANSPARENT
+	end_cap_grab_region.color = Color.TRANSPARENT
+	line_body_grab_region.gui_input.connect(_on_line_body_gui_input)
+	mouse_clicked_on_shotline.connect(screenplay_page_panel._on_shotline_clicked)
+	#mouse_released_on_shotline.connect(screenplay_page_panel._on_shotline_released)
+
+func get_begin_cap_points(start_point: Vector2) -> Array[Vector2]:
+	var left_end: Vector2 = Vector2(start_point.x - cap_line_width_offset, start_point.y)
+	var right_end: Vector2 = Vector2(start_point.x + cap_line_width_offset, start_point.y)
+
+	return [left_end, right_end, start_point]
+
+func get_end_cap_points(end_point: Vector2) -> Array[Vector2]:
+	var left_end: Vector2 = Vector2(end_point.x - cap_line_width_offset, end_point.y)
+	var right_end: Vector2 = Vector2(end_point.x + cap_line_width_offset, end_point.y)
+
+	return [end_point, left_end, right_end]
 
 func align_shot_number_label() -> void:
-    await get_tree().process_frame
-    var x: float = points[0].x
-    var y: float = points[0].y
-    shot_number_label.position = Vector2(
-        x - (0.5 * shot_number_label.get_rect().size.x),
-        y - shot_number_label.get_rect().size.y
-        )
+	#await get_tree().process_frame
+	var x: float = true_start_pos.x
+	var y: float = true_start_pos.y
+	shot_number_label.position = Vector2(
+		x - (0.5 * shot_number_label.get_rect().size.x),
+		y - (shot_number_label.get_rect().size.y + 8)
+		)
 
-func align_mouse_detection_color_rect() -> void:
-    await get_tree().process_frame
-    var line_length: float = points[1].y - points[0].y
-    color_rect.position = Vector2(points[0].x - (0.5 * width), points[0].y)
-    color_rect.size = Vector2(width, line_length)
+func align_grab_regions() -> void:
+	#await get_tree().process_frame
+	var line_length: float = true_end_pos.y - true_start_pos.y
+
+	line_body_grab_region.position = Vector2(
+		true_start_pos.x - (0.5 * color_rect_width),
+		true_start_pos.y
+		)
+	line_body_grab_region.size = Vector2(
+		color_rect_width,
+		line_length
+		)
+
+	begin_cap_grab_region.position = Vector2(
+		true_start_pos.x - (0.5 * color_rect_width),
+		true_start_pos.y - (begin_cap_grab_region.size.y)
+		)
+	begin_cap_grab_region.size = Vector2(
+		color_rect_width,
+		cap_grab_region_height
+		)
+
+	end_cap_grab_region.position = Vector2(
+		true_start_pos.x - (0.5 * color_rect_width),
+		true_end_pos.y - (begin_cap_grab_region.size.y)
+		)
+	end_cap_grab_region.size = Vector2(
+		color_rect_width,
+        cap_grab_region_height
+		)
 
 func update_shot_number_label() -> void:
-    if shotline_struct_reference.scene_number == null:
-        print("funny null shot numbers")
-        return
-    var shotnumber_string: String = str(shotline_struct_reference.scene_number) + "." + str(shotline_struct_reference.shot_number)
-    shot_number_label.text = shotnumber_string
+	if shotline_struct_reference.scene_number == null:
+		print("funny null shot numbers")
+		return
+	var shotnumber_string: String = str(shotline_struct_reference.scene_number) + "." + str(shotline_struct_reference.shot_number)
+	shot_number_label.text = shotnumber_string
 
-func _on_shape_input(event: InputEvent) -> void:
-        
-    if event is InputEventMouseButton:
-        if event.pressed:
-            mouse_clicked_on_shotline.emit(self, event.button_index)
+func resize_on_hover() -> void:
+	if is_hovered_over:
+		width = hover_line_width
+	else:
+		width = line_width
+
+func _on_line_body_gui_input(event: InputEvent) -> void:
+		
+	if event is InputEventMouseButton:
+		if event.pressed:
+			width = 14
+			mouse_clicked_on_shotline.emit(self, event.button_index)
+		else:
+			resize_on_hover()
+
+func delete_this_shotline_node_and_struct() -> void:
+	shotline_struct_reference.queue_free()
+	queue_free()

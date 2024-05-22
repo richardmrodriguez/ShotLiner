@@ -7,6 +7,7 @@ class_name InspectorPanel
 @onready var shot_num: Control = % "ShotNum"
 @onready var shot_type: Control = % "Shot Type"
 @onready var setup_num: Control = % "Setup #"
+@onready var lens: Control = % "Lens"
 @onready var group: Control = % "Group"
 @onready var tags: Control = % "Tags"
 
@@ -16,6 +17,7 @@ class_name InspectorPanel
 	shot_type,
 	shot_subtype,
 	setup_num,
+	lens,
 	group,
 	tags
 ]

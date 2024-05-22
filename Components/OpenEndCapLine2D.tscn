@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dku2jp0o2lcku"]
+
+[node name="EndCapLine2d" type="Line2D"]
+points = PackedVector2Array(-8, 0, 0, 10, 8, 0)
+width = 4.0
+antialiased = true

@@ -5,6 +5,9 @@ extends Control
 @onready var inspector_panel: Node = %InspectorPanel
 
 const FIELD_CATEGORY = TextInputField.FIELD_CATEGORY
+const uuid_util = preload ("res://addons/uuid/uuid.gd")
+
+var shotline_2D_scene := preload ("res://Components/ShotLine2D.tscn") # TODO: Move the shotline creating logic and shotlines Dictionary to here instead of screenplay_page.gd
 
 # ------ STATES ------
 var is_drawing: bool = false
@@ -18,14 +21,20 @@ var last_selected_shotline: Shotline
 
 var cur_page_index: int = 0
 var pages: Array[PageContent]
+var all_shotlines: Array = []
+
+signal created_new_shotline(shotline_struct: Shotline)
 
 func _ready() -> void:
 	inspector_panel.field_text_changed.connect(_on_inspector_panel_field_text_changed)
 	var screenplay_file_content := load_screenplay("Screenplay Files/VCR2L-2024-05-08.fountain")
 	var fnlines: Array[FNLineGD] = screenplay_page.get_parsed_lines(screenplay_file_content)
 	pages = split_fnline_array_into_page_groups(fnlines)
-	screenplay_page.populate_container_with_page_and_shotlines(pages[cur_page_index])
-	screenplay_page.created_new_shotline.connect(_on_new_shotline_added)
+
+	created_new_shotline.connect(_on_new_shotline_added)
+	screenplay_page.populate_container_with_page_lines(pages[cur_page_index])
+	#screenplay_page.created_new_shotline.connect(_on_new_shotline_added)
+	screenplay_page.page_lines_populated.connect(_on_page_lines_populated)
 	screenplay_page.shotline_clicked.connect(_on_shotline_clicked)
 
 # This merely splits an array of FNLineGDs into smaller arrays. 
@@ -56,7 +65,48 @@ func load_screenplay(filename: String) -> String:
 	var content := file.get_as_text()
 	return content
 
+# -------------------- SHOTLINE LOGIC -----------------------------------
+
+# TODO: these two funcs are confusingly named and structured;
+# constructing the shotline should constitute putting the metadata into a Shotline struct
+# adding the shotline to the page should create the Line2D
+# Also, the Line2D
+func add_shotline_node_to_page(shotline: Shotline) -> void:
+	var current_lines: Array = screenplay_page.page_container.get_children()
+	var empty_shotline_node: ShotLine2D = shotline_2D_scene.instantiate()
+	var shotline_node: ShotLine2D = Shotline.construct_shotline_node(shotline, current_lines, empty_shotline_node)
+	screenplay_page.page_panel.add_child(shotline_node)
+	created_new_shotline.emit(shotline)
+
+func add_new_shotline_to_shotlines_array(start_idx: int, end_idx: int, last_mouse_pos: Vector2) -> void:
+
+	var cur_shotline: Shotline = Shotline.new()
+	var new_shotline_id: String = uuid_util.v4()
+
+	cur_shotline.shotline_uuid = new_shotline_id
+	cur_shotline.start_page_index = cur_page_index
+	cur_shotline.end_page_index = cur_page_index
+	cur_shotline.start_index = start_idx
+	cur_shotline.end_index = end_idx
+	cur_shotline.x_position = last_mouse_pos.x
+	all_shotlines.append(cur_shotline)
+
+func populate_page_panel_with_shotlines_for_page() -> void:
+	await get_tree().process_frame
+	for sl: Shotline in all_shotlines:
+		if sl.start_page_index == cur_page_index or sl.end_page_index == cur_page_index:
+			var cur_lines: Array = screenplay_page.page_container.get_children()
+			var new_shotline_node: ShotLine2D = Shotline.construct_shotline_node(
+				sl,
+				cur_lines,
+				shotline_2D_scene.instantiate()
+			)
+			screenplay_page.page_panel.add_child(new_shotline_node)
+#
+#
 # -------------------- CHILD INPUT HANDLING -----------------------------
+#
+#
 
 func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
 	match toolbar_button:
@@ -65,6 +115,7 @@ func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
 				cur_page_index += 1
 				print(pages.size())
 				screenplay_page.replace_current_page(pages[cur_page_index], cur_page_index)
+
 		toolbar.TOOLBAR_BUTTON.PREV_PAGE:
 			if cur_page_index - 1 >= 0:
 				cur_page_index -= 1
@@ -83,8 +134,10 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 			if event.is_released():
 				if is_drawing:
 					is_drawing = false
-					screenplay_page.add_new_shotline_to_page(last_clicked_line_idx, last_hovered_line_idx, event.global_position)
-					print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
+					add_new_shotline_to_shotlines_array(last_clicked_line_idx, last_hovered_line_idx, event.global_position)
+					add_shotline_node_to_page(all_shotlines[ - 1])
+
+					#print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
 		if event.button_index == 2:
 			pass
 
@@ -92,15 +145,18 @@ func _on_screenplay_page_last_hovered_line_idx(last_line: int) -> void:
 	last_hovered_line_idx = last_line
 
 func _on_new_shotline_added(shotline_struct: Shotline) -> void:
-	inspector_panel.scene_num.focus_on_field()
+	inspector_panel.scene_num.line_edit.grab_focus()
 	inspector_panel.populate_fields_from_shotline(shotline_struct)
 	cur_selected_shotline = shotline_struct
 
 func _on_inspector_panel_field_text_changed(new_text: String, field_category: TextInputField.FIELD_CATEGORY) -> void:
-
+	if cur_selected_shotline == null or all_shotlines == []:
+		return
+	await get_tree().process_frame
 	match field_category:
 		FIELD_CATEGORY.SCENE_NUM:
 			cur_selected_shotline.scene_number = new_text
+			print("funnier amogus")
 			cur_selected_shotline.shotline_node.update_shot_number_label()
 		FIELD_CATEGORY.SHOT_NUM:
 			cur_selected_shotline.shot_number = new_text
@@ -119,12 +175,18 @@ func _on_inspector_panel_field_text_changed(new_text: String, field_category: Te
 func _on_shotline_clicked(shotline_node: ShotLine2D, button_index: int) -> void:
 	match button_index:
 		1:
-			var current_shotlines: Array = screenplay_page.shotlines_for_pages[cur_page_index]
 			var cur_shotline_uuid: String = shotline_node.shotline_struct_reference.shotline_uuid
-			for sl: Node in current_shotlines:
+			for sl: Node in all_shotlines:
 				if not sl is Shotline:
 					continue
 				if sl.shotline_uuid == cur_shotline_uuid:
+					print("funny amogus")
 					cur_selected_shotline = sl
-					break
-			inspector_panel.populate_fields_from_shotline(cur_selected_shotline)
+					inspector_panel.populate_fields_from_shotline(sl)
+		2:
+			all_shotlines.erase(shotline_node.shotline_struct_reference)
+			shotline_node.queue_free()
+
+func _on_page_lines_populated() -> void:
+	await get_tree().process_frame
+	populate_page_panel_with_shotlines_for_page()

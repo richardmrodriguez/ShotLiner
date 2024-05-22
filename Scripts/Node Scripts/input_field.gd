@@ -6,6 +6,8 @@ class_name TextInputField
 @export var field_placeholder: String
 @export var field_text: String
 @export var field_category: FIELD_CATEGORY
+@export var node_prev_focus: TextInputField
+@export var node_next_focus: TextInputField
 
 enum FIELD_TYPE {
 	LINE,
@@ -17,9 +19,10 @@ enum FIELD_CATEGORY {
 	SHOT_NUM,
 	SHOT_TYPE,
 	SHOT_SUBTYPE,
-	SETUP_NUM,
+	LENS,
 	GROUP,
-	TAGS
+	TAGS,
+	SETUP_NUM,
 }
 @export var chosen_field_type: FIELD_TYPE
 
@@ -35,6 +38,12 @@ func _ready() -> void:
 	label.focus_mode = Control.FOCUS_ALL
 	label.text = field_label
 	line_edit.text_changed.connect(field_text_changed)
+	await get_tree().process_frame
+	if node_next_focus != null:
+		line_edit.focus_next = node_next_focus.line_edit.get_path()
+	if node_prev_focus != null:
+		line_edit.focus_previous = node_prev_focus.line_edit.get_path()
+
 	if chosen_field_type == FIELD_TYPE.MULTILINE:
 		vbox.remove_child(line_edit)
 		var textedit: TextEdit = TextEdit.new()
@@ -48,16 +57,26 @@ func _ready() -> void:
 		line_edit.placeholder_text = field_placeholder
 
 func _on_line_edit_gui_input(event: InputEvent) -> void:
-	if event.is_released():
-		if event is InputEventKey:
-			if event.keycode == KEY_TAB:
-				print("Tabbed")
+	pass
+	#if event is InputEventKey:
+	#	if event.pressed:
+	#		if event.keycode == KEY_PERIOD or event.keycode == KEY_KP_PERIOD:
+	#			if (
+	#				field_category == FIELD_CATEGORY.SCENE_NUM
+	#				or field_category == FIELD_CATEGORY.SHOT_NUM
+	#				or field_category == FIELD_CATEGORY.SHOT_TYPE
+	#				or field_category == FIELD_CATEGORY.SHOT_SUBTYPE
+	#				):
+	#				await get_tree().process_frame
+	#				if line_edit.text.length() > 1:
+	#					line_edit.text = line_edit.text.substr(0, line_edit.text.length() - 1)
+	#				else:
+	#					line_edit.text = ""
+	#				text_changed.emit(line_edit.text)
+	#				node_next_focus.line_edit.grab_focus()
 
 func field_text_changed(new_text: String) -> void:
 	text_changed.emit(new_text, field_category)
-
-func focus_on_field() -> void:
-	line_edit.grab_focus()
 
 func set_text(text: String) -> void:
 	line_edit.text = text

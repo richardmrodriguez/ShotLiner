@@ -26,12 +26,14 @@ layout_mode = 2
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/FlowContainer"]
 layout_mode = 2
 
-[node name="SceneNum" parent="VBoxContainer/FlowContainer/HBoxContainer" instance=ExtResource("1_xv7la")]
+[node name="SceneNum" parent="VBoxContainer/FlowContainer/HBoxContainer" node_paths=PackedStringArray("node_prev_focus", "node_next_focus") instance=ExtResource("1_xv7la")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 focus_next = NodePath("../ShotNum")
 focus_previous = NodePath("../../../Group")
+node_prev_focus = NodePath("../../../Group")
+node_next_focus = NodePath("../ShotNum")
 
 [node name="Dot" type="Label" parent="VBoxContainer/FlowContainer/HBoxContainer"]
 layout_mode = 2
@@ -39,42 +41,67 @@ size_flags_vertical = 1
 text = "."
 vertical_alignment = 2
 
-[node name="ShotNum" parent="VBoxContainer/FlowContainer/HBoxContainer" instance=ExtResource("1_xv7la")]
+[node name="ShotNum" parent="VBoxContainer/FlowContainer/HBoxContainer" node_paths=PackedStringArray("node_prev_focus", "node_next_focus") instance=ExtResource("1_xv7la")]
 unique_name_in_owner = true
 layout_mode = 2
 focus_next = NodePath("../../Shot Type")
 focus_previous = NodePath("../SceneNum")
 field_label = "Shot #"
+field_placeholder = "0"
 field_category = 1
+node_prev_focus = NodePath("../SceneNum")
+node_next_focus = NodePath("../../Shot Type")
 
-[node name="Shot Type" parent="VBoxContainer/FlowContainer" instance=ExtResource("1_xv7la")]
+[node name="Shot Type" parent="VBoxContainer/FlowContainer" node_paths=PackedStringArray("node_prev_focus", "node_next_focus") instance=ExtResource("1_xv7la")]
 unique_name_in_owner = true
 layout_mode = 2
 field_label = "Shot Type"
 field_placeholder = "WS"
 field_category = 2
+node_prev_focus = NodePath("../HBoxContainer/ShotNum")
+node_next_focus = NodePath("../Shot Subtype")
 
-[node name="Shot Subtype" parent="VBoxContainer/FlowContainer" instance=ExtResource("1_xv7la")]
+[node name="Shot Subtype" parent="VBoxContainer/FlowContainer" node_paths=PackedStringArray("node_prev_focus", "node_next_focus") instance=ExtResource("1_xv7la")]
 unique_name_in_owner = true
 layout_mode = 2
 field_label = "Subtype"
 field_placeholder = "2S"
 field_category = 3
+node_prev_focus = NodePath("../Shot Type")
+node_next_focus = NodePath("../HBoxContainer2/Setup #")
 
-[node name="Setup #" parent="VBoxContainer" instance=ExtResource("1_xv7la")]
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer/FlowContainer"]
+layout_mode = 2
+
+[node name="Setup #" parent="VBoxContainer/FlowContainer/HBoxContainer2" node_paths=PackedStringArray("node_prev_focus", "node_next_focus") instance=ExtResource("1_xv7la")]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 1
 field_label = "Setup #"
-field_placeholder = "..."
-field_category = 4
+field_placeholder = "00"
+field_category = 7
+node_prev_focus = NodePath("../../Shot Subtype")
+node_next_focus = NodePath("../Lens")
 
-[node name="Group" parent="VBoxContainer" instance=ExtResource("1_xv7la")]
+[node name="Lens" parent="VBoxContainer/FlowContainer/HBoxContainer2" node_paths=PackedStringArray("node_prev_focus", "node_next_focus") instance=ExtResource("1_xv7la")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 1
+field_label = "Lens (mm)"
+field_placeholder = "mm"
+field_category = 4
+node_prev_focus = NodePath("../Setup #")
+node_next_focus = NodePath("../../../Group")
+
+[node name="Group" parent="VBoxContainer" node_paths=PackedStringArray("node_prev_focus", "node_next_focus") instance=ExtResource("1_xv7la")]
 unique_name_in_owner = true
 layout_mode = 2
 focus_next = NodePath("../FlowContainer/HBoxContainer/SceneNum")
 field_label = "Group"
 field_placeholder = "..."
 field_category = 5
+node_prev_focus = NodePath("../FlowContainer/HBoxContainer2/Lens")
+node_next_focus = NodePath("../FlowContainer/HBoxContainer/SceneNum")
 
 [node name="Tags" parent="VBoxContainer" instance=ExtResource("1_xv7la")]
 unique_name_in_owner = true
