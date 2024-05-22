@@ -11,7 +11,7 @@ var unfilmed_sections: Array[Dictionary] # sections[index]["section_start"] = 14
 
 var shotline_node: ShotLine2D
 
-var shotline_id: int
+var shotline_uuid: String
 
 # Metadata
 var scene_number: String

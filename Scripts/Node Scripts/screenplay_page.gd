@@ -13,6 +13,8 @@ extends Control
 @onready var page_panel: Panel = %ScreenplayPagePanel
 @onready var page_container: Node = %ScreenplayPageContentVBox
 
+const uuid_util = preload ("res://addons/uuid/uuid.gd")
+
 var shotline_2D_scene := preload ("res://Components/ShotLine2D.tscn")
 
 var current_page_number: int = 0
@@ -79,11 +81,10 @@ func populate_container_with_page_and_shotlines(cur_page_content: PageContent, p
 		#await get_tree().process_frame
 		var cur_page_shotlines: Array = shotlines_for_pages[current_page_number]
 		print("funny shotline constructiond")
-		var shotline_counter: int = 0
+		
 		for sl: Shotline in cur_page_shotlines:
 			print("Adding this shotline: ", sl)
-			page_panel.add_child(construct_shotline(sl, shotline_counter))
-			shotline_counter += 1
+			page_panel.add_child(construct_shotline(sl))
 
 # TODO: these two funcs are confusingly named and structured;
 # constructing the shotline should constitute putting the metadata into a Shotline struct
@@ -91,20 +92,21 @@ func populate_container_with_page_and_shotlines(cur_page_content: PageContent, p
 # Also, the Line2D
 func add_new_shotline_to_page(start_idx: int, end_idx: int, last_mouse_pos: Vector2) -> void:
 	if not shotlines_for_pages.has(current_page_number):
-		var empty_shotlines_arr: Array[Shotline] = []
-		shotlines_for_pages[current_page_number] = empty_shotlines_arr
-	var cur_shotlines: Array[Shotline] = shotlines_for_pages[current_page_number]
+		var empty_shotlines_dict: Array = []
+		shotlines_for_pages[current_page_number] = empty_shotlines_dict
+	var cur_shotlines: Array = shotlines_for_pages[current_page_number]
 	var cur_shotline: Shotline = Shotline.new()
+	var new_shotline_id: String = uuid_util.v4()
+	cur_shotline.shotline_uuid = new_shotline_id
 	cur_shotline.start_index = start_idx
 	cur_shotline.end_index = end_idx
 	cur_shotline.x_position = last_mouse_pos.x
 	cur_shotlines.append(cur_shotline)
-	var shotline_idx: int = cur_shotlines.size() - 1
 	await get_tree().process_frame
-	page_panel.add_child(construct_shotline(cur_shotline, shotline_idx))
+	page_panel.add_child(construct_shotline(cur_shotline))
 	created_new_shotline.emit(cur_shotline)
 
-func construct_shotline(shotline: Shotline, shotline_idx: int) -> ShotLine2D:
+func construct_shotline(shotline: Shotline) -> ShotLine2D:
 	var start_idx: int = shotline.start_index
 	var end_idx: int = shotline.end_index
 	var last_mouse_pos: float = shotline.x_position
@@ -148,7 +150,6 @@ func construct_shotline(shotline: Shotline, shotline_idx: int) -> ShotLine2D:
 	print("Current shotline positions: ", start_pos.y, ", ", end_pos.y)
 
 	var new_line2D: Line2D = shotline_2D_scene.instantiate()
-	new_line2D.shotline_struct_idx = shotline_idx
 	new_line2D.shotline_struct_reference = shotline
 	new_line2D.width = 6.0
 	new_line2D.default_color = Color.SEA_GREEN

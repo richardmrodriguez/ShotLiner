@@ -23,7 +23,7 @@ func _on_shotline_clicked(shotline2D: ShotLine2D, button_index: int) -> void:
 		"Click detected in screenplay page panel | ",
 		button_index,
 		" | ",
-		shotline2D.shotline_struct_idx
+		shotline2D.shotline_struct_reference.shotline_uuid
 		)
 	if button_index == 2:
 		delete_shotline(shotline2D)
@@ -32,5 +32,11 @@ func _on_shotline_clicked(shotline2D: ShotLine2D, button_index: int) -> void:
 
 func delete_shotline(shotline2D: ShotLine2D) -> void:
 	var cur_shotlines_array: Array = page.shotlines_for_pages[page.current_page_number]
-	cur_shotlines_array.remove_at(shotline2D.shotline_struct_idx)
+	for sl: Node in cur_shotlines_array:
+		if not sl is Shotline:
+			continue
+		if sl.shotline_uuid == shotline2D.shotline_struct_reference.shotline_uuid:
+
+			cur_shotlines_array.erase(sl)
+			break
 	shotline2D.queue_free()

@@ -120,5 +120,11 @@ func _on_shotline_clicked(shotline_node: ShotLine2D, button_index: int) -> void:
 	match button_index:
 		1:
 			var current_shotlines: Array = screenplay_page.shotlines_for_pages[cur_page_index]
-			cur_selected_shotline = current_shotlines[shotline_node.shotline_struct_idx]
+			var cur_shotline_uuid: String = shotline_node.shotline_struct_reference.shotline_uuid
+			for sl: Node in current_shotlines:
+				if not sl is Shotline:
+					continue
+				if sl.shotline_uuid == cur_shotline_uuid:
+					cur_selected_shotline = sl
+					break
 			inspector_panel.populate_fields_from_shotline(cur_selected_shotline)

@@ -2,7 +2,6 @@ extends Line2D
 
 class_name ShotLine2D
 
-var shotline_struct_idx: int
 var shotline_struct_reference: Shotline
 @onready var shot_number_label: Label = $ShotNumber
 
@@ -53,6 +52,3 @@ func _on_shape_input(event: InputEvent) -> void:
     if event is InputEventMouseButton:
         if event.pressed:
             mouse_clicked_on_shotline.emit(self, event.button_index)
-        else:
-            #mouse_released_on_shotline.emit(self, event.button_index)
-            pass
