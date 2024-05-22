@@ -7,7 +7,7 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
 - Navigate between individual pages
 - Can create multiple ShotLines per page
 - Can click on individual Shotlines to assign unique metadtata
-- Can delete Shotlines by rigth-clicking
+- Can delete Shotlines by right-clicking
 
 ## What's NOT working so far
 - Document import
