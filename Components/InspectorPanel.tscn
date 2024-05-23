@@ -48,6 +48,7 @@ focus_next = NodePath("../../Shot Type")
 focus_previous = NodePath("../SceneNum")
 field_label = "Shot #"
 field_placeholder = "0"
+field_text = "0"
 field_category = 1
 node_prev_focus = NodePath("../SceneNum")
 node_next_focus = NodePath("../../Shot Type")

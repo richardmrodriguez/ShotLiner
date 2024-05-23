@@ -16,20 +16,28 @@
   	- Top endpoint
   	- Bottom endpoint
   	- Body (middle, default)
-  - [ ] Add custom Endcaps to ShotLine2D to visually show where Lines either hard stop, continue on to the next page, or are continuing from a previous page
-  	- Flat Butt for a hard stop
-  	- Inverted Triangle at the top or bottom endpoint to indicate a line which starts on a previous page or ends on a later page
 	- [x] Endcaps are just Line2Ds which are children of the EndcapGrabRegion nodes
   	- [ ] Implement some logic so that a ShotLine2D can chose either an EndCapLine2D or an OpenEndCapLine2D 
-	- [x] Shotlines structs are organized at the top EditorView level instead of by the ScreenplayPage node, all previous functionality appears to be working 
   - [ ] Make Shotlines able to be multipage
-  - [ ] Add ability to move shotlines horizontally and vertically (horizontally will be somewhat trivial, vertically a tad tricker)
+  	- [x] Shotlines structs are organized at the top EditorView level instead of by the ScreenplayPage node, all previous functionality appears to be working 
+  - [ ] Each Scene has a Shot Count that is updated whenever a new ShotLine is added that covers a particular scene
+  - [ ] Add ability to move shotlines horizontally and vertically
+    - [x] Shotline2D Nodes can be moved my click dragging
+    - [ ] When a Shotline Node is moved, it should do the following:
+      - [ ] auto-snap its vertical end points to the nearest Label coordinates
+      - [ ] updated the Shotline data struct to reflect this new position
+      - [ ] if while draggin the shotline body, the top or bottom ends up higher than the top line or lower than the bottom line, clip the line to fit
+        - [ ] only make the line multipage if dragging the endpoints or creating the line
+        - [ ] if the line is already multipage (say, the line continues only down to the next page), when dragging the line body, the bottom of the line stays at the bottom of the page while the line itself moves horizontally, and the line top moves vertically
   - [ ] Add ability to resize shotlines by clicking and dragging top or bottom endpoints
   - [ ] Add ability to create squiggle sections in the middle of lines (unfilmed areas, useful for OTS / shot-reverse shot)
 	- [ ] ShotLines are extended to the next page by dragging a shotline's endpoint down past the final line of the page and into the margin
 	  - Maybe have a ColorRect which appears at the bottom of the page when dragging, to indicate to the user that they are about to make a multipage line
 	  - When user lets go of line, the page automatically changes to the next page so the user can continue dragging the line
 	  - A more elegant solution should exist to acommodate lengthy, multipage oners at some point...
+- [ ] Make it so that Shotlines CANNOT share the same Shot Numbers (specificially Scene Number AND Shotnumber)
+- [x] Refactored Shotline deletion behavior to be handled by EditorView script
+  - [x] Implemented logic to determine if a mouse button release is actually happening over a particular ShotLine node
 - [ ] Have a floating tooltip which follows the mouse whenever the mouse is hovering over the ShotLine, which displays the ShotLine's Scene Number
   - The user should never have to scroll or scan up and down the page to figure out which ShotLine they are touching or manipulating
 - [ ] Have the Mouse Cursor change based on which action is taking place
@@ -41,9 +49,12 @@
 	- This should not supercede the ability to manually adjust squiggles (a character may walk off camera for a shot then walk back on camera for example) 
 - [ ] Create a Shotline covering entire scene just by clicking on the Scene Heading
 
-## INPUT FIELDS
-- [ ] Add script to LineEdit of the InputField so that changing Focus via tabbing / navigating actually works properly
+## INPUT FIELDS & INSPECTOR PANEL
+- [x] Add script to LineEdit of the InputField so that changing Focus via tabbing / navigating actually works properly
+- [x] Shot Num is auto populated with "0" if tabbed in or out while the LineEdit is empty
+- [ ] Autopopulate new ShotLine with most recent (i.e. highest number) Scene num, then grab focus on ShotNum field
 - [ ] Make InputFields (and therefore their LineEdit children) ignore input with mods (while holding ctrl, alt, etc.)
+  - specifically, if I press ctrl or alt while a field is highlighted, it should not enter text into the field
 
 ## SAVING AND LOADING DOCUMENT
 - [ ] Create save and load mechanism for ShotLiner shotline data (probably just json tbh)
@@ -53,11 +64,25 @@
 - [ ] Keyboard-Only input mode (Make the layout normie friendly) (or just have the ability to rebind keys in a settings menu)
   -  I can imagine using a rotary encoder mapped to arrow keys (or just the mouse wheel) to quickly scroll through lines, then using a button to start drawing a line, then scrolling until the desired end line, then clicking the button again to end the line
   -  This could actually be significant for either speed and efficiency or accessibilty
+-  [ ] Control-Tab cycles through the ShotLine selection on the page
 
 # QUALITY OF LIFE / BONUS
-- [ ] Have ShotLines automatically space themselves apart horizontally so they don't overlap
-- [ ] Draw "preview" Line2D as the user is drawing with the mouse
 - [x] Have ShotLines width be skinny by default, but fatter when focused or hovering over
+- [ ] Ability to filter out (fade out or gray out) Shotlines of a certain kind
+  - Filter by:
+	- Scene
+	- Shot type (wide, medium close)
+	- Lens Type
+	- etc.
+  - This allows someone to focus say only on pickups or extreme closeups
+  - Conversely, you could filter out all the smaller shots and see what your wider shots give you in terms of coverage
+- [ ] Have ShotLines automatically space themselves apart horizontally so they don't overlap
+- [ ] When hovering over a ShotLine, make the Scene Number label also display Shot Type and Setup # under the scene number
+- [ ] Button that changes what the Scene Number Label displays over all the Shotlines
+  - Scene Number (scene.shot)
+  - Setup Number
+  - Shot type
+- [ ] Draw "preview" Line2D as the user is drawing with the mouse
 - [ ] When drawing Shotlines, have new lines be automatically numbered by the scene number of the above Scene Heading
   - i.e. if I draw a new line underneath a scene heading INT. HOUSE - NIGHT, and that's scene 2, the new shotline will automatically have the scene number 2
 - [ ] Highlight all `Label`s that are encompassed by the currently highlighted ShotLine

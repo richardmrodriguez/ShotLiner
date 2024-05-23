@@ -1,11 +1,13 @@
 extends Panel
 
-signal shotline_hovered_over(shotline_idx: int)
+signal shotline_hovered_over(shotline_node: ShotLine2D)
+signal shotline_clicked(shotline_node: ShotLine2D, button_index: int)
+signal shotline_released(shotline_node: ShotLine2D, button_index: int)
+signal shotline_mouse_drag(shotline_node: ShotLine2D)
 
-var last_hovered_shotline: ShotLine2D
 @onready var page: Node = get_parent()
 
-signal shotline_clicked(shotline_node: ShotLine2D, button_index: int)
+var last_hovered_shotline: ShotLine2D
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
@@ -17,22 +19,18 @@ func _input(event: InputEvent) -> void:
 				if shotline_node.is_hovered_over == false:
 					shotline_node.is_hovered_over = true
 					shotline_node.resize_on_hover()
+					shotline_hovered_over.emit(shotline_node)
 			else:
 				if shotline_node.is_hovered_over == true:
 					shotline_node.is_hovered_over = false
 					shotline_node.resize_on_hover()
+					shotline_hovered_over.emit(shotline_node)
 
 func _on_shotline_clicked(shotline2D: ShotLine2D, button_index: int) -> void:
-	
 	shotline_clicked.emit(shotline2D, button_index)
 
-func delete_shotline(shotline2D: ShotLine2D, cur_shotlines_array: Array) -> void:
-	#var cur_shotlines_array: Array = page.shotlines_for_pages[page.current_page_number]
-	for sl: Node in cur_shotlines_array:
-		if not sl is Shotline:
-			continue
-		if sl.shotline_uuid == shotline2D.shotline_struct_reference.shotline_uuid:
+func _on_shotline_released(shotline_node: ShotLine2D, button_index: int) -> void:
+	shotline_released.emit(shotline_node, button_index)
 
-			cur_shotlines_array.erase(sl)
-			break
-	shotline2D.queue_free()
+func _on_shotline_dragged(shotline_node: ShotLine2D) -> void:
+	shotline_mouse_drag.emit(shotline_node)

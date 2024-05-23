@@ -39,8 +39,7 @@ signal page_lines_populated
 # Called when the node enters the scene tree for the first time.
 
 func _ready() -> void:
-	page_panel.shotline_clicked.connect(_on_shotline_clicked)
-
+	pass
 func replace_current_page(page_content: PageContent, new_page_number: int=0) -> void:
 	for child in page_container.get_children():
 		page_container.remove_child(child)
@@ -197,6 +196,3 @@ func recursive_line_splitter(line: String, max_length: int) -> Array:
 
 func _on_screenplay_page_content_v_box_screenplay_line_hovered_over(last_line_idx: int) -> void:
 	last_hovered_line_idx.emit(last_line_idx)
-
-func _on_shotline_clicked(shotline_node: ShotLine2D, button_index: int) -> void:
-	shotline_clicked.emit(shotline_node, button_index)

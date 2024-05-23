@@ -34,10 +34,12 @@ signal text_changed(text: String, field_category: FIELD_CATEGORY)
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	line_edit.focus_entered.connect(_on_focus_entered)
+	line_edit.focus_exited.connect(_on_focus_exited)
 	focus_mode = Control.FOCUS_ALL
 	label.focus_mode = Control.FOCUS_ALL
 	label.text = field_label
-	line_edit.text_changed.connect(field_text_changed)
+	line_edit.text_changed.connect(_on_field_text_changed)
 	await get_tree().process_frame
 	if node_next_focus != null:
 		line_edit.focus_next = node_next_focus.line_edit.get_path()
@@ -56,7 +58,7 @@ func _ready() -> void:
 		line_edit.text = field_text
 		line_edit.placeholder_text = field_placeholder
 
-func _on_line_edit_gui_input(event: InputEvent) -> void:
+func _on_line_edit_gui_input(_event: InputEvent) -> void:
 	pass
 	#if event is InputEventKey:
 	#	if event.pressed:
@@ -75,7 +77,7 @@ func _on_line_edit_gui_input(event: InputEvent) -> void:
 	#				text_changed.emit(line_edit.text)
 	#				node_next_focus.line_edit.grab_focus()
 
-func field_text_changed(new_text: String) -> void:
+func _on_field_text_changed(new_text: String) -> void:
 	text_changed.emit(new_text, field_category)
 
 func set_text(text: String) -> void:
@@ -83,3 +85,15 @@ func set_text(text: String) -> void:
 
 func get_text(text: String) -> String:
 	return line_edit.text
+
+func _on_focus_entered() -> void:
+	if field_category == FIELD_CATEGORY.SHOT_NUM:
+		if line_edit.text == "":
+			line_edit.text = "0"
+			text_changed.emit(line_edit.text, field_category)
+
+func _on_focus_exited() -> void:
+	if field_category == FIELD_CATEGORY.SHOT_NUM:
+		if line_edit.text == "":
+			line_edit.text = "0"
+			text_changed.emit(line_edit.text, field_category)

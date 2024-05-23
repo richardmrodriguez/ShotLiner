@@ -25,7 +25,7 @@ var setup_number: String
 var group: String
 var tags: String
 
-var _tags_as_arr: Array[String]
+var tags_as_arr: Array[String]
 
 func print_self() -> void:
     pretty_print_properties(

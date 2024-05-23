@@ -3,6 +3,7 @@ extends Control
 @onready var toolbar: Node = %ToolBar
 @onready var screenplay_page: Node = %ScreenplayPage
 @onready var inspector_panel: Node = %InspectorPanel
+@onready var page_panel: Node = screenplay_page.page_panel
 
 const FIELD_CATEGORY = TextInputField.FIELD_CATEGORY
 const uuid_util = preload ("res://addons/uuid/uuid.gd")
@@ -13,17 +14,21 @@ var shotline_2D_scene := preload ("res://Components/ShotLine2D.tscn") # TODO: Mo
 var is_drawing: bool = false
 var is_erasing: bool = false
 var last_mouse_hover_position: Vector2
+var cur_mouse_global_position_delta: Vector2
 var last_hovered_line_idx: int = 0
 var last_clicked_line_idx: int = 0
 
 var cur_selected_shotline: Shotline
-var last_selected_shotline: Shotline
+var last_hovered_shotline_node: ShotLine2D
+var is_dragging_shotline: bool = false
 
 var cur_page_index: int = 0
 var pages: Array[PageContent]
 var all_shotlines: Array = []
 
 signal created_new_shotline(shotline_struct: Shotline)
+
+# --------------- READY ------------------------------
 
 func _ready() -> void:
 	inspector_panel.field_text_changed.connect(_on_inspector_panel_field_text_changed)
@@ -35,7 +40,11 @@ func _ready() -> void:
 	screenplay_page.populate_container_with_page_lines(pages[cur_page_index])
 	#screenplay_page.created_new_shotline.connect(_on_new_shotline_added)
 	screenplay_page.page_lines_populated.connect(_on_page_lines_populated)
-	screenplay_page.shotline_clicked.connect(_on_shotline_clicked)
+
+	page_panel.shotline_clicked.connect(_on_shotline_clicked)
+	page_panel.shotline_released.connect(_on_shotline_released)
+	page_panel.shotline_hovered_over.connect(_on_shotline_hovered_over)
+	page_panel.shotline_mouse_drag.connect(_on_shotline_mouse_drag)
 
 # This merely splits an array of FNLineGDs into smaller arrays. 
 # It then returns an array of those page arrays. This does not construct a ScreenplayPage object.
@@ -156,7 +165,6 @@ func _on_inspector_panel_field_text_changed(new_text: String, field_category: Te
 	match field_category:
 		FIELD_CATEGORY.SCENE_NUM:
 			cur_selected_shotline.scene_number = new_text
-			print("funnier amogus")
 			cur_selected_shotline.shotline_node.update_shot_number_label()
 		FIELD_CATEGORY.SHOT_NUM:
 			cur_selected_shotline.shot_number = new_text
@@ -175,18 +183,48 @@ func _on_inspector_panel_field_text_changed(new_text: String, field_category: Te
 func _on_shotline_clicked(shotline_node: ShotLine2D, button_index: int) -> void:
 	match button_index:
 		1:
-			var cur_shotline_uuid: String = shotline_node.shotline_struct_reference.shotline_uuid
-			for sl: Node in all_shotlines:
-				if not sl is Shotline:
-					continue
-				if sl.shotline_uuid == cur_shotline_uuid:
-					print("funny amogus")
-					cur_selected_shotline = sl
-					inspector_panel.populate_fields_from_shotline(sl)
+			inspector_panel.populate_fields_from_shotline(shotline_node.shotline_struct_reference)
+			cur_selected_shotline = shotline_node.shotline_struct_reference
+			is_dragging_shotline = true
+			cur_mouse_global_position_delta = shotline_node.global_position - get_global_mouse_position()
+			print(is_dragging_shotline)
 		2:
-			all_shotlines.erase(shotline_node.shotline_struct_reference)
-			shotline_node.queue_free()
+			pass
+
+func _on_shotline_released(shotline_node: ShotLine2D, button_index: int) -> void:
+
+	match button_index:
+		1:
+			if shotline_node.shotline_struct_reference == cur_selected_shotline:
+				if is_dragging_shotline:
+					is_dragging_shotline = false
+		2:
+			if shotline_node == last_hovered_shotline_node:
+				if last_hovered_shotline_node.is_hovered_over:
+					shotline_node.delete_this_shotline_node_and_struct()
+	print(is_dragging_shotline)
+
+func _on_shotline_hovered_over(shotline_node: ShotLine2D) -> void:
+	#print("Shotline Hovered changed: ", shotline_node, shotline_node.is_hovered_over)
+	last_hovered_shotline_node = shotline_node
+
+func _on_shotline_mouse_drag(shotline_node: ShotLine2D) -> void:
+	print("among us TWO")
+	if is_dragging_shotline:
+			print(cur_selected_shotline.shotline_node.global_position)
+			cur_selected_shotline.shotline_node.global_position = (
+				cur_mouse_global_position_delta + get_global_mouse_position()
+			)
 
 func _on_page_lines_populated() -> void:
 	await get_tree().process_frame
 	populate_page_panel_with_shotlines_for_page()
+
+func get_shotline_node_from_shotline_uuid(shotline_uuid: String) -> ShotLine2D:
+	for sl: Node in all_shotlines:
+		if not sl is Shotline:
+			continue
+		if sl.shotline_uuid == shotline_uuid:
+			return sl
+	
+	return null
