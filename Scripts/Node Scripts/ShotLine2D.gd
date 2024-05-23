@@ -134,7 +134,3 @@ func _input(event: InputEvent) -> void:
 		#	cur_selected_shotline.shotline_node.global_position = (
 		#		cur_mouse_global_position_delta + get_global_mouse_position()
 		#	)
-
-func delete_this_shotline_node_and_struct() -> void:
-	shotline_struct_reference.queue_free()
-	queue_free()

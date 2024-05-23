@@ -118,6 +118,7 @@ func populate_page_panel_with_shotlines_for_page() -> void:
 #
 
 func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
+	await get_tree().process_frame
 	match toolbar_button:
 		toolbar.TOOLBAR_BUTTON.NEXT_PAGE:
 			if cur_page_index + 2 <= pages.size():
@@ -201,7 +202,8 @@ func _on_shotline_released(shotline_node: ShotLine2D, button_index: int) -> void
 		2:
 			if shotline_node == last_hovered_shotline_node:
 				if last_hovered_shotline_node.is_hovered_over:
-					shotline_node.delete_this_shotline_node_and_struct()
+					all_shotlines.erase(shotline_node.shotline_struct_reference)
+					shotline_node.queue_free()
 	print(is_dragging_shotline)
 
 func _on_shotline_hovered_over(shotline_node: ShotLine2D) -> void:

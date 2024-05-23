@@ -22,13 +22,13 @@
   	- [x] Shotlines structs are organized at the top EditorView level instead of by the ScreenplayPage node, all previous functionality appears to be working 
   - [ ] Each Scene has a Shot Count that is updated whenever a new ShotLine is added that covers a particular scene
   - [ ] Add ability to move shotlines horizontally and vertically
-    - [x] Shotline2D Nodes can be moved my click dragging
-    - [ ] When a Shotline Node is moved, it should do the following:
-      - [ ] auto-snap its vertical end points to the nearest Label coordinates
-      - [ ] updated the Shotline data struct to reflect this new position
-      - [ ] if while draggin the shotline body, the top or bottom ends up higher than the top line or lower than the bottom line, clip the line to fit
-        - [ ] only make the line multipage if dragging the endpoints or creating the line
-        - [ ] if the line is already multipage (say, the line continues only down to the next page), when dragging the line body, the bottom of the line stays at the bottom of the page while the line itself moves horizontally, and the line top moves vertically
+	- [x] Shotline2D Nodes can be moved my click dragging
+	- [ ] When a Shotline Node is moved, it should do the following:
+	  - [ ] auto-snap its vertical end points to the nearest Label coordinates
+	  - [ ] updated the Shotline data struct to reflect this new position
+	  - [ ] if while draggin the shotline body, the top or bottom ends up higher than the top line or lower than the bottom line, clip the line to fit
+		- [ ] only make the line multipage if dragging the endpoints or creating the line
+		- [ ] if the line is already multipage (say, the line continues only down to the next page), when dragging the line body, the bottom of the line stays at the bottom of the page while the line itself moves horizontally, and the line top moves vertically
   - [ ] Add ability to resize shotlines by clicking and dragging top or bottom endpoints
   - [ ] Add ability to create squiggle sections in the middle of lines (unfilmed areas, useful for OTS / shot-reverse shot)
 	- [ ] ShotLines are extended to the next page by dragging a shotline's endpoint down past the final line of the page and into the margin
