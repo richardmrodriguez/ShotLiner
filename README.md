@@ -12,10 +12,10 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
 
 ## What's NOT working so far
 - Document import
-  - as of right now, this tool just reads from a fountain formatted file
+  - as of right now, this tool just reads from a fountain formatted file with several caveats:
   - The Fountain parser used does not natively handle things like `*emphasis*` with asterisks
   - This also does not handle automatic pagination; for immediate testing purposes, the fountain file I am using is manually pre-paginated and has manual page breaks using  `===` delimiters.
-  - Click-dragging Shotlines does not update the data structure yet, so it is only visual for right now
+- Click-dragging Shotlines does not update the data structure yet, so it is only visual for right now
 
 ## DEPENDENCIES
 - [Fountain Parser GDExt](https://github.com/richardmrodriguez/fountain-parser-gdext)
