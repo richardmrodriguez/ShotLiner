@@ -13,6 +13,7 @@ class_name ShotLine2D
 @export var hover_line_width: float = 10
 @export var line_width: float = 4
 @export var cap_grab_region_height: float = 6
+@export var cap_grab_region_vertical_position_offset: float = 6
 
 var shotline_struct_reference: Shotline
 var is_hovered_over: bool = false
@@ -86,7 +87,7 @@ func align_grab_regions() -> void:
 
 	begin_cap_grab_region.position = Vector2(
 		true_start_pos.x - (0.5 * color_rect_width),
-		true_start_pos.y - (begin_cap_grab_region.size.y)
+		true_start_pos.y - (begin_cap_grab_region.size.y + cap_grab_region_vertical_position_offset)
 		)
 	begin_cap_grab_region.size = Vector2(
 		color_rect_width,
@@ -95,7 +96,7 @@ func align_grab_regions() -> void:
 
 	end_cap_grab_region.position = Vector2(
 		true_start_pos.x - (0.5 * color_rect_width),
-		true_end_pos.y - (begin_cap_grab_region.size.y)
+		true_end_pos.y - (begin_cap_grab_region.size.y - 0 * cap_grab_region_vertical_position_offset)
 		)
 	end_cap_grab_region.size = Vector2(
 		color_rect_width,

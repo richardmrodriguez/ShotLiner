@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://oummcfocj72r"]
+
+[node name="PageMarginRegion" type="ColorRect"]
+custom_minimum_size = Vector2(0, 20)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.190762, 0.190762, 0.190762, 1)

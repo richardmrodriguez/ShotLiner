@@ -1,4 +1,11 @@
 # CORE FUNCTIONS
+
+## RELATIVE POSITION / PAGE 
+- [ ] The Page view needs to be resizable, particularly so the user can zoom the page view in and out.
+
+## WEIRD / SPECIFIC GODOT QUESTIONS
+- When I click on the TopMarginRegion: ColorRect, hold the mouse button, and move the mouse across the page, the other elements in the page don't receive mouse movement updates. When I click on a Label, and then drag the mouse across the other labels, the other labels can receive mouse movement, and their scripts highlight each Label as I drag across. When I click on the ColorRect, and then drag across the page, The last highlighted Label stays stuck, and no other Labels get highlighted as I move across the page. I don't know why this happens. I need this to not happen, so that a user can draw a ShotLine that begins on the previous page.
+
 ## SHOTLINES
 - [x] Created Shotline data struct which holds position and metadata for each Shotline
 - [x] Create other data structs to ensure the user can associate as much relevant metadata to each shot
@@ -11,30 +18,33 @@
   - [x] Able to select different ShotLines and have each one populate the Inspector Panel fields
 - [x] Show a Shot Number at the top of each Shotline2D
 - [x] Shotlines are now assigned a UUID to ensure we are always addressing the correct Shotline objects in the code
+- [x] ScreenplayLine nodes can now be addressed by the FNLine UUID instead of simplistic child index
+- [x] Improved spacing on begin cap and end cap regions of lines
+- [ ] LAYER SELECTION DROPDOWN - the godot editor has a beautiful feature -- if you click in the scene view over a stack of many layers of nodes, it pops up a little dropdown so you can actually select the layer you want to manipulate. This would be good to have
 - [ ] Implement ShotLine modification ability
   - [x] Add different grab regions to a shotline
   	- Top endpoint
   	- Bottom endpoint
   	- Body (middle, default)
 	- [x] Endcaps are just Line2Ds which are children of the EndcapGrabRegion nodes
-  	- [ ] Implement some logic so that a ShotLine2D can chose either an EndCapLine2D or an OpenEndCapLine2D 
   - [ ] Make Shotlines able to be multipage
   	- [x] Shotlines structs are organized at the top EditorView level instead of by the ScreenplayPage node, all previous functionality appears to be working 
+  	- [ ] Implement some logic so that a ShotLine2D can chose either an EndCapLine2D or an OpenEndCapLine2D 
   - [ ] Each Scene has a Shot Count that is updated whenever a new ShotLine is added that covers a particular scene
-  - [ ] Add ability to move shotlines horizontally and vertically
 	- [x] Shotline2D Nodes can be moved my click dragging
 	- [ ] When a Shotline Node is moved, it should do the following:
 	  - [ ] auto-snap its vertical end points to the nearest Label coordinates
-	  - [ ] updated the Shotline data struct to reflect this new position
-	  - [ ] if while draggin the shotline body, the top or bottom ends up higher than the top line or lower than the bottom line, clip the line to fit
-		- [ ] only make the line multipage if dragging the endpoints or creating the line
+	  - [x] update the Shotline data struct to reflect this new position
+	  - [ ] if while dragging the shotline body, the top or bottom ends up higher than the top line or lower than the bottom line, clip the line to fit
+		- [ ] only make the line multipage if dragging the endpoints or creating the line past the top or bottom margins
 		- [ ] if the line is already multipage (say, the line continues only down to the next page), when dragging the line body, the bottom of the line stays at the bottom of the page while the line itself moves horizontally, and the line top moves vertically
-  - [ ] Add ability to resize shotlines by clicking and dragging top or bottom endpoints
+  - [ ] RESIZE shotlines by clicking and dragging top or bottom endpoints
+  	- [ ] Add Signals to begin cap and end cap grab regions
+  	- [ ] ShotLines are extended to the next page by dragging a shotline's endpoint down past the final line of the page and into the margin
+  	  - Maybe have a ColorRect which appears at the bottom of the page when dragging, to indicate to the user that they are about to make a multipage line
+  	  - When user lets go of line, the page automatically changes to the next page so the user can continue dragging the line
+  	  - A more elegant solution should exist to acommodate lengthy, multipage oners at some point...
   - [ ] Add ability to create squiggle sections in the middle of lines (unfilmed areas, useful for OTS / shot-reverse shot)
-	- [ ] ShotLines are extended to the next page by dragging a shotline's endpoint down past the final line of the page and into the margin
-	  - Maybe have a ColorRect which appears at the bottom of the page when dragging, to indicate to the user that they are about to make a multipage line
-	  - When user lets go of line, the page automatically changes to the next page so the user can continue dragging the line
-	  - A more elegant solution should exist to acommodate lengthy, multipage oners at some point...
 - [ ] Make it so that Shotlines CANNOT share the same Shot Numbers (specificially Scene Number AND Shotnumber)
 - [x] Refactored Shotline deletion behavior to be handled by EditorView script
   - [x] Implemented logic to determine if a mouse button release is actually happening over a particular ShotLine node
@@ -60,6 +70,15 @@
 - [ ] Create save and load mechanism for ShotLiner shotline data (probably just json tbh)
 - [ ] !!! Ability to Export to an excel spreadsheet (entire point of the entire software lmao)
 
+## OTHER TOOLS
+
+### SELECTION TOOL
+- [ ] Need a recangle lasso tool to select multiple shotlines at once
+  - [ ] This probably also requires a more robust state machine to handle the different interface modes (drawing vs selection and moving)
+  - [ ] Ability to edit the metadata of multiple ShotLines at once
+  - [ ] Only overwrites modified fields for selected ShotLines, leaves unmodified individual fields alone 
+- [ ] Eraser tool - click and drag across the page to delete any ShotLines that cross under the mouse cursor
+  - Very necessary for quickly erasing many shotlines at once
 ## USER INPUT
 - [ ] Keyboard-Only input mode (Make the layout normie friendly) (or just have the ability to rebind keys in a settings menu)
   -  I can imagine using a rotary encoder mapped to arrow keys (or just the mouse wheel) to quickly scroll through lines, then using a button to start drawing a line, then scrolling until the desired end line, then clicking the button again to end the line

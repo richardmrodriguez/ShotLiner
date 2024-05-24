@@ -33,7 +33,7 @@ offset_bottom = 6.0
 color = Color(0.596078, 0.188235, 0.686275, 1)
 
 [node name="EndCapLine2d" parent="BeginCapGrabRegion" instance=ExtResource("3_j4dln")]
-position = Vector2(7, -6)
+position = Vector2(7, -4)
 scale = Vector2(1.66667, 1)
 points = PackedVector2Array(-8, 0, 0, 14, 8, 0, 8, 0)
 
@@ -46,5 +46,5 @@ offset_bottom = 20.0
 color = Color(0, 0.431373, 0.67451, 1)
 
 [node name="EndCapLine2d" parent="EndCapGrabRegion" instance=ExtResource("3_sfhht")]
-position = Vector2(7, 9)
+position = Vector2(7, 5)
 points = PackedVector2Array(-8, 0, 3.06844, 0, 8, 0)

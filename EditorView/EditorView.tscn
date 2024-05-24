@@ -68,5 +68,3 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [connection signal="toolbar_button_pressed" from="VBoxContainer/MarginContainer/ToolBar" to="." method="_on_tool_bar_toolbar_button_pressed"]
-[connection signal="gui_input" from="VBoxContainer/HSplitContainer/PageMarginContainer/ScreenplayPage" to="." method="_on_screenplay_page_gui_input"]
-[connection signal="last_hovered_line_idx" from="VBoxContainer/HSplitContainer/PageMarginContainer/ScreenplayPage" to="." method="_on_screenplay_page_last_hovered_line_idx"]

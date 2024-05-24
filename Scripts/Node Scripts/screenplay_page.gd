@@ -10,29 +10,23 @@ extends Control
 @onready var SP_PARENTHETICAL_SPACING: float = SP_FONT_SIZE * font_ratio * 5
 @onready var page_panel: Panel = %ScreenplayPagePanel
 @onready var page_container: Node = %ScreenplayPageContentVBox
+@onready var left_page_margin: Node = %LeftPageMarginRegion
+@onready var right_page_margin: Node = %RightPageMarginRegion
+@onready var bottom_page_margin: Node = %BottomPageMarginRegion
+@onready var top_page_margin: Node = %TopPageMarginRegion
 
 const uuid_util = preload ("res://addons/uuid/uuid.gd")
+const page_margin_region: PackedScene = preload ("res://Components/PageMarginRegion.tscn")
 
 var current_page_number: int = 0
 var shotlines_for_pages: Dictionary = {}
 
 signal created_new_shotline(shotline_struct: Shotline)
 signal shotline_clicked
-signal last_hovered_line_idx(last_ine_idx: int)
 signal page_lines_populated
 
 # TODO
-# - This logic needs to be abstracted into another file;
-# - This needs another piece to break up an FNLineGD array into
-# Pages, which are arrays with a maximum size and also
-# special logic to ensure CHARACTER headings are not orphaned
-# at the bottom of a page
-
-## - DRAWING LOGIC - need to get the following:
-## 1. mouse click down - which row of the page does the mouse click into?
-## 2. mouse click up - which row of the page does the mouse release its click?
-## using those two data points, we can create a ShotLine which concretely correlates
-## to a start and end position on a page, then draw it accordingly
+# - Fountain Parsing logic shoudl be in a different file, probably and autoload
 
 ## EMPHASIS is not handled here -- asterisks need to be removed from the fountain screenplay.
 
@@ -58,6 +52,7 @@ func replace_current_page(page_content: PageContent, new_page_number: int=0) -> 
 func populate_container_with_page_lines(cur_page_content: PageContent, page_number: int=0) -> void:
 	current_page_number = page_number
 	var line_counter: int = 0
+	
 	for fnline: FNLineGD in cur_page_content.lines:
 
 		var screenplay_line: Label = construct_screenplay_line(fnline, line_counter)
@@ -191,8 +186,3 @@ func recursive_line_splitter(line: String, max_length: int) -> Array:
 			final_arr.append(nl)
 		 
 	return final_arr
-
-# ------------ SIGNAL HANDLING ---------
-
-func _on_screenplay_page_content_v_box_screenplay_line_hovered_over(last_line_idx: int) -> void:
-	last_hovered_line_idx.emit(last_line_idx)
