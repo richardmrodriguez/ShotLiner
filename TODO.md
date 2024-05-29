@@ -28,7 +28,7 @@
   	- Body (middle, default)
 	- [x] Endcaps are just Line2Ds which are children of the EndcapGrabRegion nodes
   - [ ] Make Shotlines able to be multipage
-    - [x] While creating a shotline, dragging the mouse above or below the margin makes the shotline Multipage
+	- [x] While creating a shotline, dragging the mouse above or below the margin makes the shotline Multipage
 	- [x] Changed shotline construction and storage to rely on directly indexing page number and line number instead of only referencing the"current" pagelines
   	- [x] Shotlines structs are organized at the top EditorView level instead of by the ScreenplayPage node, all previous functionality appears to be working 
   	- [ ] Implement some logic so that a ShotLine2D can chose either an EndCapLine2D or an OpenEndCapLine2D 

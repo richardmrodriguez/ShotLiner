@@ -7,19 +7,23 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
 - Navigate between individual pages
 - Can create multiple ShotLines per page
 - Can click on individual Shotlines to assign unique metadtata
-- Can delete Shotlines by right-clicking
+- Can use Toolbar to select either Draw, Erase, or Move tool
+- Can delete Shotlines by using eraser tool
 - Can click and drag Shotline Nodes
   - When dragged to a new position, Shotlines retain that position when the page is refreshed
 - Can create multipage Shotlines (kind of)
   - When creating a Shotline, you can drag the mouse past the top or bottom margins to make the line either start on the previous page or end on the following page
-  - There isn't a visual difference between multipage and single page shotlines yet; Multipage shotlines should use the inverted triangle endcap to indicate if it begins on an earlier page or ends on a later page
+  
 
 ## What's NOT working so far
 - Document import
   - as of right now, this tool just reads from a fountain formatted file with several caveats:
   - The Fountain parser used does not natively handle things like `*emphasis*` with asterisks
   - This also does not handle automatic pagination; for immediate testing purposes, the fountain file I am using is manually pre-paginated and has manual page breaks using  `===` delimiters.
+- Select Tool button does nothing
+- Multipage Shotline details
   - Moving multipage shotlines is broken at the moment
+  - There isn't a visual difference between multipage and single page shotlines yet; Multipage shotlines should use the inverted triangle endcap to indicate if it begins on an earlier page or ends on a later page
 
 ## DEPENDENCIES
 - [Fountain Parser GDExt](https://github.com/richardmrodriguez/fountain-parser-gdext)
