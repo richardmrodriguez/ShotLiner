@@ -9,11 +9,21 @@ extends Control
 const FIELD_CATEGORY = TextInputField.FIELD_CATEGORY
 const uuid_util = preload ("res://addons/uuid/uuid.gd")
 
+enum TOOL {
+	MOVE,
+	SELECT,
+	DRAW,
+	DRAW_SQUIGGLE,
+	ERASE,
+}
+
 var shotline_2D_scene := preload ("res://Components/ShotLine2D.tscn") # TODO: Move the shotline creating logic and shotlines Dictionary to here instead of screenplay_page.gd
 
 # ------ STATES ------
 var is_drawing: bool = false
 var is_erasing: bool = false
+var cur_tool: TOOL = TOOL.MOVE
+
 var last_mouse_hover_position: Vector2
 var cur_mouse_global_position_delta: Vector2
 var last_shotline_node_global_pos: Vector2
@@ -28,20 +38,25 @@ var cur_selected_shotline: Shotline
 var last_hovered_shotline_node: ShotLine2D
 var is_dragging_shotline: bool = false
 
-var cur_page_index: int = 0
+var cur_page_idx: int = 0
 var pages: Array[PageContent]
 var all_shotlines: Array = []
 
 signal created_new_shotline(shotline_struct: Shotline)
+signal tool_changed
 
 # --------------- READY ------------------------------
 
+func _init() -> void:
+	pass
+
 func _ready() -> void:
+	DisplayServer.window_set_min_size(Vector2(920, 920))
 	var screenplay_file_content := load_screenplay("Screenplay Files/VCR2L-2024-05-08.fountain")
 	var fnlines: Array[FNLineGD] = screenplay_page.get_parsed_lines(screenplay_file_content)
 	pages = split_fnline_array_into_page_groups(fnlines)
 
-	screenplay_page.populate_container_with_page_lines(pages[cur_page_index])
+	screenplay_page.populate_container_with_page_lines(pages[cur_page_idx])
 
 	# -------------connecting signals-----------
 	screenplay_page.page_lines_populated.connect(_on_page_lines_populated)
@@ -53,6 +68,7 @@ func _ready() -> void:
 	page_panel.shotline_released.connect(_on_shotline_released)
 	page_panel.shotline_hovered_over.connect(_on_shotline_hovered_over)
 	page_panel.shotline_mouse_drag.connect(_on_shotline_mouse_drag)
+	tool_changed.connect(_on_tool_changed)
 
 # This merely splits an array of FNLineGDs into smaller arrays. 
 # It then returns an array of those page arrays. This does not construct a ScreenplayPage object.
@@ -84,16 +100,24 @@ func load_screenplay(filename: String) -> String:
 	var content := file.get_as_text()
 	return content
 
+func set_current_tool(tool: TOOL) -> void:
+	cur_tool = tool
+
 # -------------------- SHOTLINE LOGIC -----------------------------------
 
 # TODO: these two funcs are confusingly named and structured;
 # constructing the shotline should constitute putting the metadata into a Shotline struct
 # adding the shotline to the page should create the Line2D
 # Also, the Line2D
-func add_shotline_node_to_page(shotline: Shotline) -> void:
-	var current_lines: Array = screenplay_page.page_container.get_children()
+func create_and_add_shotline_node_to_page(shotline: Shotline) -> void:
 	var empty_shotline_node: ShotLine2D = shotline_2D_scene.instantiate()
-	var shotline_node: ShotLine2D = Shotline.construct_shotline_node(shotline, current_lines, empty_shotline_node)
+	var shotline_node: ShotLine2D = Shotline.construct_shotline_node(
+		shotline,
+		pages,
+		cur_page_idx,
+		page_container,
+		empty_shotline_node
+		)
 	screenplay_page.page_panel.add_child(shotline_node)
 	created_new_shotline.emit(shotline)
 
@@ -102,44 +126,82 @@ func add_new_shotline_to_shotlines_array(start_uuid: String, end_uuid: String, l
 	var cur_shotline: Shotline = Shotline.new()
 	var new_shotline_id: String = uuid_util.v4()
 
+	var start_line_page_idx: int = get_page_idx_of_fnline_from_uuid(start_uuid)
+	var end_line_page_idx: int = get_page_idx_of_fnline_from_uuid(end_uuid)
+
+	assert(start_line_page_idx != - 1, "Start line page index for shotline does not exist.")
+	assert(end_line_page_idx != - 1, "End line page index for shotline does not exist.")
+
 	cur_shotline.shotline_uuid = new_shotline_id
-	cur_shotline.start_page_index = cur_page_index
-	cur_shotline.end_page_index = cur_page_index
-	cur_shotline.start_uuid = start_uuid
-	cur_shotline.end_uuid = end_uuid
+	
+	if start_line_page_idx < end_line_page_idx:
+		cur_shotline.start_page_index = start_line_page_idx
+		cur_shotline.end_page_index = end_line_page_idx
+		cur_shotline.start_uuid = start_uuid
+		cur_shotline.end_uuid = end_uuid
+	else:
+		cur_shotline.start_page_index = end_line_page_idx
+		cur_shotline.end_page_index = start_line_page_idx
+		cur_shotline.start_uuid = end_uuid
+		cur_shotline.end_uuid = start_uuid
+
 	cur_shotline.x_position = last_mouse_pos.x
+	print("Start and end page indices: ", cur_shotline.start_page_index, " | ", cur_shotline.end_page_index)
 	all_shotlines.append(cur_shotline)
+
+func get_page_idx_of_fnline_from_uuid(uuid: String) -> int:
+	for page: PageContent in pages:
+		for line: FNLineGD in page.lines:
+			if line.uuid == uuid:
+				return pages.find(page)
+	return - 1
 
 func populate_page_panel_with_shotlines_for_page() -> void:
 	await get_tree().process_frame
 	for sl: Shotline in all_shotlines:
-		if sl.start_page_index == cur_page_index or sl.end_page_index == cur_page_index:
-			var cur_lines: Array = screenplay_page.page_container.get_children()
+		if sl.start_page_index == cur_page_idx or sl.end_page_index == cur_page_idx:
 			var new_shotline_node: ShotLine2D = Shotline.construct_shotline_node(
 				sl,
-				cur_lines,
+				pages,
+				cur_page_idx,
+				page_container,
 				shotline_2D_scene.instantiate()
 			)
 			screenplay_page.page_panel.add_child(new_shotline_node)
 #
 #
-# -------------------- CHILD INPUT HANDLING -----------------------------
+# -------------------- SIGNAL HANDLING -----------------------------
 #
 #
+
+func _on_tool_changed() -> void:
+	pass
 
 func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
 	await get_tree().process_frame
 	match toolbar_button:
 		toolbar.TOOLBAR_BUTTON.NEXT_PAGE:
-			if cur_page_index + 2 <= pages.size():
-				cur_page_index += 1
+			if cur_page_idx + 2 <= pages.size():
+				cur_page_idx += 1
 				print(pages.size())
-				screenplay_page.replace_current_page(pages[cur_page_index], cur_page_index)
+				screenplay_page.replace_current_page(pages[cur_page_idx], cur_page_idx)
 
 		toolbar.TOOLBAR_BUTTON.PREV_PAGE:
-			if cur_page_index - 1 >= 0:
-				cur_page_index -= 1
-				screenplay_page.replace_current_page(pages[cur_page_index], cur_page_index)
+			if cur_page_idx - 1 >= 0:
+				cur_page_idx -= 1
+				screenplay_page.replace_current_page(pages[cur_page_idx], cur_page_idx)
+
+		# TOOL SELECTION
+		toolbar.TOOLBAR_BUTTON.SELECT:
+			cur_tool = TOOL.SELECT
+		toolbar.TOOLBAR_BUTTON.MOVE:
+			cur_tool = TOOL.MOVE
+		toolbar.TOOLBAR_BUTTON.DRAW:
+			cur_tool = TOOL.DRAW
+		toolbar.TOOLBAR_BUTTON.DRAW_SQUIGGLE:
+			cur_tool = TOOL.DRAW_SQUIGGLE
+		toolbar.TOOLBAR_BUTTON.ERASE:
+			cur_tool = TOOL.ERASE
 
 func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 
@@ -165,31 +227,54 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 			)
 		
 		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.is_pressed():
-				if not last_mouse_click_past_left_margin or last_mouse_click_past_right_margin:
-					print("imma clicking")
+			_handle_left_click(event)
 
+func _handle_left_click(event: InputEvent) -> void:
+	if event.is_pressed():
+		match cur_tool:
+			TOOL.DRAW:
+				if not last_mouse_click_past_left_margin or last_mouse_click_past_right_margin:
+					#print("imma clicking")
 					if not is_drawing:
 						is_drawing = true
 						last_mouse_hover_position = event.position
 						last_clicked_line_uuid = last_hovered_line_uuid
 						#print("last hovered line: ", last_hovered_line_uuid)
 						#print(event.position)
-			if event.is_released():
+	if event.is_released():
+		match cur_tool:
+			TOOL.DRAW:
 				if is_drawing:
 					is_drawing = false
-				if not (last_mouse_click_past_left_margin or last_mouse_click_past_right_margin):
-					add_new_shotline_to_shotlines_array(last_clicked_line_uuid, last_hovered_line_uuid, event.global_position)
-					add_shotline_node_to_page(all_shotlines[ - 1])
+					if not (
+						last_mouse_click_past_left_margin or
+						last_mouse_click_past_right_margin):
+						if not (last_mouse_click_below_bottom_margin or last_mouse_click_above_top_margin):
+							add_new_shotline_to_shotlines_array(last_clicked_line_uuid, last_hovered_line_uuid, event.position)
+							create_and_add_shotline_node_to_page(all_shotlines[ - 1])
+					
+						elif last_mouse_click_above_top_margin:
+							# click released past top or bottom margin
+							# give the add_new_shotline the last line of prev page or first line of next page
 
-					var cur_shotline_node: ShotLine2D = all_shotlines[- 1].shotline_node
-					if last_mouse_click_below_bottom_margin:
-						print("oh hell naw bro just made a multipage shotline fr fr")
-						cur_shotline_node.default_color = Color.CADET_BLUE
-					if last_mouse_click_above_top_margin:
-						print("aw hell naw bro just made a shotline that starts on the previous page fr")
-						cur_shotline_node.default_color = Color.REBECCA_PURPLE
-					#print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
+							var start_uuid: String
+							if cur_page_idx - 1 >= 0:
+								start_uuid = pages[cur_page_idx - 1].lines[- 1].uuid
+							else:
+								start_uuid = pages[cur_page_idx].lines[0].uuid
+							add_new_shotline_to_shotlines_array(start_uuid, last_hovered_line_uuid, event.position)
+							create_and_add_shotline_node_to_page(all_shotlines[ - 1])
+						elif last_mouse_click_below_bottom_margin:
+							print("it's here lmao gotem")
+							var end_uuid: String
+							if cur_page_idx + 1 <= pages.size() + 1:
+								end_uuid = pages[cur_page_idx + 1].lines[+ 1].uuid
+							else:
+								end_uuid = pages[cur_page_idx].lines[- 1].uuid
+							add_new_shotline_to_shotlines_array(last_clicked_line_uuid, end_uuid, event.position)
+							create_and_add_shotline_node_to_page(all_shotlines[ - 1])
+
+							#print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
 
 func _on_screenplay_line_hovered(screenplay_line_uuid: String) -> void:
 	last_hovered_line_uuid = screenplay_line_uuid
@@ -222,21 +307,22 @@ func _on_inspector_panel_field_text_changed(new_text: String, field_category: Te
 			cur_selected_shotline.tags = new_text
 
 func _on_shotline_clicked(shotline_node: ShotLine2D, button_index: int) -> void:
-	match button_index:
-		1:
-			inspector_panel.populate_fields_from_shotline(shotline_node.shotline_struct_reference)
-			cur_selected_shotline = shotline_node.shotline_struct_reference
-			is_dragging_shotline = true
-			cur_mouse_global_position_delta = shotline_node.global_position - get_global_mouse_position()
-			last_shotline_node_global_pos = shotline_node.global_position
-			print(is_dragging_shotline)
-		2:
-			pass
+	match cur_tool:
+		TOOL.MOVE:
+			match button_index:
+				1:
+					inspector_panel.populate_fields_from_shotline(shotline_node.shotline_struct_reference)
+					cur_selected_shotline = shotline_node.shotline_struct_reference
+					is_dragging_shotline = true
+					cur_mouse_global_position_delta = shotline_node.global_position - get_global_mouse_position()
+					last_shotline_node_global_pos = shotline_node.global_position
+					print(is_dragging_shotline)
 
 func _on_shotline_released(shotline_node: ShotLine2D, button_index: int) -> void:
-
-	match button_index:
-		1:
+	match cur_tool:
+		TOOL.MOVE:
+			if button_index != 1:
+				return
 			if shotline_node.shotline_struct_reference == cur_selected_shotline:
 				if is_dragging_shotline:
 					
@@ -244,18 +330,20 @@ func _on_shotline_released(shotline_node: ShotLine2D, button_index: int) -> void
 					cur_selected_shotline.x_position = get_global_mouse_position().x
 					await get_tree().process_frame
 					var page_container_children := page_container.get_children()
-					await get_tree().process_frame
+					#await get_tree().process_frame
 					cur_selected_shotline.update_page_line_indices_with_points(
 						page_container_children,
 						last_shotline_node_global_pos
 						)
-						
-		2:
+					print(is_dragging_shotline)
+					
+		TOOL.ERASE:
+			if button_index != 1:
+				return
 			if shotline_node == last_hovered_shotline_node:
 				if last_hovered_shotline_node.is_hovered_over:
 					all_shotlines.erase(shotline_node.shotline_struct_reference)
 					shotline_node.queue_free()
-	print(is_dragging_shotline)
 
 func _on_shotline_hovered_over(shotline_node: ShotLine2D) -> void:
 	#print("Shotline Hovered changed: ", shotline_node, shotline_node.is_hovered_over)
@@ -272,12 +360,3 @@ func _on_shotline_mouse_drag(shotline_node: ShotLine2D) -> void:
 func _on_page_lines_populated() -> void:
 	await get_tree().process_frame
 	populate_page_panel_with_shotlines_for_page()
-
-func get_shotline_node_from_shotline_uuid(shotline_uuid: String) -> ShotLine2D:
-	for sl: Node in all_shotlines:
-		if not sl is Shotline:
-			continue
-		if sl.shotline_uuid == shotline_uuid:
-			return sl
-	
-	return null

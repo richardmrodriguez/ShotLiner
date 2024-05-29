@@ -19,22 +19,32 @@ custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 
 [node name="DRAW" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Draw"
 
 [node name="ERASER" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Eraser"
 
-[node name="SELECT_MOVE" type="Button" parent="."]
+[node name="SELECT" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
-text = "Select / Move"
+text = "Select"
+
+[node name="MOVE" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Move"
 
 [node name="SAVE" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Save"
 
 [node name="LOAD" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Load"
 
@@ -49,7 +59,8 @@ text = "NEXT PG."
 [connection signal="pressed" from="PREV PG" to="." method="_on_prev_pg_pressed"]
 [connection signal="pressed" from="DRAW" to="." method="_on_draw_pressed"]
 [connection signal="pressed" from="ERASER" to="." method="_on_eraser_pressed"]
-[connection signal="pressed" from="SELECT_MOVE" to="." method="_on_select_move_pressed"]
+[connection signal="pressed" from="SELECT" to="." method="_on_select_pressed"]
+[connection signal="pressed" from="MOVE" to="." method="_on_move_pressed"]
 [connection signal="pressed" from="SAVE" to="." method="_on_save_pressed"]
 [connection signal="pressed" from="LOAD" to="." method="_on_load_pressed"]
 [connection signal="pressed" from="NEXT PG" to="." method="_on_next_pg_pressed"]

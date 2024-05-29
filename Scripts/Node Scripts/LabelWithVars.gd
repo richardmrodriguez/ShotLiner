@@ -1,6 +1,6 @@
 extends Label
 
-class_name ScreenplayLineLabel
+class_name PageLineLabel
 
 var fnline: FNLineGD
 var line_index: int

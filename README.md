@@ -10,6 +10,9 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
 - Can delete Shotlines by right-clicking
 - Can click and drag Shotline Nodes
   - When dragged to a new position, Shotlines retain that position when the page is refreshed
+- Can create multipage Shotlines (kind of)
+  - When creating a Shotline, you can drag the mouse past the top or bottom margins to make the line either start on the previous page or end on the following page
+  - There isn't a visual difference between multipage and single page shotlines yet; Multipage shotlines should use the inverted triangle endcap to indicate if it begins on an earlier page or ends on a later page
 
 ## What's NOT working so far
 - Document import

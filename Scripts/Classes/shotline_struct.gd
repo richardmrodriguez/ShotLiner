@@ -85,7 +85,7 @@ func update_page_line_indices_with_points(cur_page_screenplay_lines: Array, last
 	var old_end_label_idx: int
 
 	for cur_screenplay_line: Node in cur_page_screenplay_lines:
-		if not cur_screenplay_line is ScreenplayLineLabel:
+		if not cur_screenplay_line is PageLineLabel:
 			continue
 		if not line_label_height_set:
 			line_label_height = cur_screenplay_line.size.y
@@ -125,39 +125,98 @@ func update_page_line_indices_with_points(cur_page_screenplay_lines: Array, last
 
 static func construct_shotline_node(
 	shotline: Shotline,
-	cur_screenplay_page_lines: Array,
+	pages: Array[PageContent],
+	current_page_index: int,
+	page_container: Node,
 	empty_shotline_2D: ShotLine2D
 	) -> ShotLine2D:
+
 	var cur_start_uuid: String = shotline.start_uuid
 	var cur_end_uuid: String = shotline.end_uuid
+
+	var cur_start_page_line_indices: Vector2i
+	var cur_end_page_line_indices: Vector2i
+	
+	for page: PageContent in pages:
+		for line: FNLineGD in page.lines:
+			if line.uuid == cur_start_uuid:
+				cur_start_page_line_indices = Vector2i(pages.find(page), page.lines.find(line))
+			elif line.uuid == cur_end_uuid:
+				cur_end_page_line_indices = Vector2i(pages.find(page), page.lines.find(line))
+
+	var shotline_start_page_idx: int = shotline.start_page_index
+	var shotline_end_page_idx: int = shotline.end_page_index
+
 	var last_mouse_pos: float = shotline.x_position
 
-	var screenplay_line_start: Label
-	var screenplay_line_end: Label
+	var starts_on_earlier_page: bool = false
+	var ends_on_later_page: bool = false
 
-	var start_idx: int
-	var end_idx: int
-	for spl: Node in cur_screenplay_page_lines:
-		if spl is Label:
-			#print(spl.fnline.uuid)
-			if spl.fnline.uuid == cur_start_uuid:
-				screenplay_line_start = spl
-				start_idx = spl.get_index()
-				#print("start line: ", spl.fnline.fn_type, " | ", spl.text, )
-			if spl.fnline.uuid == cur_end_uuid:
-				screenplay_line_end = spl
-				end_idx = spl.get_index()
+	var pageline_start: Label
+	var pageline_end: Label
+
+	var pageline_real_start_idx: int
+	var pageline_real_end_idx: int
+
+	if shotline_start_page_idx < current_page_index:
+		starts_on_earlier_page = true
+	if shotline_end_page_idx > current_page_index:
+		ends_on_later_page = true
 	
-	var real_end: Label
-	var real_start: Label
-	if start_idx > end_idx:
-		real_start = screenplay_line_end
-		real_end = screenplay_line_start
-	else:
-		real_end = screenplay_line_end
-		real_start = screenplay_line_start
+	var cur_pagelines: Array[PageLineLabel] = []
+	for pageline: Node in page_container.get_children():
+		if not pageline is PageLineLabel:
+			continue
+		cur_pagelines.append(pageline)
 
-	var screenplay_line_vertical_size: float = screenplay_line_start.get_rect().size.y
+	var local_end_label: PageLineLabel
+	var local_start_label: PageLineLabel
+
+	if not (starts_on_earlier_page or ends_on_later_page):
+		for pageline: PageLineLabel in cur_pagelines:
+			if pageline.fnline.uuid == cur_start_uuid:
+				
+				pageline_start = pageline
+				pageline_real_start_idx = pageline.get_index()
+				#print("start line: ", spl.fnline.fn_type, " | ", spl.text, )
+			if pageline.fnline.uuid == cur_end_uuid:
+				pageline_end = pageline
+				pageline_real_end_idx = pageline.get_index()
+		print("Normal shotline")
+		if pageline_real_start_idx > pageline_real_end_idx:
+			local_start_label = pageline_end
+			local_end_label = pageline_start
+		else:
+			local_end_label = pageline_end
+			local_start_label = pageline_start
+	elif starts_on_earlier_page&&ends_on_later_page:
+		print("Start earlier and ends later")
+		local_start_label = cur_pagelines[0]
+		local_end_label = cur_pagelines[- 1]
+	elif starts_on_earlier_page:
+		print("Starts on previous page")
+		local_start_label = cur_pagelines[0]
+		for pageline: PageLineLabel in cur_pagelines:
+			if cur_start_page_line_indices.x < cur_end_page_line_indices.x:
+				if pageline.fnline.uuid == cur_end_uuid:
+					local_end_label = pageline
+			else:
+				if pageline.fnline.uuid == cur_start_uuid:
+					local_end_label = pageline
+				
+	elif ends_on_later_page:
+		print("Ends on later page")
+		local_end_label = cur_pagelines[- 1]
+		for pageline: PageLineLabel in cur_pagelines:
+			if cur_start_page_line_indices.x < cur_end_page_line_indices.x:
+				if pageline.fnline.uuid == cur_start_uuid:
+					local_start_label = pageline
+			else:
+				if pageline.fnline.uuid == cur_end_uuid:
+					local_start_label = pageline
+
+	# ------------ SET POINTS AND POSITION FOR SHOTLINE NODE -------------------
+	var screenplay_line_vertical_size: float = cur_pagelines[0].get_rect().size.y
 
 	# TODO: I don't know why the shotlines' vertical position is off by like 3 lines,
 	# But it is and so, it needs the following offsets. Must investigate further.
@@ -165,11 +224,11 @@ static func construct_shotline_node(
 	# overhang for the start and end;
 	var start_pos: Vector2 = Vector2(
 		last_mouse_pos,
-		real_start.global_position.y - 4.5 * screenplay_line_vertical_size
+		local_start_label.global_position.y - 4.5 * screenplay_line_vertical_size
 		)
 	var end_pos: Vector2 = Vector2(
 		last_mouse_pos,
-		real_end.global_position.y - 3.5 * screenplay_line_vertical_size
+		local_end_label.global_position.y - 3.5 * screenplay_line_vertical_size
 		)
 
 	#print("Current shotline positions: ", start_pos.y, ", ", end_pos.y)

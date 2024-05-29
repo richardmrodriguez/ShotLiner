@@ -22,12 +22,14 @@
 - [x] Improved spacing on begin cap and end cap regions of lines
 - [ ] LAYER SELECTION DROPDOWN - the godot editor has a beautiful feature -- if you click in the scene view over a stack of many layers of nodes, it pops up a little dropdown so you can actually select the layer you want to manipulate. This would be good to have
 - [ ] Implement ShotLine modification ability
-  - [x] Add different grab regions to a shotline
+  - [ ] Add different grab regions to a shotline
   	- Top endpoint
   	- Bottom endpoint
   	- Body (middle, default)
 	- [x] Endcaps are just Line2Ds which are children of the EndcapGrabRegion nodes
   - [ ] Make Shotlines able to be multipage
+    - [x] While creating a shotline, dragging the mouse above or below the margin makes the shotline Multipage
+	- [x] Changed shotline construction and storage to rely on directly indexing page number and line number instead of only referencing the"current" pagelines
   	- [x] Shotlines structs are organized at the top EditorView level instead of by the ScreenplayPage node, all previous functionality appears to be working 
   	- [ ] Implement some logic so that a ShotLine2D can chose either an EndCapLine2D or an OpenEndCapLine2D 
   - [ ] Each Scene has a Shot Count that is updated whenever a new ShotLine is added that covers a particular scene
@@ -36,7 +38,7 @@
 	  - [ ] auto-snap its vertical end points to the nearest Label coordinates
 	  - [x] update the Shotline data struct to reflect this new position
 	  - [ ] if while dragging the shotline body, the top or bottom ends up higher than the top line or lower than the bottom line, clip the line to fit
-		- [ ] only make the line multipage if dragging the endpoints or creating the line past the top or bottom margins
+		- [x] only make the line multipage if creating the line past the top or bottom margins
 		- [ ] if the line is already multipage (say, the line continues only down to the next page), when dragging the line body, the bottom of the line stays at the bottom of the page while the line itself moves horizontally, and the line top moves vertically
   - [ ] RESIZE shotlines by clicking and dragging top or bottom endpoints
   	- [ ] Add Signals to begin cap and end cap grab regions
