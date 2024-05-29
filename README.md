@@ -16,6 +16,14 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
   
 
 ## What's NOT working so far
+- Spreadsheet Export
+  - This is the big feature -- After creating your shotlines, you will be able to export a Shot List from your shotlines. This will be a spreadsheet with cells containing the relevant metadata for each Shot:
+    - Shot Number
+    - Shot Type / Subtype (Wide Shot, OTS, etc.)
+    - Setup Number
+    - Group Number
+    - Location & Time of Day
+    - misc. tags
 - Document import
   - as of right now, this tool just reads from a fountain formatted file with several caveats:
   - The Fountain parser used does not natively handle things like `*emphasis*` with asterisks
