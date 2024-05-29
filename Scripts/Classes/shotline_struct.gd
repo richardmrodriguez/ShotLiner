@@ -40,22 +40,6 @@ func pretty_print_properties(props: Array) -> void:
 	for prop: Variant in props:
 		print("- ", prop)
 
-# TODO: This method is inaccurate, because it calculates the closetst Label
-# of each point separately. This leads to the Shotline becoming unintentionally
-# expanded or shrunk due to rounding. 
-# Instead:
-# 1. First calculate the screenplay line index length (the span of the Shotline in terms of 
-# number of fnline elements in order)
-# 2. only calculate the Label nearest to one line
-# 3. From that singular nearest Label as reference, then find the Label exactly the
-# index span away
-# i.e. if the line starts at line index 5, and is 5lines long, it begins with
-# a span from 5 to 10. If the lines is then moved to start at line index 10,
-# The new span will be from 10 to 15, exactly.
-# Alternately, you could grab the Label height of one of the Screenplay lines,
-# and use that with the mouse's position.y delta over time to determine
-# how many "Label heights" the current ShotLine has moved.
-
 func update_page_line_indices_with_points(cur_page_screenplay_lines: Array, last_node_global_pos: Vector2) -> void:
 	#await get_tree().process_frame
 	
@@ -113,6 +97,8 @@ func update_page_line_indices_with_points(cur_page_screenplay_lines: Array, last
 		start_uuid = cur_page_screenplay_lines[new_start_label_idx].fnline.uuid
 		end_uuid = cur_page_screenplay_lines[new_end_label_idx].fnline.uuid
 	elif new_end_point_set:
+		# TODO: Actually handle moving the shotline above or below the top or bottom margins
+
 		# too high up;, move down
 		# but what about multipage shotlines AAAUUUGGHHHHH
 		pass
