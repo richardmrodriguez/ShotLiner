@@ -14,15 +14,23 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ygaef")
 
-[node name="VBoxContainer" type="VSplitContainer" parent="."]
+[node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-split_offset = -285
-dragger_visibility = 2
+color = Color(0, 0.168627, 0.211765, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -44,7 +52,7 @@ split_offset = -270
 [node name="PageMarginContainer" type="MarginContainer" parent="VBoxContainer/HSplitContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-focus_neighbor_right = NodePath("../MarginContainer")
+focus_neighbor_right = NodePath("../InspectorPanelContainer")
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
@@ -54,7 +62,8 @@ theme_override_constants/margin_bottom = 8
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/HSplitContainer"]
+[node name="InspectorPanelContainer" type="MarginContainer" parent="VBoxContainer/HSplitContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 focus_neighbor_left = NodePath("../PageMarginContainer")
 theme_override_constants/margin_left = 16
@@ -62,9 +71,19 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="InspectorPanel" parent="VBoxContainer/HSplitContainer/MarginContainer" instance=ExtResource("3_72tf4")]
+[node name="InspectorPanel" parent="VBoxContainer/HSplitContainer/InspectorPanelContainer" instance=ExtResource("3_72tf4")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="InspectorPanelBottomContainer" type="MarginContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [connection signal="toolbar_button_pressed" from="VBoxContainer/MarginContainer/ToolBar" to="." method="_on_tool_bar_toolbar_button_pressed"]

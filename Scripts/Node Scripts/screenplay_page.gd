@@ -33,7 +33,11 @@ signal page_lines_populated
 # Called when the node enters the scene tree for the first time.
 
 func _ready() -> void:
-	pass
+	left_page_margin.color = Color.TRANSPARENT
+	right_page_margin.color = Color.TRANSPARENT
+	top_page_margin.color = Color.TRANSPARENT
+	bottom_page_margin.color = Color.TRANSPARENT
+	
 func replace_current_page(page_content: PageContent, new_page_number: int=0) -> void:
 	for child in page_container.get_children():
 		page_container.remove_child(child)

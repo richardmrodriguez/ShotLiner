@@ -48,6 +48,13 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Load"
 
+[node name="TestLayout" type="Button" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+toggle_mode = true
+text = "Funny"
+
 [node name="spacer3" type="Control" parent="."]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
@@ -63,4 +70,5 @@ text = "NEXT PG."
 [connection signal="pressed" from="MOVE" to="." method="_on_move_pressed"]
 [connection signal="pressed" from="SAVE" to="." method="_on_save_pressed"]
 [connection signal="pressed" from="LOAD" to="." method="_on_load_pressed"]
+[connection signal="toggled" from="TestLayout" to="." method="_on_test_layout_toggled"]
 [connection signal="pressed" from="NEXT PG" to="." method="_on_next_pg_pressed"]

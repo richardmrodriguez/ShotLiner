@@ -27,6 +27,11 @@ var tags: String
 
 var tags_as_arr: Array[String]
 
+func is_multiline() -> bool:
+	if start_page_index != end_page_index:
+		return true
+	return false
+
 func print_self() -> void:
 	pretty_print_properties(
 		[scene_number,
@@ -220,8 +225,17 @@ static func construct_shotline_node(
 	#print("Current shotline positions: ", start_pos.y, ", ", end_pos.y)
 
 	var new_line2D: ShotLine2D = empty_shotline_2D
+	new_line2D.default_color = ShotLinerColors.line_color
 	new_line2D.shotline_struct_reference = shotline
 	new_line2D.set_points([start_pos, end_pos])
+
+	if starts_on_earlier_page:
+		print("Shotline starts earlier")
+		new_line2D.begin_cap_open = true
+	if ends_on_later_page:
+		print("Shotline ends later")
+		new_line2D.end_cap_open = true
+
 	new_line2D.true_start_pos = start_pos
 	new_line2D.true_end_pos = end_pos
 

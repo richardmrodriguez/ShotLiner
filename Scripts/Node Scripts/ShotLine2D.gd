@@ -19,6 +19,9 @@ var shotline_struct_reference: Shotline
 var is_hovered_over: bool = false
 var cap_line_width_offset: float = 8
 
+var begin_cap_open: bool = false
+var end_cap_open: bool = false
+
 var true_start_pos: Vector2 = Vector2(0, 0)
 var true_end_pos: Vector2 = Vector2(0, 0)
 
@@ -30,6 +33,12 @@ func _init() -> void:
 	visible = false
 
 func _ready() -> void:
+
+	if begin_cap_open:
+		begin_cap_grab_region.toggle_open_endcap(true)
+	if end_cap_open:
+		end_cap_grab_region.toggle_open_endcap(true)
+
 	await get_tree().process_frame
 	if visible == false:
 		visible = true
@@ -38,8 +47,12 @@ func _ready() -> void:
 	update_shot_number_label()
 	width = line_width
 
-	begin_cap_grab_region.get_child(0).default_color = Color.SEA_GREEN
-	end_cap_grab_region.get_child(0).default_color = Color.SEA_GREEN
+	var line_color: Color = Color.hex(0x2aa198)
+	
+	for ln in begin_cap_grab_region.get_children():
+		ln.default_color = ShotLinerColors.line_color
+	for ln in end_cap_grab_region.get_children():
+		ln.default_color = ShotLinerColors.line_color
 
 	#end_cap_mode = Line2D.LINE_CAP_BOX
 	#begin_cap_mode = Line2D.LINE_CAP_BOX

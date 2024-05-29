@@ -1,9 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://b51jgp8xdibk5"]
+[gd_scene load_steps=4 format=3 uid="uid://b51jgp8xdibk5"]
 
 [ext_resource type="Script" path="res://Scripts/Node Scripts/ShotLine2D.gd" id="1_ykvo7"]
 [ext_resource type="PackedScene" uid="uid://caj7qefxpanxu" path="res://Components/ShotNumber.tscn" id="2_nrk40"]
-[ext_resource type="PackedScene" uid="uid://dku2jp0o2lcku" path="res://Components/OpenEndCapLine2D.tscn" id="3_j4dln"]
-[ext_resource type="PackedScene" uid="uid://w0s0cadfrsur" path="res://Components/EndCapLine2D.tscn" id="3_sfhht"]
+[ext_resource type="PackedScene" uid="uid://dulv4qjmana1k" path="res://Components/EndCapGrabRegion.tscn" id="4_oxu3w"]
 
 [node name="ShotLine2d" type="Line2D"]
 points = PackedVector2Array(0, 0, 0, 20)
@@ -25,26 +24,10 @@ offset_right = 5.0
 offset_bottom = 20.0
 color = Color(0.729412, 0, 0.462745, 0.466667)
 
-[node name="BeginCapGrabRegion" type="ColorRect" parent="."]
+[node name="BeginCapGrabRegion" parent="." instance=ExtResource("4_oxu3w")]
 unique_name_in_owner = true
-offset_left = -5.0
-offset_right = 5.0
-offset_bottom = 6.0
-color = Color(0.596078, 0.188235, 0.686275, 1)
+offset_top = 0.0
+offset_bottom = 8.0
 
-[node name="EndCapLine2d" parent="BeginCapGrabRegion" instance=ExtResource("3_j4dln")]
-position = Vector2(7, -4)
-scale = Vector2(1.66667, 1)
-points = PackedVector2Array(-8, 0, 0, 14, 8, 0, 8, 0)
-
-[node name="EndCapGrabRegion" type="ColorRect" parent="."]
+[node name="EndCapGrabRegion" parent="." instance=ExtResource("4_oxu3w")]
 unique_name_in_owner = true
-offset_left = -5.0
-offset_top = 12.0
-offset_right = 5.0
-offset_bottom = 20.0
-color = Color(0, 0.431373, 0.67451, 1)
-
-[node name="EndCapLine2d" parent="EndCapGrabRegion" instance=ExtResource("3_sfhht")]
-position = Vector2(7, 5)
-points = PackedVector2Array(-8, 0, 3.06844, 0, 8, 0)

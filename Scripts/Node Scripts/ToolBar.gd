@@ -15,6 +15,7 @@ enum TOOLBAR_BUTTON {
 }
 
 signal toolbar_button_pressed(toolbar_button: TOOLBAR_BUTTON)
+signal layout_test_pressed(toggle: bool)
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -41,3 +42,6 @@ func _on_select_pressed() -> void:
 
 func _on_move_pressed() -> void:
 	toolbar_button_pressed.emit(TOOLBAR_BUTTON.MOVE)
+
+func _on_test_layout_toggled(toggled_on: bool) -> void:
+	layout_test_pressed.emit(toggled_on)

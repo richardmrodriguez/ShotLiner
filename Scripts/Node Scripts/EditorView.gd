@@ -5,6 +5,7 @@ extends Control
 @onready var inspector_panel: Node = %InspectorPanel
 @onready var page_panel: Node = screenplay_page.page_panel
 @onready var page_container: Node = screenplay_page.page_container
+@onready var vbox: Node = %VBoxContainer
 
 const FIELD_CATEGORY = TextInputField.FIELD_CATEGORY
 const uuid_util = preload ("res://addons/uuid/uuid.gd")
@@ -69,6 +70,7 @@ func _ready() -> void:
 	page_panel.shotline_hovered_over.connect(_on_shotline_hovered_over)
 	page_panel.shotline_mouse_drag.connect(_on_shotline_mouse_drag)
 	tool_changed.connect(_on_tool_changed)
+	toolbar.layout_test_pressed.connect(_on_layout_change)
 
 # This merely splits an array of FNLineGDs into smaller arrays. 
 # It then returns an array of those page arrays. This does not construct a ScreenplayPage object.
@@ -173,6 +175,14 @@ func populate_page_panel_with_shotlines_for_page() -> void:
 # -------------------- SIGNAL HANDLING -----------------------------
 #
 #
+
+func _on_layout_change(toggled: bool) -> void:
+	print("funnies")
+	if toggled:
+		inspector_panel.reparent( %InspectorPanelBottomContainer)
+	else:
+		inspector_panel.reparent( %InspectorPanelContainer)
+	pass
 
 func _on_tool_changed() -> void:
 	pass
