@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://oummcfocj72r"]
+[gd_scene load_steps=2 format=3 uid="uid://oummcfocj72r"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/PageMarginRegion.gd" id="1_4u7d8"]
 
 [node name="PageMarginRegion" type="ColorRect"]
 custom_minimum_size = Vector2(0, 20)
@@ -8,3 +10,4 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.190762, 0.190762, 0.190762, 1)
+script = ExtResource("1_4u7d8")

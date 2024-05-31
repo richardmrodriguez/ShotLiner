@@ -33,15 +33,15 @@
   	- [x] Shotlines can have Open or Closed endcaps
 	- [x] Shotline2D Nodes can be moved my click dragging
 	- [ ] When a Shotline Node is moved, it should do the following:
-	  - [ ] auto-snap its vertical end points to the nearest Label coordinates
 	  - [x] update the Shotline data struct to reflect this new position
-	  - [ ] if while dragging the shotline body, the top or bottom ends up higher than the top line or lower than the bottom line, clip the line to fit
 		- [x] only make the line multipage if creating the line past the top or bottom margins
+	  - [ ] auto-snap its vertical end points to the nearest Label coordinates
+	  - [ ] if while dragging the shotline body, the top or bottom ends up higher than the top line or lower than the bottom line, clip the line to fit
 		- [ ] if the line is already multipage (say, the line continues only down to the next page), when dragging the line body, the bottom of the line stays at the bottom of the page while the line itself moves horizontally, and the line top moves vertically
   - [ ] Make Shotlines able to be multipage
-  	- [ ] Add Signals to begin cap and end cap grab regions
   - [ ] Each Scene has a Shot Count that is updated whenever a new ShotLine is added that covers a particular scene
   - [ ] RESIZE shotlines by clicking and dragging top or bottom endpoints
+  	- [ ] Add Signals to begin cap and end cap grab regions
   	- [ ] ShotLines are extended to the next page by dragging a shotline's endpoint down past the final line of the page and into the margin
   	  - Maybe have a ColorRect which appears at the bottom of the page when dragging, to indicate to the user that they are about to make a multipage line
   	  - When user lets go of line, the page automatically changes to the next page so the user can continue dragging the line

@@ -6,6 +6,7 @@ extends Control
 @onready var page_panel: Node = screenplay_page.page_panel
 @onready var page_container: Node = screenplay_page.page_container
 @onready var vbox: Node = %VBoxContainer
+@onready var background_color_rect: ColorRect = % "Background Color"
 
 const FIELD_CATEGORY = TextInputField.FIELD_CATEGORY
 const uuid_util = preload ("res://addons/uuid/uuid.gd")
@@ -26,7 +27,6 @@ var is_erasing: bool = false
 var cur_tool: TOOL = TOOL.MOVE
 
 var last_mouse_hover_position: Vector2
-var cur_mouse_global_position_delta: Vector2
 var last_shotline_node_global_pos: Vector2
 var last_mouse_click_above_top_margin: bool = false
 var last_mouse_click_below_bottom_margin: bool = false
@@ -34,10 +34,15 @@ var last_mouse_click_past_right_margin: bool = false
 var last_mouse_click_past_left_margin: bool = false
 var last_hovered_line_uuid: String = ""
 var last_clicked_line_uuid: String = ""
-
-var cur_selected_shotline: Shotline
 var last_hovered_shotline_node: ShotLine2D
+var last_valid_shotline_position: Vector2
+
+var cur_mouse_global_position_delta: Vector2
+var cur_selected_shotline: Shotline
+
 var is_dragging_shotline: bool = false
+
+# ------ PAGE STATUS ------
 
 var cur_page_idx: int = 0
 var pages: Array[PageContent]
@@ -59,12 +64,15 @@ func _ready() -> void:
 
 	screenplay_page.populate_container_with_page_lines(pages[cur_page_idx])
 
+	# ------------ set colors ------------------
+	background_color_rect.color = ShotLinerColors.background_color
+	screenplay_page.background_color_rect.color = ShotLinerColors.foreground_color
+
 	# -------------connecting signals-----------
 	screenplay_page.page_lines_populated.connect(_on_page_lines_populated)
 	screenplay_page.gui_input.connect(_on_screenplay_page_gui_input)
 	created_new_shotline.connect(_on_new_shotline_added)
 	inspector_panel.field_text_changed.connect(_on_inspector_panel_field_text_changed)
-	page_container.screenplay_line_hovered_over.connect(_on_screenplay_line_hovered)
 	page_panel.shotline_clicked.connect(_on_shotline_clicked)
 	page_panel.shotline_released.connect(_on_shotline_released)
 	page_panel.shotline_hovered_over.connect(_on_shotline_hovered_over)
@@ -238,6 +246,27 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 		
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			_handle_left_click(event)
+	if event is InputEventMouseMotion:
+		var pageline_labels: Array[Node] = page_container.get_children()
+		# highlight a pageline if the mouse is hovering over it
+		for pageline in pageline_labels:
+			if pageline is PageLineLabel:
+				if pageline.get_global_rect().has_point(event.global_position):
+					for subchild in pageline.get_children():
+						subchild.visible = true
+					var cur_child_uuid: String = pageline.fnline.uuid
+					if last_hovered_line_uuid != cur_child_uuid:
+						last_hovered_line_uuid = cur_child_uuid
+						#screenplay_line_hovered_over.emit(cur_child_uuid)
+						#print(screenplay_line.get_index(), "   ", screenplay_line.fnline.fn_type)
+				else:
+					for subchild in pageline.get_children():
+						pageline.get_child(0).visible = false
+		var cur_global_mouse_pos: Vector2 = get_global_mouse_position()
+		if screenplay_page.top_page_margin.get_global_rect().has_point(cur_global_mouse_pos):
+			screenplay_page.top_page_margin.color = Color.RED
+		else:
+			screenplay_page.top_page_margin.color = Color.TRANSPARENT
 
 func _handle_left_click(event: InputEvent) -> void:
 	if event.is_pressed():
@@ -286,9 +315,6 @@ func _handle_left_click(event: InputEvent) -> void:
 
 							#print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
 
-func _on_screenplay_line_hovered(screenplay_line_uuid: String) -> void:
-	last_hovered_line_uuid = screenplay_line_uuid
-
 func _on_new_shotline_added(shotline_struct: Shotline) -> void:
 	inspector_panel.scene_num.line_edit.grab_focus()
 	inspector_panel.populate_fields_from_shotline(shotline_struct)
@@ -301,10 +327,8 @@ func _on_inspector_panel_field_text_changed(new_text: String, field_category: Te
 	match field_category:
 		FIELD_CATEGORY.SCENE_NUM:
 			cur_selected_shotline.scene_number = new_text
-			cur_selected_shotline.shotline_node.update_shot_number_label()
 		FIELD_CATEGORY.SHOT_NUM:
 			cur_selected_shotline.shot_number = new_text
-			cur_selected_shotline.shotline_node.update_shot_number_label()
 		FIELD_CATEGORY.SHOT_TYPE:
 			cur_selected_shotline.shot_type = new_text
 		FIELD_CATEGORY.SHOT_SUBTYPE:
@@ -315,6 +339,7 @@ func _on_inspector_panel_field_text_changed(new_text: String, field_category: Te
 			cur_selected_shotline.group = new_text
 		FIELD_CATEGORY.TAGS:
 			cur_selected_shotline.tags = new_text
+	cur_selected_shotline.shotline_node.update_shot_number_label()
 
 func _on_shotline_clicked(shotline_node: ShotLine2D, button_index: int) -> void:
 	match cur_tool:
@@ -337,11 +362,26 @@ func _on_shotline_released(shotline_node: ShotLine2D, button_index: int) -> void
 				if is_dragging_shotline:
 					
 					is_dragging_shotline = false
+					
+					# If the mouse has dragged the shotline past the left or right margins,
+					# Put the shotline back where it came from
+					if (
+						(screenplay_page.left_page_margin.global_position.x
+						+ screenplay_page.left_page_margin.size.x)
+						> get_global_mouse_position().x
+						or
+						(screenplay_page.right_page_margin.global_position.x)
+						< get_global_mouse_position().x
+						):
+						shotline_node.global_position = last_shotline_node_global_pos
+						return
+
 					cur_selected_shotline.x_position = get_global_mouse_position().x
 					await get_tree().process_frame
 					var page_container_children := page_container.get_children()
-					#await get_tree().process_frame
 					cur_selected_shotline.update_page_line_indices_with_points(
+						pages,
+						cur_page_idx,
 						page_container_children,
 						last_shotline_node_global_pos
 						)

@@ -14,6 +14,7 @@ extends Control
 @onready var right_page_margin: Node = %RightPageMarginRegion
 @onready var bottom_page_margin: Node = %BottomPageMarginRegion
 @onready var top_page_margin: Node = %TopPageMarginRegion
+@onready var background_color_rect: ColorRect = %PageBackground
 
 const uuid_util = preload ("res://addons/uuid/uuid.gd")
 const page_margin_region: PackedScene = preload ("res://Components/PageMarginRegion.tscn")
@@ -26,7 +27,7 @@ signal shotline_clicked
 signal page_lines_populated
 
 # TODO
-# - Fountain Parsing logic shoudl be in a different file, probably and autoload
+# - Fountain Parsing logic should be in a different file, probably an autoload
 
 ## EMPHASIS is not handled here -- asterisks need to be removed from the fountain screenplay.
 
@@ -86,6 +87,7 @@ func construct_screenplay_line(fnline: FNLineGD, idx: int) -> Label:
 	screenplay_line.line_index = idx
 	screenplay_line.autowrap_mode = TextServer.AUTOWRAP_OFF
 	screenplay_line.add_theme_font_size_override("font_size", SP_FONT_SIZE)
+	screenplay_line.add_theme_color_override("font_color", ShotLinerColors.text_color)
 
 	match fnline.fn_type:
 		"Heading":

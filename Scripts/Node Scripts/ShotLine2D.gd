@@ -33,7 +33,9 @@ func _init() -> void:
 	visible = false
 
 func _ready() -> void:
-
+	line_body_grab_region.mouse_filter = Control.MOUSE_FILTER_PASS
+	begin_cap_grab_region.mouse_filter = Control.MOUSE_FILTER_PASS
+	end_cap_grab_region.mouse_filter = Control.MOUSE_FILTER_PASS
 	if begin_cap_open:
 		begin_cap_grab_region.toggle_open_endcap(true)
 	if end_cap_open:
@@ -64,25 +66,13 @@ func _ready() -> void:
 	mouse_released_on_shotline.connect(screenplay_page_panel._on_shotline_released)
 	mouse_drag_on_shotline.connect(screenplay_page_panel._on_shotline_dragged)
 
-func get_begin_cap_points(start_point: Vector2) -> Array[Vector2]:
-	var left_end: Vector2 = Vector2(start_point.x - cap_line_width_offset, start_point.y)
-	var right_end: Vector2 = Vector2(start_point.x + cap_line_width_offset, start_point.y)
-
-	return [left_end, right_end, start_point]
-
-func get_end_cap_points(end_point: Vector2) -> Array[Vector2]:
-	var left_end: Vector2 = Vector2(end_point.x - cap_line_width_offset, end_point.y)
-	var right_end: Vector2 = Vector2(end_point.x + cap_line_width_offset, end_point.y)
-
-	return [end_point, left_end, right_end]
-
 func align_shot_number_label() -> void:
 	#await get_tree().process_frame
 	var x: float = true_start_pos.x
 	var y: float = true_start_pos.y
 	shot_number_label.position = Vector2(
 		x - (0.5 * shot_number_label.get_rect().size.x),
-		y - (shot_number_label.get_rect().size.y + 8)
+		y - (shot_number_label.get_rect().size.y + 16)
 		)
 
 func align_grab_regions() -> void:
@@ -120,7 +110,7 @@ func update_shot_number_label() -> void:
 	if shotline_struct_reference.scene_number == null:
 		print("funny null shot numbers")
 		return
-	var shotnumber_string: String = str(shotline_struct_reference.scene_number) + "." + str(shotline_struct_reference.shot_number)
+	var shotnumber_string: String = str(shotline_struct_reference.scene_number) + "." + str(shotline_struct_reference.shot_number) + "\n" + str(shotline_struct_reference.shot_type)
 	shot_number_label.text = shotnumber_string
 
 func resize_on_hover() -> void:
@@ -130,7 +120,6 @@ func resize_on_hover() -> void:
 		width = line_width
 
 func _on_line_body_gui_input(event: InputEvent) -> void:
-		
 	if event is InputEventMouseButton:
 		if event.pressed:
 			width = click_width
@@ -142,9 +131,3 @@ func _on_line_body_gui_input(event: InputEvent) -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		mouse_drag_on_shotline.emit(self)
-		#print("please god help me")
-		#if is_dragging_shotline:
-		#	print(cur_selected_shotline.shotline_node.global_position)
-		#	cur_selected_shotline.shotline_node.global_position = (
-		#		cur_mouse_global_position_delta + get_global_mouse_position()
-		#	)

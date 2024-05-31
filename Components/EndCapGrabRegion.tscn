@@ -16,12 +16,11 @@ visible = false
 position = Vector2(7, -4)
 points = PackedVector2Array(-8, 0, 0, 14, 8, 0, 8, 0)
 width = 3.0
-sharp_limit = 4.0
 antialiased = true
 
 [node name="ClosedEndCapLine2D" type="Line2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(7, 9)
+position = Vector2(7, 6)
 scale = Vector2(1.33333, 1)
 points = PackedVector2Array(-8, 0, 8, 0)
 width = 4.0
