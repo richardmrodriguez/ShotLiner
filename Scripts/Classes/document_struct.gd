@@ -1,5 +1,3 @@
-extends Node
-
 class_name ScreenplayDocument
 
 # TODO: This struct handles DOCUMENT-WIDE data such as:

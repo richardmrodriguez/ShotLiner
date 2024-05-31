@@ -1,5 +1,3 @@
-extends Node
-
 class_name PagelineSection
 
 var start_index_uuid: String

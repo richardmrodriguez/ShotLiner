@@ -1,5 +1,3 @@
-extends Node
-
 class_name Shotline
 
 var shotline_2D_scene := preload ("res://Components/ShotLine2D.tscn")
