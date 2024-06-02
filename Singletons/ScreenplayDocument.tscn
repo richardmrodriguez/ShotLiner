@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://iyk0cuk1clh6"]
+
+[ext_resource type="Script" path="res://Scripts/Classes/ScreenplayDocument.gd" id="1_bpku7"]
+
+[node name="ScreenplayDocument" type="Node"]
+script = ExtResource("1_bpku7")

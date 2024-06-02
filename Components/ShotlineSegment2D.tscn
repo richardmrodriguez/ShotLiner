@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3 uid="uid://cin2wy7h7ru4l"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/ShotLineSegment2D.gd" id="1_bbegq"]
+
+[node name="SegmentGrabRegion" type="ColorRect"]
+custom_minimum_size = Vector2(10, 4)
+offset_left = -5.0
+offset_right = 5.0
+offset_bottom = 100.0
+size_flags_horizontal = 4
+color = Color(1, 1, 1, 0)
+script = ExtResource("1_bbegq")
+
+[node name="StraightLine2D" type="Line2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(5, 0)
+points = PackedVector2Array(0, 0, 0, 100)
+width = 4.0
+default_color = Color(0, 1, 0, 1)
+
+[node name="JaggedLine2D" type="Line2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(5, 0)
+points = PackedVector2Array(8, 0, -8, 16, 8, 32, -8, 48, 8, 64, -8, 80, 8, 100)
+width = 4.0
+default_color = Color(1, 0, 0, 1)

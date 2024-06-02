@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://be8ms4xik2l22"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/EventStateManager.gd" id="1_4kuu1"]
+
+[node name="EventStateManager" type="Node"]
+script = ExtResource("1_4kuu1")

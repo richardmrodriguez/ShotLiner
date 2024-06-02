@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dc00tkcw4ylvf"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/FountainHandler.gd" id="1_vejef"]
+
+[node name="ParsingHandler" type="Node"]
+
+[node name="FountainHandler" type="Node" parent="."]
+script = ExtResource("1_vejef")

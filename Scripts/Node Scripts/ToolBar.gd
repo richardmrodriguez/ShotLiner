@@ -1,5 +1,7 @@
 extends HBoxContainer
 
+class_name ToolBar
+
 enum TOOLBAR_BUTTON {
 	PREV_PAGE,
 	NEXT_PAGE,
@@ -19,7 +21,7 @@ signal layout_test_pressed(toggle: bool)
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	pass
+	EventStateManager.toolbar_node = self
 
 func _on_prev_pg_pressed() -> void:
 	toolbar_button_pressed.emit(TOOLBAR_BUTTON.PREV_PAGE)

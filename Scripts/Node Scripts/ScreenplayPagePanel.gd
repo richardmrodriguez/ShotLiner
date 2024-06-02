@@ -15,11 +15,11 @@ func _input(event: InputEvent) -> void:
 		for shotline_node in children:
 			if not shotline_node is ShotLine2D:
 				continue
-			if shotline_node.line_body_grab_region.get_global_rect().has_point(get_global_mouse_position()):
-				if shotline_node.is_hovered_over == false:
-					shotline_node.is_hovered_over = true
-					shotline_node.resize_on_hover()
-					shotline_hovered_over.emit(shotline_node)
+			#if shotline_node.line_body_grab_region.get_global_rect().has_point(get_global_mouse_position()):
+			#	if shotline_node.is_hovered_over == false:
+			#		shotline_node.is_hovered_over = true
+			#		shotline_node.resize_on_hover()
+			#		shotline_hovered_over.emit(shotline_node)
 			else:
 				if shotline_node.is_hovered_over == true:
 					shotline_node.is_hovered_over = false

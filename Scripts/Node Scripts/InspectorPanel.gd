@@ -26,6 +26,7 @@ signal field_text_changed(new_text: String, field_category: TextInputField.FIELD
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	EventStateManager.inpsector_panel_node = self
 	for field in fields:
 		field.text_changed.connect(on_field_text_changed)
 

@@ -15,6 +15,11 @@ run/main_scene="res://EditorView/EditorView.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+ScreenplayDocument="*res://Singletons/ScreenplayDocument.tscn"
+EventStateManager="*res://Singletons/EventStateManager.tscn"
+
 [debug]
 
 gdscript/warnings/unassigned_variable=2

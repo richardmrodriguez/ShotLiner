@@ -62,6 +62,9 @@ theme_override_constants/margin_bottom = 8
 [node name="ScreenplayPage" parent="VBoxContainer/HSplitContainer/PageMarginContainer" instance=ExtResource("1_nkjii")]
 unique_name_in_owner = true
 layout_mode = 2
+SP_ACTION_WIDTH = null
+SP_DIALOGUE_WIDTH = null
+font_ratio = null
 
 [node name="InspectorPanelContainer" type="MarginContainer" parent="VBoxContainer/HSplitContainer"]
 unique_name_in_owner = true

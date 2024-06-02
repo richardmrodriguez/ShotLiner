@@ -1,5 +1,7 @@
 extends Control
 
+class_name ScreenplayPage
+
 @export_multiline var raw_screenplay_content: String = "INT. HOUSE - DAY"
 @export var SP_ACTION_WIDTH: int = 61
 @export var SP_DIALOGUE_WIDTH: int = 36
@@ -34,6 +36,7 @@ signal page_lines_populated
 # Called when the node enters the scene tree for the first time.
 
 func _ready() -> void:
+	EventStateManager.page_node = self
 	left_page_margin.color = Color.TRANSPARENT
 	right_page_margin.color = Color.TRANSPARENT
 	top_page_margin.color = Color.TRANSPARENT
@@ -78,7 +81,14 @@ func populate_container_with_page_lines(cur_page_content: PageContent, page_numb
 		line_counter += 1
 
 	page_lines_populated.emit()
-
+func populate_page_panel_with_shotlines_for_page() -> void:
+	await get_tree().process_frame
+	for sl: Shotline in ScreenplayDocument.shotlines:
+		if (
+			sl.start_page_index == EventStateManager.cur_page_idx
+			or sl.end_page_index == EventStateManager.cur_page_idx):
+			var new_shotline_node: ShotLine2D = sl.construct_shotline_node()
+			page_panel.add_child(new_shotline_node)
 func construct_screenplay_line(fnline: FNLineGD, idx: int) -> Label:
 
 	var screenplay_line := Label.new()
