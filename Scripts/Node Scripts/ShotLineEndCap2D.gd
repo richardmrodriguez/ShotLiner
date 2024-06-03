@@ -2,7 +2,7 @@ extends Line2D
 
 class_name ShotLineEndCap2D
 
-@export var shotline: ShotLine2D
+@export var shotline: ShotLine2DContainer
 
 var cap_line_width_offset: float = 8
 var cap_line_height_offset: float = 10

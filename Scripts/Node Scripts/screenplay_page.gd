@@ -45,10 +45,10 @@ func _ready() -> void:
 func replace_current_page(page_content: PageContent, new_page_number: int=0) -> void:
 	for child in page_container.get_children():
 		page_container.remove_child(child)
-	for shotline: Node in page_panel.get_children():
-		if shotline is ShotLine2D:
-			page_panel.remove_child(shotline)
-			shotline.queue_free()
+	for shotline_container: Node in page_panel.get_children():
+		if shotline_container is ShotLine2DContainer:
+			page_panel.remove_child(shotline_container)
+			shotline_container.queue_free()
 			#print("lmao", shotline)
 	#await get_tree().process_frame
 	# ^^^ There appear to be rendering issues when navigating back and forth
@@ -56,6 +56,7 @@ func replace_current_page(page_content: PageContent, new_page_number: int=0) -> 
 	# which already have an await get_tree().process_frame line,
 	# it appears to be not quite enough sometimes. It appears random.
 	populate_container_with_page_lines(page_content, new_page_number)
+	populate_page_panel_with_shotlines_for_page()
 
 func populate_container_with_page_lines(cur_page_content: PageContent, page_number: int=0) -> void:
 	current_page_number = page_number
@@ -87,8 +88,10 @@ func populate_page_panel_with_shotlines_for_page() -> void:
 		if (
 			sl.start_page_index == EventStateManager.cur_page_idx
 			or sl.end_page_index == EventStateManager.cur_page_idx):
-			var new_shotline_node: ShotLine2D = sl.construct_shotline_node()
+			var new_shotline_node: ShotLine2DContainer = sl.shotline_2D_scene.instantiate()
+			new_shotline_node.construct_shotline_node(sl)
 			page_panel.add_child(new_shotline_node)
+			sl.shotline_node = new_shotline_node
 func construct_screenplay_line(fnline: FNLineGD, idx: int) -> Label:
 
 	var screenplay_line := Label.new()

@@ -48,6 +48,15 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Load"
 
+[node name="Undo" type="Button" parent="."]
+layout_mode = 2
+text = "Undo"
+
+[node name="Redo" type="Button" parent="."]
+layout_mode = 2
+text = "Redo
+"
+
 [node name="TestLayout" type="Button" parent="."]
 unique_name_in_owner = true
 visible = false
@@ -70,5 +79,7 @@ text = "NEXT PG."
 [connection signal="pressed" from="MOVE" to="." method="_on_move_pressed"]
 [connection signal="pressed" from="SAVE" to="." method="_on_save_pressed"]
 [connection signal="pressed" from="LOAD" to="." method="_on_load_pressed"]
+[connection signal="pressed" from="Undo" to="." method="_on_undo_pressed"]
+[connection signal="pressed" from="Redo" to="." method="_on_redo_pressed"]
 [connection signal="toggled" from="TestLayout" to="." method="_on_test_layout_toggled"]
 [connection signal="pressed" from="NEXT PG" to="." method="_on_next_pg_pressed"]
