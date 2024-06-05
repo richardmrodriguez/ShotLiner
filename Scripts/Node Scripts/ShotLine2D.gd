@@ -8,8 +8,6 @@ class_name ShotLine2DContainer
 @onready var begin_cap_grab_region: ColorRect = %BeginCapGrabRegion
 @onready var end_cap_grab_region: ColorRect = %EndCapGrabRegion
 @onready var segments_container: VBoxContainer = %SegmentsContainer
-@onready var shotline_segment_scene: PackedScene = preload ("res://Components/ShotlineSegment2D.tscn")
-
 @export var color_rect_width: float = 12
 @export var click_width: float = 12
 @export var hover_line_width: float = 10
@@ -17,6 +15,7 @@ class_name ShotLine2DContainer
 @export var cap_grab_region_height: float = 6
 @export var cap_grab_region_vertical_position_offset: float = 6
 
+var shotline_segment_scene: PackedScene = preload ("res://Components/ShotlineSegment2D.tscn")
 var unfilmed_sections: Array = []
 var shotline_length: int
 var cur_pageline_label_height: float
@@ -36,31 +35,29 @@ signal mouse_released_on_shotline(shotline2D: ShotLine2DContainer, button_index:
 signal mouse_drag_on_shotline(shotline_node: ShotLine2DContainer)
 
 func _init() -> void:
-	#construct_shotline_node(shotline_struct_reference)
-	#shotline_struct_reference = shotline
 	visible = false
 
 func _ready() -> void:
-	#print("Children: ", get_children())
 	if visible == false:
 		visible = true
 	#await get_tree().process_frame
 	#line_body_grab_region.mouse_filter = Control.MOUSE_FILTER_PASS
 	#print( %BeginCapGrabRegion)
 	#print(end_cap_grab_region)
-	#begin_cap_grab_region.mouse_filter = Control.MOUSE_FILTER_PASS
-	#end_cap_grab_region.mouse_filter = Control.MOUSE_FILTER_PASS
+
+	begin_cap_grab_region.mouse_filter = Control.MOUSE_FILTER_PASS
+	end_cap_grab_region.mouse_filter = Control.MOUSE_FILTER_PASS
 
 	if begin_cap_open:
-		#begin_cap_grab_region.toggle_open_endcap(true)
+		begin_cap_grab_region.toggle_open_endcap(true)
 		pass
 	if end_cap_open:
-		#end_cap_grab_region.toggle_open_endcap(true)
+		end_cap_grab_region.toggle_open_endcap(true)
 		pass
 
 	await get_tree().process_frame
 	
-	#align_grab_regions()
+	align_grab_regions()
 	align_shot_number_label()
 	update_shot_number_label()
 
@@ -72,11 +69,6 @@ func _ready() -> void:
 		ln.default_color = ShotLinerColors.line_color
 	for ln in end_cap_grab_region.get_children():
 		ln.default_color = ShotLinerColors.line_color
-
-	populate_shotline_with_segments(
-		unfilmed_sections,
-		shotline_length,
-		cur_pageline_label_height)
 
 	#end_cap_mode = Line2D.LINE_CAP_BOX
 	#begin_cap_mode = Line2D.LINE_CAP_BOX
@@ -102,9 +94,6 @@ func construct_shotline_node(shotline: Shotline) -> void:
 
 	var cur_start_page_line_indices: Vector2i
 	var cur_end_page_line_indices: Vector2i
-
-	#var cur_local_start_idx: int
-	#var cur_local_end_idx: int
 	
 	for page: PageContent in pages:
 		for line: FNLineGD in page.lines:
@@ -185,7 +174,7 @@ func construct_shotline_node(shotline: Shotline) -> void:
 					local_start_label = pageline
 
 	# ------------ SET POINTS AND POSITION FOR SHOTLINE NODE -------------------
-	var screenplay_line_vertical_size: float = cur_pagelines[0].get_rect().size.y
+	var screenplay_line_vertical_size: float = cur_pagelines[0].size.y
 
 	# TODO: I don't know why the shotlines' vertical position is off by like 3 lines,
 	# But it is and so, it needs the following offsets. Must investigate further.
@@ -193,16 +182,16 @@ func construct_shotline_node(shotline: Shotline) -> void:
 	# overhang for the start and end;
 	var start_pos: Vector2 = Vector2(
 		last_mouse_x_pos,
-		local_start_label.global_position.y - 6.5 * screenplay_line_vertical_size
+		local_start_label.global_position.y - .65 * shot_number_label.size.y
 		)
 	var end_pos: Vector2 = Vector2(
 		last_mouse_x_pos,
-		local_end_label.global_position.y # - 5.5 * screenplay_line_vertical_size
+		(local_end_label.global_position.y + local_end_label.size.y) - .65 * shot_number_label.size.y
 		)
 
 	var shotline_points: Array[Vector2] = [] # empty array to be filled by the following section
 
-	# Get the start and end positions of each unfilmed (squiggle) section, use those positions to construct a points array which includes jagged squiggles for unfilmed sections
+	# Get the start and end positions of each unfilmed (squiggle) section
 	var unfilmed_sections_in_page: Array[PagelineSection] = []
 
 	# TODO: too much copy-pasting here, extract the inner for loops into a single func 
@@ -223,7 +212,7 @@ func construct_shotline_node(shotline: Shotline) -> void:
 				if label.fnline.uuid == section.start_index_uuid:
 					section._start_position = label.global_position
 				elif label.fnline.uuid == section.end_index_uuid:
-					section._end_position = label.global_position + Vector2(0, screenplay_line_vertical_size)
+					section._end_position = label.global_position # + Vector2(0, screenplay_line_vertical_size)
 			unfilmed_sections_in_page.append(section)
 		
 		# only the start of this section is on this page
@@ -237,7 +226,7 @@ func construct_shotline_node(shotline: Shotline) -> void:
 				if label.fnline.uuid == section.start_index_uuid:
 					new_final_section._start_position = label.global_position
 				elif label.fnline.uuid == section.end_index_uuid:
-					new_final_section._end_position = label.global_position + Vector2(0, screenplay_line_vertical_size)
+					new_final_section._end_position = label.global_position # + Vector2(0, screenplay_line_vertical_size)
 			unfilmed_sections_in_page.append(new_final_section)
 			break
 		
@@ -258,25 +247,32 @@ func construct_shotline_node(shotline: Shotline) -> void:
 			unfilmed_sections_in_page.append(new_start_section)
 
 	for section: PagelineSection in unfilmed_sections_in_page:
-		section.start_index = ScreenplayDocument.get_index_from_uuid(section.start_index_uuid, pages)
-		section.end_index = ScreenplayDocument.get_index_from_uuid(section.end_index_uuid, pages)
+		section.start_index = ScreenplayDocument.get_index_from_uuid(section.start_index_uuid)
+		section.end_index = ScreenplayDocument.get_index_from_uuid(section.end_index_uuid)
 
 	if starts_on_earlier_page:
 		print("Shotline starts earlier")
 		begin_cap_open = true
+		begin_cap_grab_region.toggle_open_endcap(begin_cap_open)
 	if ends_on_later_page:
 		print("Shotline ends later")
 		end_cap_open = true
+		end_cap_grab_region.toggle_open_endcap(end_cap_open)
 
 	true_start_pos = start_pos
 	true_end_pos = end_pos
 	#print("pageline end and start: ", local_end_label, " | ", local_start_label)
-	shotline_length = absi(local_end_label.get_index() - local_start_label.get_index())
-	
+	shotline_length = absi(local_end_label.get_index() - local_start_label.get_index()) + 1
+
+	#actually make the shotline length appropriate
+	#1 . change the Line2D length of the segment
+	#2. append
+
 	update_line_color(ShotLinerColors.line_color)
 	unfilmed_sections = unfilmed_sections_in_page
 	cur_pageline_label_height = screenplay_line_vertical_size
 	global_position = start_pos
+	populate_shotline_with_segments(unfilmed_sections, shotline_length, cur_pageline_label_height)
 
 func align_shot_number_label() -> void:
 	#await get_tree().process_frame
@@ -318,6 +314,45 @@ func align_grab_regions() -> void:
 		cap_grab_region_height
 		)
 
+func populate_shotline_with_segments(
+	unfilmed_sections_in_page: Array[PagelineSection],
+	total_shotline_length: int,
+	line_label_height: float) -> void:
+
+	if not segments_container:
+		for child: Node in get_children():
+			if child is VBoxContainer:
+				segments_container = child
+	
+	var section_indices: Array = range(total_shotline_length)
+
+	var unfilmed_indices: Array = []
+	print("length: ", total_shotline_length)
+	for section: PagelineSection in unfilmed_sections_in_page:
+		for num: int in range(section.start_index.y, section.end_index.y + 1):
+			unfilmed_indices.append(num)
+	
+	if section_indices == [0] or section_indices == []:
+		print("Instantiating segment...")
+		var new_segment: ShotLineSegment2D = shotline_segment_scene.instantiate()
+		segments_container.add_child(new_segment)
+		new_segment.set_segment_height(line_label_height)
+		print("Instantiated segment.")
+		return
+
+	for idx: int in section_indices:
+		var new_segment: ShotLineSegment2D = shotline_segment_scene.instantiate()
+		segments_container.add_child(new_segment)
+		
+		if idx in unfilmed_sections_in_page:
+			new_segment.set_straight_or_jagged(false)
+		else:
+			new_segment.set_straight_or_jagged(true)
+		new_segment.set_segment_height(line_label_height)
+		# if this index is also in the unfilmed indices, add a squiggle segment to the segment container
+		# else, add a straight segment to the segment container
+		# also the section indices needs to be offset, to start at the Shotline's actual starting index ?		
+
 func update_line_width(width: float) -> void:
 	for node: Node in get_children():
 		if node is ShotLineSegment2D:
@@ -335,36 +370,11 @@ func update_shot_number_label() -> void:
 	var shotnumber_string: String = str(shotline_struct_reference.scene_number) + "." + str(shotline_struct_reference.shot_number) + "\n" + str(shotline_struct_reference.shot_type)
 	shot_number_label.text = shotnumber_string
 
-func resize_on_hover() -> void:
+func resize_line_width_on_hover() -> void:
 	if is_hovered_over:
 		update_line_width(hover_line_width)
 	else:
 		update_line_width(line_width)
-
-func populate_shotline_with_segments(
-	unfilmed_sections: Array[PagelineSection],
-	total_shotline_length: int,
-	line_label_height: float) -> void:
-	
-	var section_indices: Array = range(total_shotline_length)
-	var unfilmed_indices: Array = []
-	print("length: ", total_shotline_length)
-	for section: PagelineSection in unfilmed_sections:
-		for num: int in range(section.start_index.y, section.end_index.y + 1):
-			unfilmed_indices.append(num)
-	
-	for idx: int in section_indices:
-		if idx in unfilmed_sections:
-			var new_squiggle_segment: ShotLineSegment2D = shotline_segment_scene.instantiate()
-			segments_container.add_child(new_squiggle_segment)
-		else:
-			var new_segment: ShotLineSegment2D = shotline_segment_scene.instantiate()
-			#await get_tree().process_frame
-			if segments_container:
-				segments_container.add_child(new_segment)
-		# if this index is also in the unfilmed indices, add a squiggle segment to the segment container
-		# else, add a straight segment to the segment container
-		# also the section indices needs to be offset, to start at the Shotline's actual starting index ?
 
 func create_points_with_squiggles_from_sections(
 	line_start: Vector2,
@@ -511,7 +521,7 @@ func _on_line_body_gui_input(event: InputEvent) -> void:
 			mouse_clicked_on_shotline.emit(self, event.button_index)
 		else:
 			mouse_released_on_shotline.emit(self, event.button_index)
-			resize_on_hover()
+			resize_line_width_on_hover()
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:

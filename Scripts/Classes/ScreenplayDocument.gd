@@ -55,3 +55,10 @@ func split_fnline_array_into_page_groups(fnlines: Array) -> Array[PageContent]:
 			cur_page.lines.append(ln)
 
 	return cur_pages
+
+func get_index_from_uuid(uuid: String) -> Vector2i:
+	for page: PageContent in pages:
+		for line: FNLineGD in page.lines:
+			if line.uuid == uuid:
+				return Vector2i(pages.find(page), page.lines.find(line))
+	return Vector2i(0, 999) # a page will probably not ever have 999 lines on it...

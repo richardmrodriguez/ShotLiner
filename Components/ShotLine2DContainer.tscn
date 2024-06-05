@@ -4,12 +4,13 @@
 [ext_resource type="PackedScene" uid="uid://caj7qefxpanxu" path="res://Components/ShotNumber.tscn" id="2_nrk40"]
 [ext_resource type="PackedScene" uid="uid://dulv4qjmana1k" path="res://Components/EndCapGrabRegion.tscn" id="4_oxu3w"]
 
-[node name="ShotLine2d" type="VBoxContainer"]
-custom_minimum_size = Vector2(50, 10)
+[node name="ShotLine2DContainer" type="VBoxContainer"]
+custom_minimum_size = Vector2(50, 1)
 offset_left = -25.0
 offset_top = -45.0
 offset_right = 25.0
 offset_bottom = 152.0
+theme_override_constants/separation = 0
 script = ExtResource("1_ykvo7")
 
 [node name="ShotNumber" parent="." instance=ExtResource("2_nrk40")]
@@ -27,6 +28,7 @@ size_flags_horizontal = 4
 [node name="SegmentsContainer" type="VBoxContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_constants/separation = 0
 
 [node name="EndCapGrabRegion" parent="." instance=ExtResource("4_oxu3w")]
 unique_name_in_owner = true

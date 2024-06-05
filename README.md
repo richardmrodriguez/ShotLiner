@@ -20,7 +20,7 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
   - delete Shotlines by using eraser tool
   - A Shotline will have a Closed or Open endcap at each end, to visually distinguish which lines start or end on a previous or following page
   - Click and drag Shotline Nodes
-    - When dragged to a new position, Shotlines retain that position when the page is refreshed
+	- When dragged to a new position, Shotlines retain that position when the page is refreshed
 - Spreadsheet Export
   - This is the big feature -- After creating your shotlines, you will be able to export a Shot List from your shotlines. This will be a spreadsheet with cells containing the relevant metadata for each Shot:
 	- Shot Number

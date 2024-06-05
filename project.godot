@@ -36,6 +36,10 @@ window/size/viewport_height=900
 
 project/assembly_name="ShotLiner"
 
+[filesystem]
+
+import/blender/enabled=false
+
 [gui]
 
 theme/custom_font="res://Fonts/Courier Prime.ttf"
