@@ -6,21 +6,23 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
 ## What's working so far
 - Navigate between individual pages
 - Create multiple ShotLines per page
+  - A Shotline will have a Closed or Open endcap at each end, to visually distinguish which lines start or end on a previous or following page
+  - Right-click on segments of Shotline to toggle filmed (Straight line) or unfilmed (jagged line)
 - Use Toolbar to select either Draw, Erase, or Move tool
 - Create multipage Shotlines (kind of)
   - When creating a Shotline, you can drag the mouse past the top or bottom margins to make the line either start on the previous page or end on the following page
 - Can Undo and Redo some things:
   - Draw shotlines
   - Navigate Pages
+  - Filmed/ unfilmed sections of shotlines (Straight or Jagged lines)
   
 
 ## What's NOT working so far
-- NEW BROKEN: Shotlines are not drawn properly; I'm in the middle of refactoring ShotLines to be VBoxContainers instead of a singular Line2D scene
+- NEW BROKEN: These were working, but need to be re-implemented; should work soon
   - Click on individual Shotlines to assign unique metadtata
   - delete Shotlines by using eraser tool
-  - A Shotline will have a Closed or Open endcap at each end, to visually distinguish which lines start or end on a previous or following page
   - Click and drag Shotline Nodes
-	- When dragged to a new position, Shotlines retain that position when the page is refreshed
+  	- When dragged to a new position, Shotlines retain that position when the page is refreshed
 - Spreadsheet Export
   - This is the big feature -- After creating your shotlines, you will be able to export a Shot List from your shotlines. This will be a spreadsheet with cells containing the relevant metadata for each Shot:
 	- Shot Number
