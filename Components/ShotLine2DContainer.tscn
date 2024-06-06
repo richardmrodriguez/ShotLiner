@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://b51jgp8xdibk5"]
+[gd_scene load_steps=5 format=3 uid="uid://b51jgp8xdibk5"]
 
 [ext_resource type="Script" path="res://Scripts/Node Scripts/ShotLine2D.gd" id="1_ykvo7"]
 [ext_resource type="PackedScene" uid="uid://caj7qefxpanxu" path="res://Components/ShotNumber.tscn" id="2_nrk40"]
 [ext_resource type="PackedScene" uid="uid://dulv4qjmana1k" path="res://Components/EndCapGrabRegion.tscn" id="4_oxu3w"]
+[ext_resource type="Script" path="res://Scripts/Node Scripts/SegmentsContainer.gd" id="4_prmar"]
 
 [node name="ShotLine2DContainer" type="VBoxContainer"]
 custom_minimum_size = Vector2(50, 1)
@@ -15,10 +16,10 @@ script = ExtResource("1_ykvo7")
 
 [node name="ShotNumber" parent="." instance=ExtResource("2_nrk40")]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 size_flags_vertical = 1
-text = "3.14
-WS"
+text = ""
 
 [node name="BeginCapGrabRegion" parent="." instance=ExtResource("4_oxu3w")]
 unique_name_in_owner = true
@@ -29,6 +30,7 @@ size_flags_horizontal = 4
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 0
+script = ExtResource("4_prmar")
 
 [node name="EndCapGrabRegion" parent="." instance=ExtResource("4_oxu3w")]
 unique_name_in_owner = true

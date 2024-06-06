@@ -10,7 +10,7 @@ var page_panel: Node
 func execute() -> bool:
 	if params:
 		shotline_obj = params.front()
-		page_panel = params.back()
+		page_panel = EventStateManager.page_node.page_panel
 		shotline_uuid = shotline_obj.shotline_uuid
 		# two steps:
 		# 1. Add shotline object to shotlines array
@@ -18,14 +18,16 @@ func execute() -> bool:
 		# to undo:
 		# 1. get shotline container by uuid, queue free
 		# 2. remove shotline obj from array by uuid
-
-		ScreenplayDocument.shotlines.append(shotline_obj)
+		if not ScreenplayDocument.shotlines.has(shotline_obj):
+			ScreenplayDocument.shotlines.append(shotline_obj)
 		
 		this_shotline_2D = shotline_obj.shotline_2D_scene.instantiate()
 		page_panel.add_child(this_shotline_2D)
 		this_shotline_2D.construct_shotline_node(shotline_obj)
 		shotline_obj.shotline_node = this_shotline_2D
+
 		return true
+
 	return false
 	
 func undo() -> bool:

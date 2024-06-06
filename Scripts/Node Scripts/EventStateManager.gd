@@ -63,12 +63,10 @@ func get_page_idx_of_fnline_from_uuid(uuid: String) -> int:
 # adding the shotline to the page should create the Line2D
 # Also, the Line2D
 func create_and_add_shotline_node_to_page(shotline: Shotline) -> void:
-	var params: Array = [
-			shotline,
-			page_node.page_panel
-	]
-	var command: CreateShotLineCommand = CreateShotLineCommand.new(params)
-	CommandHistory.add_command(command)
+	
+	var create_shotline_command: CreateShotLineCommand = CreateShotLineCommand.new([shotline])
+	CommandHistory.add_command(create_shotline_command)
+	cur_selected_shotline = shotline
 
 	#print("Commands History: ", CommandHistory.history)
 	#created_new_shotline.emit(shotline)
@@ -301,7 +299,6 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 						return
 
 					cur_selected_shotline.x_position = editor_view.get_global_mouse_position().x
-					await get_tree().process_frame
 					var page_container_children := page_node.page_container.get_children()
 					cur_selected_shotline.update_page_line_indices_with_points(
 						page_container_children,
@@ -339,5 +336,5 @@ func _on_shotline_mouse_drag(shotline_node: ShotLine2DContainer) -> void:
 			)
 
 func _on_page_lines_populated() -> void:
-	await get_tree().process_frame
-	page_node.populate_page_panel_with_shotlines_for_page()
+	pass
+	#page_node.populate_page_panel_with_shotlines_for_page()

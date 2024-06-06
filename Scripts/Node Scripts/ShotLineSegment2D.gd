@@ -4,8 +4,21 @@ class_name ShotLineSegment2D
 
 @onready var straight_line: Node
 @onready var jagged_line: Node
+@onready var segments_container: Node
+@onready var shotline_container: Node
+
+var is_hovered_over: bool = false
+var is_straight: bool = true
+var pageline_uuid: String = ""
+
+signal hovered_over_shotline_segment(segment: ShotLineSegment2D)
 
 func _ready() -> void:
+	pageline_uuid = EventStateManager.uuid_util.v4()
+	segments_container = get_parent()
+	shotline_container = segments_container.get_parent()
+
+	hovered_over_shotline_segment.connect(segments_container._on_segment_hovered)
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	straight_line = $StraightLine2D
 	jagged_line = $JaggedLine2D
@@ -19,6 +32,9 @@ func set_straight_or_jagged(straight: bool) -> void:
 	else:
 		straight_line.visible = false
 		jagged_line.visible = true
+	
+	if straight_line.visible and jagged_line.visible:
+		print("BOTH VISIBLE")
 
 func set_segment_height(height: float) -> void:
 	custom_minimum_size = Vector2(size.x, height)
@@ -29,4 +45,20 @@ func set_segment_height(height: float) -> void:
 		]
 		)
 	)
-	jagged_line.scale = Vector2(1, 100 / height)
+	jagged_line.scale = Vector2(1, height / 100)
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		if get_global_rect().has_point(event.global_position):
+			is_hovered_over = true
+			hovered_over_shotline_segment.emit(self)
+		else:
+			is_hovered_over = false
+	if event is InputEventMouseButton:
+		if event.is_pressed():
+			if event.button_index == MOUSE_BUTTON_RIGHT:
+				if EventStateManager.cur_tool == EventStateManager.TOOL.DRAW:
+					if is_hovered_over:
+						var toggle_straight_command := ToggleSegmentUnfilmedCommand.new([self])
+						CommandHistory.add_command(toggle_straight_command)
+	

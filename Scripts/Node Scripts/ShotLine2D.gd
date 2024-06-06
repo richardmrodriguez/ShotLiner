@@ -4,10 +4,10 @@ class_name ShotLine2DContainer
 
 @onready var shot_number_label: Label = $ShotNumber
 @onready var screenplay_page_panel: Panel = get_parent()
-#@onready var line_body_grab_region: ColorRect = $ColorRect
 @onready var begin_cap_grab_region: ColorRect = %BeginCapGrabRegion
 @onready var end_cap_grab_region: ColorRect = %EndCapGrabRegion
 @onready var segments_container: VBoxContainer = %SegmentsContainer
+
 @export var color_rect_width: float = 12
 @export var click_width: float = 12
 @export var hover_line_width: float = 10
@@ -40,7 +40,6 @@ func _init() -> void:
 func _ready() -> void:
 	if visible == false:
 		visible = true
-	#await get_tree().process_frame
 	#line_body_grab_region.mouse_filter = Control.MOUSE_FILTER_PASS
 	#print( %BeginCapGrabRegion)
 	#print(end_cap_grab_region)
@@ -182,73 +181,16 @@ func construct_shotline_node(shotline: Shotline) -> void:
 	# overhang for the start and end;
 	var start_pos: Vector2 = Vector2(
 		last_mouse_x_pos,
-		local_start_label.global_position.y - .65 * shot_number_label.size.y
+		local_start_label.global_position.y - (shot_number_label.size.y + 8)
 		)
 	var end_pos: Vector2 = Vector2(
 		last_mouse_x_pos,
-		(local_end_label.global_position.y + local_end_label.size.y) - .65 * shot_number_label.size.y
+		(local_end_label.global_position.y + local_end_label.size.y) - (shot_number_label.size.y + 8)
 		)
 
 	var shotline_points: Array[Vector2] = [] # empty array to be filled by the following section
 
 	# Get the start and end positions of each unfilmed (squiggle) section
-	var unfilmed_sections_in_page: Array[PagelineSection] = []
-
-	# TODO: too much copy-pasting here, extract the inner for loops into a single func 
-	for section: PagelineSection in unfilmed_sections:
-		print("looking for sections")
-
-		var start_idx: Vector2i = shotline.get_fnline_index_from_uuid(section.start_index_uuid)
-		var end_idx: Vector2i = shotline.get_fnline_index_from_uuid(section.end_index_uuid)
-		
-		# The entirety of the unfilmed section is not even on this page, skip it
-		if end_idx.x < current_page_index or start_idx.x > current_page_index:
-			continue
-
-		# The entire unfilmed section is on this page, handle it
-		if start_idx.x == current_page_index&&end_idx.x == current_page_index:
-			# this section is entirely on this page, add the positions to the section struct, then add it to the array
-			for label: PageLineLabel in cur_pagelines:
-				if label.fnline.uuid == section.start_index_uuid:
-					section._start_position = label.global_position
-				elif label.fnline.uuid == section.end_index_uuid:
-					section._end_position = label.global_position # + Vector2(0, screenplay_line_vertical_size)
-			unfilmed_sections_in_page.append(section)
-		
-		# only the start of this section is on this page
-		elif start_idx.x == current_page_index:
-			# we can simply conclude the rest of the line is a squiggle, so
-			# make a new PagelineSection which ends at the line's end, add it to the array, then break
-			var new_final_section: PagelineSection = PagelineSection.new()
-			new_final_section.start_index_uuid = section.start_index_uuid
-			new_final_section.end_index_uuid = local_end_label.fnline.uuid
-			for label: PageLineLabel in cur_pagelines:
-				if label.fnline.uuid == section.start_index_uuid:
-					new_final_section._start_position = label.global_position
-				elif label.fnline.uuid == section.end_index_uuid:
-					new_final_section._end_position = label.global_position # + Vector2(0, screenplay_line_vertical_size)
-			unfilmed_sections_in_page.append(new_final_section)
-			break
-		
-		# only the end of this section is on this page
-		elif end_idx.x == current_page_index:
-			# make the entire first part of the line a squiggle up to this point, then continue
-			var new_start_section: PagelineSection = PagelineSection.new()
-			new_start_section.start_index_uuid = local_start_label.fnline.uuid
-			new_start_section.end_index_uuid = section.end_index_uuid
-
-			for label: PageLineLabel in cur_pagelines:
-				if label.fnline.uuid == section.start_index_uuid:
-					new_start_section._start_position = label.global_position
-				elif label.fnline.uuid == section.end_index_uuid:
-					new_start_section._end_position = label.global_position + label.get_global_rect().size
-
-			unfilmed_sections_in_page.clear()
-			unfilmed_sections_in_page.append(new_start_section)
-
-	for section: PagelineSection in unfilmed_sections_in_page:
-		section.start_index = ScreenplayDocument.get_index_from_uuid(section.start_index_uuid)
-		section.end_index = ScreenplayDocument.get_index_from_uuid(section.end_index_uuid)
 
 	if starts_on_earlier_page:
 		print("Shotline starts earlier")
@@ -262,6 +204,7 @@ func construct_shotline_node(shotline: Shotline) -> void:
 	true_start_pos = start_pos
 	true_end_pos = end_pos
 	#print("pageline end and start: ", local_end_label, " | ", local_start_label)
+	
 	shotline_length = absi(local_end_label.get_index() - local_start_label.get_index()) + 1
 
 	#actually make the shotline length appropriate
@@ -269,22 +212,22 @@ func construct_shotline_node(shotline: Shotline) -> void:
 	#2. append
 
 	update_line_color(ShotLinerColors.line_color)
-	unfilmed_sections = unfilmed_sections_in_page
+	#unfilmed_sections = unfilmed_sections_in_page
+
 	cur_pageline_label_height = screenplay_line_vertical_size
 	global_position = start_pos
+
 	populate_shotline_with_segments(unfilmed_sections, shotline_length, cur_pageline_label_height)
 
 func align_shot_number_label() -> void:
-	#await get_tree().process_frame
 	var x: float = true_start_pos.x
 	var y: float = true_start_pos.y
 	shot_number_label.position = Vector2(
-		x - (0.5 * shot_number_label.get_rect().size.x),
-		y - (shot_number_label.get_rect().size.y + 16)
+		x - (0.5 * shot_number_label.size.x),
+		y - (shot_number_label.size.y + 16)
 		)
 
 func align_grab_regions() -> void:
-	#await get_tree().process_frame
 	var line_length: float = true_end_pos.y - true_start_pos.y
 
 	#line_body_grab_region.position = Vector2(
@@ -314,8 +257,10 @@ func align_grab_regions() -> void:
 		cap_grab_region_height
 		)
 
+# TODO: Break this process into two parts: the segments_filmed dictionary population, and the Shotline2D segments population
+# Basically, we don't reconstruct the existing shotline segments which have
 func populate_shotline_with_segments(
-	unfilmed_sections_in_page: Array[PagelineSection],
+	unfilmed_pagelines: Array,
 	total_shotline_length: int,
 	line_label_height: float) -> void:
 
@@ -325,33 +270,67 @@ func populate_shotline_with_segments(
 				segments_container = child
 	
 	var section_indices: Array = range(total_shotline_length)
+	# TODO: Fix the order of the god damn start and end indices when CREATING the shotline in the first place...
+	var fnline_start_idx: Vector2i = ScreenplayDocument.get_index_from_uuid(shotline_struct_reference.start_uuid)
+	var fnline_end_idx: Vector2i = ScreenplayDocument.get_index_from_uuid(shotline_struct_reference.end_uuid)
 
-	var unfilmed_indices: Array = []
-	print("length: ", total_shotline_length)
-	for section: PagelineSection in unfilmed_sections_in_page:
-		for num: int in range(section.start_index.y, section.end_index.y + 1):
-			unfilmed_indices.append(num)
-	
-	if section_indices == [0] or section_indices == []:
-		print("Instantiating segment...")
-		var new_segment: ShotLineSegment2D = shotline_segment_scene.instantiate()
-		segments_container.add_child(new_segment)
-		new_segment.set_segment_height(line_label_height)
-		print("Instantiated segment.")
-		return
+	var real_fnline_start_idx: Vector2i
+	var real_fnline_end_idx: Vector2i
+	if fnline_start_idx.x > fnline_end_idx.x:
+		real_fnline_end_idx = fnline_start_idx
+		real_fnline_start_idx = fnline_end_idx
+	elif fnline_start_idx.x == fnline_end_idx.x:
+		if fnline_start_idx.y > fnline_end_idx.y:
+			real_fnline_end_idx = fnline_start_idx
+			real_fnline_start_idx = fnline_end_idx
+	else:
+		real_fnline_end_idx = fnline_end_idx
+		real_fnline_start_idx = fnline_start_idx
+
+	print("Shotline start and end indicices: ", real_fnline_start_idx, " | ", real_fnline_end_idx)
+
+	var fnline_uuids: Array[String] = []
+
+	for page: PageContent in ScreenplayDocument.pages:
+		for line: FNLineGD in page.lines:
+			var cur_fnline_index: Vector2i = ScreenplayDocument.get_index_from_uuid(line.uuid)
+			if cur_fnline_index.x == real_fnline_start_idx.x:
+				if cur_fnline_index.y < real_fnline_start_idx.y:
+
+					continue
+			elif cur_fnline_index.x == real_fnline_end_idx.x:
+				if cur_fnline_index.y > real_fnline_end_idx.y:
+					break
+			elif cur_fnline_index.x > real_fnline_end_idx.x:
+				break
+			fnline_uuids.append(line.uuid)
 
 	for idx: int in section_indices:
 		var new_segment: ShotLineSegment2D = shotline_segment_scene.instantiate()
+		var cur_uuid_for_segment: String = fnline_uuids[idx]
 		segments_container.add_child(new_segment)
+		var shotline_start_index: Vector2i = ScreenplayDocument.get_index_from_uuid(
+			shotline_struct_reference.start_uuid
+		)
+		#print("idx before: ", idx)
+		#print("shotline_start_index.y: ", shotline_start_index.y)
+		new_segment.pageline_uuid = fnline_uuids[idx]
+		# TODO: This doesn't quite reconstruct an existing set of filmed or unfilmed segments
 		
-		if idx in unfilmed_sections_in_page:
-			new_segment.set_straight_or_jagged(false)
+		if cur_uuid_for_segment in shotline_struct_reference.segments_filmed_or_unfilmed.keys():
+			if shotline_struct_reference.segments_filmed_or_unfilmed[cur_uuid_for_segment] == false:
+				new_segment.set_straight_or_jagged(false)
 		else:
 			new_segment.set_straight_or_jagged(true)
+		
+		#shotline_struct_reference.segments_filmed_or_unfilmed[new_segment.pageline_uuid] = new_segment.is_straight
+		
 		new_segment.set_segment_height(line_label_height)
 		# if this index is also in the unfilmed indices, add a squiggle segment to the segment container
 		# else, add a straight segment to the segment container
-		# also the section indices needs to be offset, to start at the Shotline's actual starting index ?		
+		# also the section indices needs to be offset, to start at the Shotline's actual starting index ?	
+	
+	#print(shotline_struct_reference.segments_filmed_or_unfilmed)
 
 func update_line_width(width: float) -> void:
 	for node: Node in get_children():
@@ -375,52 +354,6 @@ func resize_line_width_on_hover() -> void:
 		update_line_width(hover_line_width)
 	else:
 		update_line_width(line_width)
-
-func create_points_with_squiggles_from_sections(
-	line_start: Vector2,
-	line_end: Vector2,
-	squiggle_sections: Array[PagelineSection],
-	pageline_label_height: float=12.0) -> Array[Vector2]:
-
-	var fraction_denominator: float = 2.0
-	var squiggle_x_offset: float = pageline_label_height / fraction_denominator
-	var squiggle_y_offset: float = pageline_label_height / fraction_denominator
-
-	var new_array: Array[Vector2] = []
-	
-	# construct the squiggly sections, then return the array with those sections
-	if squiggle_sections != []:
-		
-		new_array.append(line_start)
-		
-		for section: PagelineSection in squiggle_sections:
-			new_array.append(section.start_position)
-
-			var x_center: float = section.start_position.x
-			var y_pos: float = section.start_position.y + squiggle_y_offset
-			var x_offset_positive: bool = false
-			var cur_x_offset: float = squiggle_x_offset
-
-			while y_pos < section.end_position.y:
-				if x_offset_positive:
-					cur_x_offset = squiggle_x_offset
-				else:
-					cur_x_offset = -squiggle_x_offset
-				new_array.append(Vector2(x_center + cur_x_offset, y_pos))
-
-				x_offset_positive = !x_offset_positive
-				y_pos += squiggle_y_offset
-			
-			if not section.end_position in new_array:
-				new_array.append(section.end_position)
-		
-		if not line_end in new_array:
-			new_array.append(line_end)
-		
-		return new_array
-	
-	# if no squiggle sections, just return the line start and end
-	return [line_start, line_end]
 
 func update_page_line_indices_with_points(
 	page_container_children: Array[Node],

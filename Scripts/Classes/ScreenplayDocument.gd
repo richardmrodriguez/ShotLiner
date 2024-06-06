@@ -45,7 +45,7 @@ func split_fnline_array_into_page_groups(fnlines: Array) -> Array[PageContent]:
 
 		if (cur_pages.size() < page_counter + 1):
 			cur_pages.append(PageContent.new())
-			print("uh oh stinky", cur_pages.size())
+			#print("uh oh stinky", cur_pages.size())
 		
 		if ln.fn_type.begins_with("Title") or ln.fn_type.begins_with("Sec"):
 			continue

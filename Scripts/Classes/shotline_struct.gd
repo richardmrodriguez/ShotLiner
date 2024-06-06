@@ -8,7 +8,7 @@ var start_uuid: String
 var end_uuid: String
 var x_position: float
 
-var unfilmed_sections: Array[PagelineSection]
+var segments_filmed_or_unfilmed: Dictionary = {} # fnlineuuid: is_filmed_bool
 
 var shotline_node: ShotLine2DContainer
 var shotline_uuid: String
@@ -60,3 +60,7 @@ func get_fnline_index_from_uuid(uuid: String) -> Vector2i:
 					ScreenplayDocument.pages.find(page),
 					page.lines.find(line))
 	return Vector2i()
+
+func toggle_segment_filmed(segment_uuid: String, setting: bool) -> void:
+	segments_filmed_or_unfilmed[segment_uuid] = setting
+	#print(segments_filmed_or_unfilmed)

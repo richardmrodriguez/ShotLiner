@@ -49,12 +49,7 @@ func replace_current_page(page_content: PageContent, new_page_number: int=0) -> 
 		if shotline_container is ShotLine2DContainer:
 			page_panel.remove_child(shotline_container)
 			shotline_container.queue_free()
-			#print("lmao", shotline)
-	#await get_tree().process_frame
-	# ^^^ There appear to be rendering issues when navigating back and forth
-	# between pages. Even though there are other parts of relevant functions
-	# which already have an await get_tree().process_frame line,
-	# it appears to be not quite enough sometimes. It appears random.
+
 	populate_container_with_page_lines(page_content, new_page_number)
 	populate_page_panel_with_shotlines_for_page()
 
@@ -84,14 +79,25 @@ func populate_container_with_page_lines(cur_page_content: PageContent, page_numb
 	page_lines_populated.emit()
 func populate_page_panel_with_shotlines_for_page() -> void:
 	await get_tree().process_frame
+	var cur_page_idx: int = EventStateManager.cur_page_idx
+	var shotlines_in_page: Array[Shotline] = []
+
 	for sl: Shotline in ScreenplayDocument.shotlines:
 		if (
-			sl.start_page_index == EventStateManager.cur_page_idx
-			or sl.end_page_index == EventStateManager.cur_page_idx):
-			var new_shotline_node: ShotLine2DContainer = sl.shotline_2D_scene.instantiate()
-			new_shotline_node.construct_shotline_node(sl)
-			page_panel.add_child(new_shotline_node)
-			sl.shotline_node = new_shotline_node
+			sl.start_page_index == cur_page_idx # starts on this page
+			or sl.end_page_index == cur_page_idx # ends on this page
+			) or (
+				sl.start_page_index < cur_page_idx
+				and sl.end_page_index > cur_page_idx # Starts before this page and ends after this page
+			):
+				if sl.end_page_index < cur_page_idx:
+					break
+				shotlines_in_page.append(sl)
+
+	for sl: Shotline in shotlines_in_page:
+		var create_shotline_command: CreateShotLineCommand = CreateShotLineCommand.new([sl])
+		create_shotline_command.execute()
+
 func construct_screenplay_line(fnline: FNLineGD, idx: int) -> Label:
 
 	var screenplay_line := Label.new()

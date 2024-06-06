@@ -19,6 +19,6 @@ default_color = Color(0, 1, 0, 1)
 
 [node name="JaggedLine2D" type="Line2D" parent="."]
 position = Vector2(5, 0)
-points = PackedVector2Array(8, 0, -8, 16, 8, 32, -8, 48, 8, 64, -8, 80, 8, 100)
+points = PackedVector2Array(0, 0, -8, 33, 8, 66, 0, 100)
 width = 4.0
 default_color = Color(1, 0, 0, 1)
