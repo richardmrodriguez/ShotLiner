@@ -3,6 +3,8 @@ extends Node
 const FIELD_CATEGORY = TextInputField.FIELD_CATEGORY
 const uuid_util = preload ("res://addons/uuid/uuid.gd")
 
+var line_hover_width: float
+
 enum TOOL {
 	MOVE,
 	SELECT,
@@ -169,6 +171,8 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 			_handle_left_click(event)
 	if event is InputEventMouseMotion:
 		var pageline_labels: Array[Node] = page_node.page_container.get_children()
+		var cur_global_mouse_pos: Vector2 = editor_view.get_global_mouse_position()
+
 		# highlight a pageline if the mouse is hovering over it
 		for pageline in pageline_labels:
 			if pageline is PageLineLabel:
@@ -183,11 +187,25 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 				else:
 					for subchild in pageline.get_children():
 						pageline.get_child(0).visible = false
-		var cur_global_mouse_pos: Vector2 = editor_view.get_global_mouse_position()
+		#Highlight the margins if mouse is over a margin rect
 		if page_node.top_page_margin.get_global_rect().has_point(cur_global_mouse_pos):
 			page_node.top_page_margin.color = Color.RED
 		else:
 			page_node.top_page_margin.color = Color.TRANSPARENT
+		
+		# Handle dragging shotlines
+		match cur_tool:
+			TOOL.MOVE:
+				if is_dragging_shotline:
+
+					var new_x_pos: float = (
+						cur_mouse_global_position_delta.x
+						+ editor_view.get_global_mouse_position().x
+					)
+					cur_selected_shotline.shotline_node.global_position = Vector2(
+						new_x_pos,
+						last_shotline_node_global_pos.y
+					)
 
 func _handle_left_click(event: InputEvent) -> void:
 	var pages: Array[PageContent] = ScreenplayDocument.pages
@@ -274,8 +292,10 @@ func _on_shotline_clicked(shotline_node: ShotLine2DContainer, button_index: int)
 					last_shotline_node_global_pos = shotline_node.global_position
 					print(is_dragging_shotline)
 
+# TODO: have a func which calls all the on_something_released whenever the mouse leaves the Screenplay Page area
+
 func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int) -> void:
-	
+	print("shotline released!!!")
 	match cur_tool:
 		TOOL.MOVE:
 			if button_index != 1:
@@ -297,14 +317,21 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 						):
 						shotline_node.global_position = last_shotline_node_global_pos
 						return
-
-					cur_selected_shotline.x_position = editor_view.get_global_mouse_position().x
-					var page_container_children := page_node.page_container.get_children()
-					cur_selected_shotline.update_page_line_indices_with_points(
-						page_container_children,
-						last_shotline_node_global_pos
-						)
-					print(is_dragging_shotline)
+					var move_shotline_cmd := MoveShotLineCommand.new(
+						[
+							cur_selected_shotline,
+							editor_view.get_global_mouse_position().x
+						]
+					)
+					print(CommandHistory.add_command(move_shotline_cmd))
+					#cur_selected_shotline.x_position = editor_view.get_global_mouse_position().x
+					
+					#var page_container_children := page_node.page_container.get_children()
+					#cur_selected_shotline.update_page_line_indices_with_points(
+					#	page_container_children,
+					#	last_shotline_node_global_pos
+					#	)
+					#print(is_dragging_shotline)
 					
 		TOOL.ERASE:
 			if button_index != 1:
@@ -328,12 +355,13 @@ func _on_shotline_hovered_over(shotline_node: ShotLine2DContainer) -> void:
 	last_hovered_shotline_node = shotline_node
 
 func _on_shotline_mouse_drag(shotline_node: ShotLine2DContainer) -> void:
-	#print("among us TWO")
+	print("among us TWO")
 	if is_dragging_shotline:
 			print(cur_selected_shotline.shotline_node.global_position)
-			cur_selected_shotline.shotline_node.global_position = (
-				cur_mouse_global_position_delta + editor_view.get_global_mouse_position()
+			var new_x_pos: float = (
+				cur_mouse_global_position_delta.x + editor_view.get_global_mouse_position().x
 			)
+			cur_selected_shotline.shotline_node.global_position = Vector2(new_x_pos, cur_selected_shotline.shotline_node.global_position.y)
 
 func _on_page_lines_populated() -> void:
 	pass

@@ -56,7 +56,7 @@ func split_fnline_array_into_page_groups(fnlines: Array) -> Array[PageContent]:
 
 	return cur_pages
 
-func get_index_from_uuid(uuid: String) -> Vector2i:
+func get_fnline_index_from_uuid(uuid: String) -> Vector2i:
 	for page: PageContent in pages:
 		for line: FNLineGD in page.lines:
 			if line.uuid == uuid:

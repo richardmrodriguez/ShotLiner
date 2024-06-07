@@ -26,6 +26,8 @@ func execute() -> bool:
 		this_shotline_2D.construct_shotline_node(shotline_obj)
 		shotline_obj.shotline_node = this_shotline_2D
 
+		EventStateManager.cur_selected_shotline = shotline_obj
+
 		return true
 
 	return false

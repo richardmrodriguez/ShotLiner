@@ -7,14 +7,13 @@ class_name ShotLineSegment2D
 @onready var segments_container: Node
 @onready var shotline_container: Node
 
+var pageline_uuid: String
 var is_hovered_over: bool = false
 var is_straight: bool = true
-var pageline_uuid: String = ""
 
 signal hovered_over_shotline_segment(segment: ShotLineSegment2D)
 
 func _ready() -> void:
-	pageline_uuid = EventStateManager.uuid_util.v4()
 	segments_container = get_parent()
 	shotline_container = segments_container.get_parent()
 
@@ -45,15 +44,28 @@ func set_segment_height(height: float) -> void:
 		]
 		)
 	)
-	jagged_line.scale = Vector2(1, height / 100)
+	jagged_line.set_points(PackedVector2Array(
+		[
+			Vector2(0, 0),
+			Vector2(8, (height / 3)),
+			Vector2( - 8, 2 * (height / 3)),
+			Vector2(0, height)
+		]
+	))
+
+func set_segment_line_width(width: float) -> void:
+	straight_line.width = width
+	jagged_line.width = width
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		if get_global_rect().has_point(event.global_position):
 			is_hovered_over = true
 			hovered_over_shotline_segment.emit(self)
+			set_segment_line_width(shotline_container.hover_line_width)
 		else:
 			is_hovered_over = false
+			set_segment_line_width(shotline_container.line_width)
 	if event is InputEventMouseButton:
 		if event.is_pressed():
 			if event.button_index == MOUSE_BUTTON_RIGHT:

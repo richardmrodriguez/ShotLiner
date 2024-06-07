@@ -15,13 +15,15 @@ class_name ShotLine2DContainer
 @export var cap_grab_region_height: float = 6
 @export var cap_grab_region_vertical_position_offset: float = 6
 
+var line_is_hovered_over: bool = false
+var last_hovered_segment: ShotLineSegment2D
+
 var shotline_segment_scene: PackedScene = preload ("res://Components/ShotlineSegment2D.tscn")
 var unfilmed_sections: Array = []
 var shotline_length: int
 var cur_pageline_label_height: float
 
 var shotline_struct_reference: Shotline
-var is_hovered_over: bool = false
 var cap_line_width_offset: float = 8
 
 var begin_cap_open: bool = false
@@ -32,7 +34,6 @@ var true_end_pos: Vector2 = Vector2(0, 0)
 
 signal mouse_clicked_on_shotline(shotline2D: ShotLine2DContainer, button_index: int)
 signal mouse_released_on_shotline(shotline2D: ShotLine2DContainer, button_index: int)
-signal mouse_drag_on_shotline(shotline_node: ShotLine2DContainer)
 
 func _init() -> void:
 	visible = false
@@ -75,9 +76,16 @@ func _ready() -> void:
 	begin_cap_grab_region.color = Color.TRANSPARENT
 	end_cap_grab_region.color = Color.TRANSPARENT
 	#line_body_grab_region.gui_input.connect(_on_line_body_gui_input)
-	mouse_clicked_on_shotline.connect(screenplay_page_panel._on_shotline_clicked)
-	mouse_released_on_shotline.connect(screenplay_page_panel._on_shotline_released)
-	mouse_drag_on_shotline.connect(screenplay_page_panel._on_shotline_dragged)
+	mouse_clicked_on_shotline.connect(EventStateManager._on_shotline_clicked)
+	mouse_released_on_shotline.connect(EventStateManager._on_shotline_released)
+
+func is_hovered_over() -> bool:
+	for segment: Node in segments_container.get_children():
+		if not segment is ShotLineSegment2D:
+			continue
+		if segment.is_hovered_over:
+			return true
+	return false
 
 # ---------------- CONSTRUCT NODE ------------------------
 
@@ -271,8 +279,8 @@ func populate_shotline_with_segments(
 	
 	var section_indices: Array = range(total_shotline_length)
 	# TODO: Fix the order of the god damn start and end indices when CREATING the shotline in the first place...
-	var fnline_start_idx: Vector2i = ScreenplayDocument.get_index_from_uuid(shotline_struct_reference.start_uuid)
-	var fnline_end_idx: Vector2i = ScreenplayDocument.get_index_from_uuid(shotline_struct_reference.end_uuid)
+	var fnline_start_idx: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(shotline_struct_reference.start_uuid)
+	var fnline_end_idx: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(shotline_struct_reference.end_uuid)
 
 	var real_fnline_start_idx: Vector2i
 	var real_fnline_end_idx: Vector2i
@@ -293,7 +301,7 @@ func populate_shotline_with_segments(
 
 	for page: PageContent in ScreenplayDocument.pages:
 		for line: FNLineGD in page.lines:
-			var cur_fnline_index: Vector2i = ScreenplayDocument.get_index_from_uuid(line.uuid)
+			var cur_fnline_index: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(line.uuid)
 			if cur_fnline_index.x == real_fnline_start_idx.x:
 				if cur_fnline_index.y < real_fnline_start_idx.y:
 
@@ -309,7 +317,7 @@ func populate_shotline_with_segments(
 		var new_segment: ShotLineSegment2D = shotline_segment_scene.instantiate()
 		var cur_uuid_for_segment: String = fnline_uuids[idx]
 		segments_container.add_child(new_segment)
-		var shotline_start_index: Vector2i = ScreenplayDocument.get_index_from_uuid(
+		var shotline_start_index: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(
 			shotline_struct_reference.start_uuid
 		)
 		#print("idx before: ", idx)
@@ -332,6 +340,7 @@ func populate_shotline_with_segments(
 	
 	#print(shotline_struct_reference.segments_filmed_or_unfilmed)
 
+# ----------------- UPDATE NODE ---------------------
 func update_line_width(width: float) -> void:
 	for node: Node in get_children():
 		if node is ShotLineSegment2D:
@@ -350,7 +359,7 @@ func update_shot_number_label() -> void:
 	shot_number_label.text = shotnumber_string
 
 func resize_line_width_on_hover() -> void:
-	if is_hovered_over:
+	if is_hovered_over():
 		update_line_width(hover_line_width)
 	else:
 		update_line_width(line_width)
@@ -445,17 +454,24 @@ func update_page_line_indices_with_points(
 		#you fucked up bro lmao
 		pass
 
-# -------------LOCAL INPUT ------------------
+# ------------- SIGNAL CALLBACKS ----------------------
 
-func _on_line_body_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		if event.pressed:
-			update_line_width(click_width)
-			mouse_clicked_on_shotline.emit(self, event.button_index)
-		else:
-			mouse_released_on_shotline.emit(self, event.button_index)
-			resize_line_width_on_hover()
+# -------------LOCAL INPUT ------------------
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
-		mouse_drag_on_shotline.emit(self)
+		if is_hovered_over():
+			if not line_is_hovered_over:
+				line_is_hovered_over = true
+			#print("This line is hovered over")
+			
+		else:
+			if line_is_hovered_over:
+				line_is_hovered_over = false
+	if event is InputEventMouseButton:
+		if is_hovered_over():
+			if event.button_index == MOUSE_BUTTON_LEFT:
+				if event.pressed:
+					mouse_clicked_on_shotline.emit(self, event.button_index)
+				else:
+					mouse_released_on_shotline.emit(self, event.button_index)
