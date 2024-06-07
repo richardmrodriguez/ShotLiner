@@ -215,17 +215,12 @@ func construct_shotline_node(shotline: Shotline) -> void:
 	
 	shotline_length = absi(local_end_label.get_index() - local_start_label.get_index()) + 1
 
-	#actually make the shotline length appropriate
-	#1 . change the Line2D length of the segment
-	#2. append
-
 	update_line_color(ShotLinerColors.line_color)
-	#unfilmed_sections = unfilmed_sections_in_page
 
 	cur_pageline_label_height = screenplay_line_vertical_size
 	global_position = start_pos
 
-	populate_shotline_with_segments(unfilmed_sections, shotline_length, cur_pageline_label_height)
+	populate_shotline_with_segments(shotline_length, cur_pageline_label_height)
 
 func align_shot_number_label() -> void:
 	var x: float = true_start_pos.x
@@ -268,7 +263,7 @@ func align_grab_regions() -> void:
 # TODO: Break this process into two parts: the segments_filmed dictionary population, and the Shotline2D segments population
 # Basically, we don't reconstruct the existing shotline segments which have
 func populate_shotline_with_segments(
-	unfilmed_pagelines: Array,
+	#unfilmed_pagelines: Array,
 	total_shotline_length: int,
 	line_label_height: float) -> void:
 
