@@ -358,7 +358,10 @@ func resize_line_width_on_hover() -> void:
 		update_line_width(hover_line_width)
 	else:
 		update_line_width(line_width)
-
+		
+# TODO: Refactor this to take two global pos
+#	also this is incompatible with the new shotline_container vbox container model
+#	so maybe just write a new func lmao
 func update_page_line_indices_with_points(
 	page_container_children: Array[Node],
 	last_node_global_pos: Vector2) -> void:

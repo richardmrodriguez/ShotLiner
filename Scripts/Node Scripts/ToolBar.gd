@@ -56,7 +56,8 @@ func _on_undo_pressed() -> void:
 			return false
 	)
 	if CommandHistory.command_index > 0:
-		print("Current command index: ", CommandHistory.command_index, " | History before undo: ", filtered_history)
+		pass
+		#print("Current command index: ", CommandHistory.command_index, " | History before undo: ", filtered_history)
 	
 	CommandHistory.undo()
 

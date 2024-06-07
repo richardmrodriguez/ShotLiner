@@ -49,7 +49,7 @@ func replace_current_page(page_content: PageContent, new_page_number: int=0) -> 
 		if shotline_container is ShotLine2DContainer:
 			page_panel.remove_child(shotline_container)
 			shotline_container.queue_free()
-
+	await get_tree().process_frame
 	populate_container_with_page_lines(page_content, new_page_number)
 	populate_page_panel_with_shotlines_for_page()
 
