@@ -184,14 +184,27 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 				else:
 					for subchild in pageline.get_children():
 						pageline.get_child(0).visible = false
-		#Highlight the margins if mouse is over a margin rect
-		if page_node.top_page_margin.get_global_rect().has_point(cur_global_mouse_pos):
-			page_node.top_page_margin.color = Color.RED
-		else:
-			page_node.top_page_margin.color = Color.TRANSPARENT
-		
-		# Handle dragging shotlines
+		if is_drawing:
+			#Highlight the margins if mouse is over a margin rect
+			if page_node.top_page_margin.get_global_rect().has_point(cur_global_mouse_pos):
+				if cur_page_idx == 0:
+					page_node.top_page_margin.color = Color.DARK_RED
+				else:
+					page_node.top_page_margin.color = ShotLinerColors.content_color
+			else:
+				page_node.top_page_margin.color = Color.TRANSPARENT
+			if page_node.bottom_page_margin.get_global_rect().has_point(cur_global_mouse_pos):
+				if cur_page_idx == ScreenplayDocument.pages.size() - 1:
+					page_node.bottom_page_margin.color = Color.DARK_RED
+				else:
+					page_node.bottom_page_margin.color = ShotLinerColors.content_color
+			else:
+				page_node.bottom_page_margin.color = Color.TRANSPARENT
+				
 		match cur_tool:
+			TOOL.DRAW:
+				pass
+			# Handle dragging shotlines
 			TOOL.MOVE:
 				if is_dragging_shotline:
 
@@ -222,6 +235,7 @@ func _handle_left_click(event: InputEvent) -> void:
 			TOOL.DRAW:
 				if is_drawing:
 					is_drawing = false
+					page_node.set_color_of_all_page_margins()
 					if not (
 						last_mouse_click_past_left_margin or
 						last_mouse_click_past_right_margin):
@@ -242,10 +256,10 @@ func _handle_left_click(event: InputEvent) -> void:
 							create_and_add_shotline_node_to_page(new_shotline)
 						elif last_mouse_click_below_bottom_margin:
 							var end_uuid: String
-							if cur_page_idx + 1 <= pages.size() + 1:
-								end_uuid = pages[cur_page_idx + 1].lines[+ 1].uuid
+							if cur_page_idx + 1 < pages.size():
+								end_uuid = pages[cur_page_idx + 1].lines[0].uuid
 							else:
-								end_uuid = pages[cur_page_idx].lines[- 1].uuid
+								end_uuid = pages[cur_page_idx].lines.back().uuid
 							var new_shotline: Shotline = create_new_shotline_obj(last_clicked_line_uuid, end_uuid, event.position)
 							create_and_add_shotline_node_to_page(new_shotline)
 
@@ -334,7 +348,7 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 			if button_index != 1:
 				return
 			if shotline_node == last_hovered_shotline_node:
-				print("Erasing...?")
+				#print("Erasing...?")
 				if last_hovered_shotline_node.is_hovered_over:
 					# TODO: Erasing isnt working because the shotlines arent working again lmao
 					var erase_command: EraseShotLineCommand = EraseShotLineCommand.new(

@@ -55,7 +55,7 @@ func set_segment_height(height: float) -> void:
 
 func set_segment_line_width(width: float) -> void:
 	straight_line.width = width
-	jagged_line.width = width
+	jagged_line.width = 0.75 * width
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:

@@ -77,6 +77,7 @@ func populate_container_with_page_lines(cur_page_content: PageContent, page_numb
 		line_counter += 1
 
 	page_lines_populated.emit()
+
 func populate_page_panel_with_shotlines_for_page() -> void:
 	await get_tree().process_frame
 	var cur_page_idx: int = EventStateManager.cur_page_idx
@@ -128,6 +129,12 @@ func construct_screenplay_line(fnline: FNLineGD, idx: int) -> Label:
 				screenplay_line.text = fnline.string
 	
 	return screenplay_line
+
+func set_color_of_all_page_margins(color: Color=Color.TRANSPARENT) -> void:
+	left_page_margin.color = color
+	right_page_margin.color = color
+	bottom_page_margin.color = color
+	top_page_margin.color = color
 
 # -------- FOUNTAIN / STRING MANIPULATION --------
 
