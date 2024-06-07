@@ -1,7 +1,5 @@
 extends Node
 
-#class_name CommandHistory
-
 var history: Array[Command] = []
 var command_index: int = 0
 const max_size: int = 1000
@@ -18,12 +16,15 @@ func add_command(command: Command) -> int:
 
 	history[command_index] = command
 
-	if command_index < max_size - 1:
-		command_index += 1
-	if get_command_at_index(command_index):
-		print("next command is valid")
-		history.resize(command_index)
+	if command_index == max_size - 1:
+		history.pop_front()
 		history.resize(max_size)
+	elif command_index < max_size - 1:
+		command_index += 1
+		if get_command_at_index(command_index):
+			print("Overwriting redos...")
+			history.resize(command_index)
+			history.resize(max_size)
 
 	var first_ten: Array = []
 	for n in range(10):
@@ -37,13 +38,13 @@ func undo() -> int:
 		print("Not undoing...")
 		return - 1
 	print("Undoing...")
-	print("command index before undo: ", command_index)
-	print(get_filtered_history())
+	#print("command index before undo: ", command_index)
+	#print(get_filtered_history())
 	command_index -= 1
-	print("Command at index: ", history[command_index])
+	#print("Command at index: ", history[command_index])
 	history[command_index].undo()
-	print("Command index after undo: ", command_index)
-	print(history[command_index])
+	#print("Command index after undo: ", command_index)
+	#print(history[command_index])
 
 	return 0
 
@@ -52,8 +53,9 @@ func redo() -> int:
 		return - 1
 	print("Redoing...")
 	if command_index + 1 > max_size - 1:
+		print("Not redoing...")
 		return - 1
-	print("current command index: ", command_index)
+	#print("current command index: ", command_index)
 	var command_to_redo: Command = history[command_index]
 	command_to_redo.execute()
 	command_index += 1
