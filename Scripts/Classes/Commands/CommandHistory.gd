@@ -12,16 +12,19 @@ func _ready() -> void:
 func add_command(command: Command) -> int:
 	if not command:
 		return - 1
+	
+	while history.size() > max_size - 1:
+		print("History size: ", history.size())
+		history.pop_front()
+	history.resize(max_size)
+
 	if not command.execute():
 		return - 1
-		
-	while history.size() > max_size:
-		history.pop_front()
 	
 	history[command_index] = command
 	history.resize(command_index + 1)
 	history.resize(max_size)
-	if command_index < max_size:
+	if command_index < max_size - 1:
 		command_index += 1
 	return 0
 
