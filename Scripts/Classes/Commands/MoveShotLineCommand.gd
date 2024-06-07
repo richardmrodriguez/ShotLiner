@@ -19,7 +19,6 @@ func execute() -> bool:
             sl.x_position = new_x_position
             sl.shotline_node.global_position = Vector2(sl.x_position, sl.shotline_node.global_position.y)
             return true
-    print("bruh")
     return false
 
 func undo() -> bool:

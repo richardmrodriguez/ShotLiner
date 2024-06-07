@@ -320,7 +320,7 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 					var move_shotline_cmd := MoveShotLineCommand.new(
 						[
 							cur_selected_shotline,
-							editor_view.get_global_mouse_position().x
+							editor_view.get_global_mouse_position().x + cur_mouse_global_position_delta.x
 						]
 					)
 					print(CommandHistory.add_command(move_shotline_cmd))
