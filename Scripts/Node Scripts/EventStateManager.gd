@@ -70,9 +70,6 @@ func create_and_add_shotline_node_to_page(shotline: Shotline) -> void:
 	CommandHistory.add_command(create_shotline_command)
 	cur_selected_shotline = shotline
 
-	#print("Commands History: ", CommandHistory.history)
-	#created_new_shotline.emit(shotline)
-
 func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_pos: Vector2) -> Shotline:
 
 	var new_shotline: Shotline = Shotline.new()
@@ -337,6 +334,7 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 			if button_index != 1:
 				return
 			if shotline_node == last_hovered_shotline_node:
+				print("Erasing...?")
 				if last_hovered_shotline_node.is_hovered_over:
 					# TODO: Erasing isnt working because the shotlines arent working again lmao
 					var erase_command: EraseShotLineCommand = EraseShotLineCommand.new(
@@ -350,9 +348,9 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 					#ScreenplayDocument.shotlines.erase(shotline_node.shotline_struct_reference)
 					#shotline_node.queue_free()
 
-func _on_shotline_hovered_over(shotline_node: ShotLine2DContainer) -> void:
+func _on_shotline_hovered_over(shotline_container: ShotLine2DContainer) -> void:
 	#print("Shotline Hovered changed: ", shotline_node, shotline_node.is_hovered_over)
-	last_hovered_shotline_node = shotline_node
+	last_hovered_shotline_node = shotline_container
 
 func _on_shotline_mouse_drag(shotline_node: ShotLine2DContainer) -> void:
 	print("among us TWO")

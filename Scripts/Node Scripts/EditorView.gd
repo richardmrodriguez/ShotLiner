@@ -39,9 +39,5 @@ func _ready() -> void:
 	
 	inspector_panel.field_text_changed.connect(EventStateManager._on_inspector_panel_field_text_changed)
 	
-	page_panel.shotline_clicked.connect(EventStateManager._on_shotline_clicked)
-	page_panel.shotline_released.connect(EventStateManager._on_shotline_released)
-	page_panel.shotline_hovered_over.connect(EventStateManager._on_shotline_hovered_over)
-	page_panel.shotline_mouse_drag.connect(EventStateManager._on_shotline_mouse_drag)
 	toolbar.toolbar_button_pressed.connect(EventStateManager._on_tool_bar_toolbar_button_pressed)
 	#toolbar.layout_test_pressed.connect(EventStateManager._on_layout_change)

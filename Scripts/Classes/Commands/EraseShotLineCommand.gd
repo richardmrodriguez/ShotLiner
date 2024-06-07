@@ -16,5 +16,6 @@ func undo() -> bool:
     return command_to_invert.execute()
     
 func execute() -> bool:
+    print("erasing shotline...")
     return command_to_invert.undo()
     
