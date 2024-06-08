@@ -8,12 +8,14 @@ class_name ShotLineSegment2D
 @onready var shotline_container: Node
 
 var pageline_uuid: String
+
 var is_hovered_over: bool = false
 var is_straight: bool = true
 
 signal hovered_over_shotline_segment(segment: ShotLineSegment2D)
 
 func _ready() -> void:
+
 	segments_container = get_parent()
 	shotline_container = segments_container.get_parent()
 
@@ -68,6 +70,8 @@ func _input(event: InputEvent) -> void:
 			set_segment_line_width(shotline_container.line_width)
 	if event is InputEventMouseButton:
 		if event.is_pressed():
+			return
+			# TODO: IDK if I want this logic here...
 			if event.button_index == MOUSE_BUTTON_RIGHT:
 				if EventStateManager.cur_tool == EventStateManager.TOOL.DRAW:
 					if is_hovered_over:

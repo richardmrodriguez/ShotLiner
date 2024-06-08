@@ -17,27 +17,36 @@ enum TOOL {
 @onready var inpsector_panel_node: InspectorPanel
 @onready var toolbar_node: ToolBar
 @onready var editor_view: Node
+@onready var selection_box_rect: ColorRect = ColorRect.new()
 
 # ------ STATES ------
 var is_drawing: bool = false
 var is_erasing: bool = false
+var is_inverting_line: bool = false
+
+var is_dragging_shotline: bool = false
+
 var cur_tool: TOOL = TOOL.DRAW
 
-var last_mouse_hover_position: Vector2
+var cur_highlighted_pageline_uuids: Array[String] = []
+var cur_already_modified_shotline_segments: Array = []
+
 var last_shotline_node_global_pos: Vector2
+
+var last_mouse_hover_position: Vector2
 var last_mouse_click_above_top_margin: bool = false
 var last_mouse_click_below_bottom_margin: bool = false
 var last_mouse_click_past_right_margin: bool = false
 var last_mouse_click_past_left_margin: bool = false
+
 var last_hovered_line_uuid: String = ""
 var last_clicked_line_uuid: String = ""
+
 var last_hovered_shotline_node: ShotLine2DContainer
 var last_valid_shotline_position: Vector2
 
 var cur_mouse_global_position_delta: Vector2
 var cur_selected_shotline: Shotline
-
-var is_dragging_shotline: bool = false
 
 # ------ PAGE STATUS ------
 
@@ -46,6 +55,7 @@ var cur_page_idx: int = 0
 # ------ READY ------
 
 func _ready() -> void:
+	selection_box_rect.color = Color(0.4, 0.4, 0.4, 0.4)
 	pass
 
 # ----- UITIL FUNCS ------
@@ -166,11 +176,17 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 		
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			_handle_left_click(event)
+		if event.button_index == MOUSE_BUTTON_RIGHT:
+			_handle_right_click(event)
+
 	if event is InputEventMouseMotion:
 		var pageline_labels: Array[Node] = page_node.page_container.get_children()
 		var cur_global_mouse_pos: Vector2 = editor_view.get_global_mouse_position()
 
 		# highlight a pageline if the mouse is hovering over it
+		# TODO: If is_drawing, this should highlight the labels between the currently hovered pageline and the
+		# Last clicked pageline, and de-highlight any lines that aren't in that range
+		# var cur_highlighted_pageline_uuids: Array[String]
 		for pageline in pageline_labels:
 			if pageline is PageLineLabel:
 				if pageline.get_global_rect().has_point(event.global_position):
@@ -182,10 +198,12 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 						#screenplay_line_hovered_over.emit(cur_child_uuid)
 						#print(screenplay_line.get_index(), "   ", screenplay_line.fnline.fn_type)
 				else:
-					for subchild in pageline.get_children():
-						pageline.get_child(0).visible = false
+					if not (is_drawing or is_inverting_line):
+						for subchild in pageline.get_children():
+							pageline.get_child(0).visible = false
+
+		#Highlight the margins if mouse is over a margin rect
 		if is_drawing:
-			#Highlight the margins if mouse is over a margin rect
 			if page_node.top_page_margin.get_global_rect().has_point(cur_global_mouse_pos):
 				if cur_page_idx == 0:
 					page_node.top_page_margin.color = Color.DARK_RED
@@ -200,7 +218,21 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 					page_node.bottom_page_margin.color = ShotLinerColors.content_color
 			else:
 				page_node.bottom_page_margin.color = Color.TRANSPARENT
-				
+
+		if is_inverting_line:
+			if is_instance_valid(last_hovered_shotline_node):
+				for segment: ShotLineSegment2D in last_hovered_shotline_node.segments_container.get_children():
+					if not segment:
+						continue
+					if cur_already_modified_shotline_segments.has(segment.pageline_uuid):
+						continue
+					if segment.is_hovered_over:
+						cur_already_modified_shotline_segments.append(segment.pageline_uuid)
+						var toggle_segment_cmd: ToggleSegmentUnfilmedCommand = ToggleSegmentUnfilmedCommand.new([segment])
+						toggle_segment_cmd.execute()
+				if page_node.page_panel.get_children().has(selection_box_rect):
+					selection_box_rect.size = page_node.get_global_mouse_position() - selection_box_rect.global_position
+
 		match cur_tool:
 			TOOL.DRAW:
 				pass
@@ -216,6 +248,27 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 						new_x_pos,
 						last_shotline_node_global_pos.y
 					)
+
+func _handle_right_click(event: InputEvent) -> void:
+	var pages: Array[PageContent] = ScreenplayDocument.pages
+	if event.is_pressed():
+		match cur_tool:
+			TOOL.DRAW:
+				if not last_mouse_click_past_left_margin or last_mouse_click_past_right_margin:
+					if not is_inverting_line:
+						is_inverting_line = true
+						#page_node.page_panel.add_child(selection_box_rect)
+						selection_box_rect.global_position = page_node.get_global_mouse_position()
+						selection_box_rect.size = Vector2(100, 100)
+	if event.is_released():
+		match cur_tool:
+			TOOL.DRAW:
+				if is_inverting_line:
+					is_inverting_line = false
+					# TODO: setup some more vars and create and utilize a BulkSegmentsChangedCommand
+					cur_already_modified_shotline_segments.clear()
+					#page_node.page_panel.remove_child(selection_box_rect)
+	print("Is inverting_line: ", is_inverting_line)
 
 func _handle_left_click(event: InputEvent) -> void:
 	var pages: Array[PageContent] = ScreenplayDocument.pages

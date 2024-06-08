@@ -24,8 +24,8 @@ const page_margin_region: PackedScene = preload ("res://Components/PageMarginReg
 var current_page_number: int = 0
 var shotlines_for_pages: Dictionary = {}
 
-signal created_new_shotline(shotline_struct: Shotline)
-signal shotline_clicked
+#signal created_new_shotline(shotline_struct: Shotline)
+#signal shotline_clicked
 signal page_lines_populated
 
 # TODO

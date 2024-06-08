@@ -16,10 +16,12 @@ func _init(_params: Array) -> void:
 func execute() -> bool:
 	var shotline_cont: ShotLine2DContainer = get_shotline_from_uuid(shotline_uuid)
 	var segment: ShotLineSegment2D = get_current_segment_from_pageline_uuid(pageline_uuid, shotline_cont)
-	
+	print("before ", segment.is_straight)
 	segment.shotline_container.shotline_struct_reference.toggle_segment_filmed(segment.pageline_uuid, !last_unfilmed_state)
+	
 	segment.is_straight = !last_unfilmed_state
 	segment.set_straight_or_jagged(!last_unfilmed_state)
+	print("after: ", segment.is_straight)
 	#print(segment.shotline_container.shotline_struct_reference.segments_filmed_or_unfilmed)
 	return true
 
