@@ -23,6 +23,7 @@ enum TOOL {
 var is_drawing: bool = false
 var is_erasing: bool = false
 var is_inverting_line: bool = false
+var is_resizing_shotline: bool = false
 
 var is_dragging_shotline: bool = false
 
@@ -32,6 +33,10 @@ var cur_highlighted_pageline_uuids: Array[String] = []
 var cur_already_modified_shotline_segments: Array = []
 
 var last_shotline_node_global_pos: Vector2
+
+var last_mouse_click_point: Vector2
+var last_mouse_release_point: Vector2
+var last_mouse_drag_delta: Vector2
 
 var last_mouse_hover_position: Vector2
 var last_mouse_click_above_top_margin: bool = false
@@ -47,6 +52,8 @@ var last_valid_shotline_position: Vector2
 
 var cur_mouse_global_position_delta: Vector2
 var cur_selected_shotline: Shotline
+var cur_selected_shotline_container: ShotLine2DContainer
+var cur_selected_shotline_endcap: EndcapGrabRegion
 
 # ------ PAGE STATUS ------
 
@@ -70,10 +77,7 @@ func get_page_idx_of_fnline_from_uuid(uuid: String) -> int:
 
 # -------------------- SHOTLINE LOGIC -----------------------------------
 
-# TODO: these two funcs are confusingly named and structured;
-# constructing the shotline should constitute putting the metadata into a Shotline struct
-# adding the shotline to the page should create the Line2D
-# Also, the Line2D
+# TODO: This logic is fucked up but also maybe needs to be somewhere else at some point???? but it is working now so whatever lmao
 func create_and_add_shotline_node_to_page(shotline: Shotline) -> void:
 	
 	var create_shotline_command: CreateShotLineCommand = CreateShotLineCommand.new([shotline])
@@ -84,8 +88,8 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 
 	var new_shotline: Shotline = Shotline.new()
 
-	var start_line_page_idx: int = get_page_idx_of_fnline_from_uuid(start_uuid)
-	var end_line_page_idx: int = get_page_idx_of_fnline_from_uuid(end_uuid)
+	var start_line_page_idx: int = ScreenplayDocument.get_fnline_index_from_uuid(start_uuid).x
+	var end_line_page_idx: int = ScreenplayDocument.get_fnline_index_from_uuid(end_uuid).x
 
 	assert(start_line_page_idx != - 1, "Start line page index for shotline does not exist.")
 	assert(end_line_page_idx != - 1, "End line page index for shotline does not exist.")
@@ -103,8 +107,51 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 		new_shotline.start_uuid = end_uuid
 		new_shotline.end_uuid = start_uuid
 
+	# NOTE: The above block always assigns something, but really it shouldn't assign anything
+	# right now, the following block relies on the previous block assigning something
+
+	# The right thing to to is fix both blocks... but it seems tricky.... idk lmao
+	if start_line_page_idx == end_line_page_idx:
+		var old_start_uuid: String = new_shotline.start_uuid
+		var old_end_uuid: String = new_shotline.end_uuid
+		var old_start_fnline_substr: String = ScreenplayDocument.get_fnline_from_uuid(old_start_uuid).string.substr(0, 10)
+		var old_end_fnline_substr: String = ScreenplayDocument.get_fnline_from_uuid(old_end_uuid).string.substr(0, 10)
+
+		var old_start_idx: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(old_start_uuid)
+		var old_end_idx: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(old_end_uuid)
+		if old_start_idx.y > old_end_idx.y:
+			print("rearranged!!!!!!!!!!!!!!!!!")
+			new_shotline.start_uuid = old_end_uuid
+			new_shotline.end_uuid = old_start_uuid
+			print("fixed_start: ", new_shotline.start_uuid.substr(0, 5), "...", old_end_fnline_substr)
+			print("fixed_end: ", new_shotline.end_uuid.substr(0, 5), "...", old_start_fnline_substr)
+
 	new_shotline.x_position = last_mouse_pos.x
+
 	print("Start and end page indices: ", new_shotline.start_page_index, " | ", new_shotline.end_page_index)
+
+	# pre-populate the shotline.segments_filmed_or_unfilmed Dict with default values of true
+
+	var found_start: bool = false
+	var found_end: bool = false
+
+	for page: PageContent in ScreenplayDocument.pages:
+		if found_end:
+			break
+		
+		for line: FNLineGD in page.lines:
+			if line.uuid == new_shotline.start_uuid:
+				found_start = true
+			if not found_start:
+				continue
+			new_shotline.segments_filmed_or_unfilmed[line.uuid] = true
+			if line.uuid == new_shotline.end_uuid:
+				found_end = true
+				break
+				
+	for n: String in new_shotline.segments_filmed_or_unfilmed.keys():
+		var pageline_substr: String = ScreenplayDocument.get_fnline_from_uuid(n).string.substr(0, 10)
+		print(n.substr(0, 5), "...", pageline_substr)
 	return new_shotline
 
 func set_current_tool(tool: TOOL) -> void:
@@ -190,8 +237,7 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 		for pageline in pageline_labels:
 			if pageline is PageLineLabel:
 				if pageline.get_global_rect().has_point(event.global_position):
-					for subchild in pageline.get_children():
-						subchild.visible = true
+					pageline.label_highlight.visible = true
 					var cur_child_uuid: String = pageline.fnline.uuid
 					if EventStateManager.last_hovered_line_uuid != cur_child_uuid:
 						EventStateManager.last_hovered_line_uuid = cur_child_uuid
@@ -199,8 +245,7 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 						#print(screenplay_line.get_index(), "   ", screenplay_line.fnline.fn_type)
 				else:
 					if not (is_drawing or is_inverting_line):
-						for subchild in pageline.get_children():
-							pageline.get_child(0).visible = false
+						pageline.label_highlight.visible = false
 
 		#Highlight the margins if mouse is over a margin rect
 		if is_drawing:
@@ -239,7 +284,6 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 			# Handle dragging shotlines
 			TOOL.MOVE:
 				if is_dragging_shotline:
-
 					var new_x_pos: float = (
 						cur_mouse_global_position_delta.x
 						+ editor_view.get_global_mouse_position().x
@@ -248,6 +292,26 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 						new_x_pos,
 						last_shotline_node_global_pos.y
 					)
+					# TODO: This func block which handles highlighting filmed/unfilmed pagelines per the current selected shotline
+					# BUT This seems to just not fucking work at all on a page that isn't the first page...????
+					if cur_selected_shotline:
+						#print(cur_selected_shotline.segments_filmed_or_unfilmed)
+						for pageline_uuid: String in cur_selected_shotline.segments_filmed_or_unfilmed.keys():
+							for pageline in page_node.page_container.get_children():
+								if not pageline is PageLineLabel:
+									continue
+
+								#TODO: Verify that when the shotlines obj is created, it populates the shotline.segments_filmed_or_unfilmed Dict properly
+
+								if pageline.fnline.uuid == pageline_uuid:
+									#print("Pageline Label Highlight: ", pageline.label_highlight)
+									if cur_selected_shotline.segments_filmed_or_unfilmed[pageline_uuid] == true:
+										pageline.label_highlight.visible = true
+									else:
+										pageline.label_highlight.visible = false
+								else:
+									pass
+								#print("This didn't match: ", pageline.fnline.uuid, " | ", pageline_uuid)
 
 func _handle_right_click(event: InputEvent) -> void:
 	var pages: Array[PageContent] = ScreenplayDocument.pages
@@ -273,6 +337,7 @@ func _handle_right_click(event: InputEvent) -> void:
 func _handle_left_click(event: InputEvent) -> void:
 	var pages: Array[PageContent] = ScreenplayDocument.pages
 	if event.is_pressed():
+		last_mouse_click_point = page_node.get_global_mouse_position()
 		match cur_tool:
 			TOOL.DRAW:
 				if not last_mouse_click_past_left_margin or last_mouse_click_past_right_margin:
@@ -284,6 +349,8 @@ func _handle_left_click(event: InputEvent) -> void:
 						#print("last hovered line: ", last_hovered_line_uuid)
 						#print(event.position)
 	if event.is_released():
+		last_mouse_release_point = page_node.get_global_mouse_position()
+		last_mouse_drag_delta = last_mouse_release_point - last_mouse_click_point
 		match cur_tool:
 			TOOL.DRAW:
 				if is_drawing:
@@ -292,9 +359,9 @@ func _handle_left_click(event: InputEvent) -> void:
 					if not (
 						last_mouse_click_past_left_margin or
 						last_mouse_click_past_right_margin):
+						var new_shotline: Shotline
 						if not (last_mouse_click_below_bottom_margin or last_mouse_click_above_top_margin):
-							var new_shotline: Shotline = create_new_shotline_obj(last_clicked_line_uuid, last_hovered_line_uuid, event.position)
-							create_and_add_shotline_node_to_page(new_shotline)
+							new_shotline = create_new_shotline_obj(last_clicked_line_uuid, last_hovered_line_uuid, event.position)
 					
 						elif last_mouse_click_above_top_margin:
 							# click released past top or bottom margin
@@ -305,18 +372,23 @@ func _handle_left_click(event: InputEvent) -> void:
 								start_uuid = pages[cur_page_idx - 1].lines[- 1].uuid
 							else:
 								start_uuid = pages[cur_page_idx].lines[0].uuid
-							var new_shotline: Shotline = create_new_shotline_obj(start_uuid, last_hovered_line_uuid, event.position)
-							create_and_add_shotline_node_to_page(new_shotline)
+							new_shotline = create_new_shotline_obj(start_uuid, last_hovered_line_uuid, event.position)
 						elif last_mouse_click_below_bottom_margin:
 							var end_uuid: String
 							if cur_page_idx + 1 < pages.size():
 								end_uuid = pages[cur_page_idx + 1].lines[0].uuid
 							else:
 								end_uuid = pages[cur_page_idx].lines.back().uuid
-							var new_shotline: Shotline = create_new_shotline_obj(last_clicked_line_uuid, end_uuid, event.position)
-							create_and_add_shotline_node_to_page(new_shotline)
+							new_shotline = create_new_shotline_obj(last_clicked_line_uuid, end_uuid, event.position)
 
 							#print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
+						create_and_add_shotline_node_to_page(new_shotline)
+			TOOL.MOVE:
+				if is_resizing_shotline:
+					is_resizing_shotline = false
+					print("oh goodness")
+					#last_mouse_drag_delta = page_node.get_global_mouse_position() - last_mouse_click_point
+					cur_selected_shotline_container.update_length_from_endcap_drag(cur_selected_shotline_endcap)
 
 func _on_new_shotline_added(shotline_struct: Shotline) -> void:
 	inpsector_panel_node.scene_num.line_edit.grab_focus()
@@ -388,14 +460,6 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 						]
 					)
 					print(CommandHistory.add_command(move_shotline_cmd))
-					#cur_selected_shotline.x_position = editor_view.get_global_mouse_position().x
-					
-					#var page_container_children := page_node.page_container.get_children()
-					#cur_selected_shotline.update_page_line_indices_with_points(
-					#	page_container_children,
-					#	last_shotline_node_global_pos
-					#	)
-					#print(is_dragging_shotline)
 					
 		TOOL.ERASE:
 			if button_index != 1:
@@ -412,21 +476,28 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 					)
 					CommandHistory.add_command(erase_command)
 
-					#ScreenplayDocument.shotlines.erase(shotline_node.shotline_struct_reference)
-					#shotline_node.queue_free()
-
 func _on_shotline_hovered_over(shotline_container: ShotLine2DContainer) -> void:
 	#print("Shotline Hovered changed: ", shotline_node, shotline_node.is_hovered_over)
 	last_hovered_shotline_node = shotline_container
 
-func _on_shotline_mouse_drag(shotline_node: ShotLine2DContainer) -> void:
-	print("among us TWO")
-	if is_dragging_shotline:
-			print(cur_selected_shotline.shotline_node.global_position)
-			var new_x_pos: float = (
-				cur_mouse_global_position_delta.x + editor_view.get_global_mouse_position().x
-			)
-			cur_selected_shotline.shotline_node.global_position = Vector2(new_x_pos, cur_selected_shotline.shotline_node.global_position.y)
+func _on_shotline_endcap_clicked(
+	shotline_endcap: EndcapGrabRegion,
+	shotline_container: ShotLine2DContainer,
+	button_index: int) -> void:
+	if cur_tool == TOOL.MOVE:
+		if not is_resizing_shotline:
+			print("Resizing...")
+			is_resizing_shotline = true
+			cur_selected_shotline = shotline_container.shotline_struct_reference
+			cur_selected_shotline_container = shotline_container
+			cur_selected_shotline_endcap = shotline_endcap
+
+func _on_shotline_endcap_released(
+	shotline_endcap: EndcapGrabRegion,
+	shotline_container: ShotLine2DContainer,
+	button_index: int) -> void:
+	if cur_tool == TOOL.MOVE:
+		pass
 
 func _on_page_lines_populated() -> void:
 	pass

@@ -24,7 +24,7 @@ var tags: String
 
 var tags_as_arr: Array[String]
 
-func is_multiline() -> bool:
+func is_multipage() -> bool:
 	if start_page_index != end_page_index:
 		return true
 	return false

@@ -61,4 +61,8 @@ func get_fnline_index_from_uuid(uuid: String) -> Vector2i:
 		for line: FNLineGD in page.lines:
 			if line.uuid == uuid:
 				return Vector2i(pages.find(page), page.lines.find(line))
-	return Vector2i(0, 999) # a page will probably not ever have 999 lines on it...
+	return Vector2i( - 1, 999) # a page will probably not ever have 999 lines on it...
+
+func get_fnline_from_uuid(uuid: String) -> FNLineGD:
+	var index: Vector2i = get_fnline_index_from_uuid(uuid)
+	return pages[index.x].lines[index.y]

@@ -65,6 +65,7 @@ func populate_container_with_page_lines(cur_page_content: PageContent, page_numb
 		# adds a toggleable highlight to text lines
 		var line_bg := ColorRect.new()
 		screenplay_line.add_child(line_bg)
+		screenplay_line.label_highlight = line_bg
 		line_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		line_bg.color = Color(1, .8, 1, 0.125)
 		line_bg.set_size(line_bg.get_parent_area_size())

@@ -271,6 +271,10 @@ func populate_shotline_with_segments(
 		for child: Node in get_children():
 			if child is VBoxContainer:
 				segments_container = child
+
+	for segment: Node in segments_container.get_children():
+		segments_container.remove_child(segment)
+		segment.queue_free()
 	
 	var section_indices: Array = range(total_shotline_length)
 	# TODO: Fix the order of the god damn start and end indices when CREATING the shotline in the first place...
@@ -359,29 +363,30 @@ func resize_line_width_on_hover() -> void:
 	else:
 		update_line_width(line_width)
 
-# TODO: Refactor this to take two global pos
+# TODO: Refactor this - separate out the "global line length to pageline length" conversion
+# 		Then, this func takes in two simple "pageline offset" int args;
+#		start_offset: int, end_offset: int
+#		This means we need just one function to set either a new start or end pos
+#		But also, in the future if for some reason we need to update both the start and end pos
+#		we can do that as well I guess
 #	also this is incompatible with the new shotline_container vbox container model
-#	so maybe just write a new func lmao
-func update_page_line_indices_with_points(
-	page_container_children: Array[Node],
-	last_node_global_pos: Vector2) -> void:
+func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
+
 	var pages: Array[PageContent] = ScreenplayDocument.pages
 	var cur_page_idx: int = EventStateManager.cur_page_idx
 	
 	# if this is the middle of a multipage shotline, don't do anything to update the vertical 
 	# position ;
 	# Might change this behavior in the future
-	if shotline_struct_reference.is_multiline():
+	if shotline_struct_reference.is_multipage():
 		if (
 			shotline_struct_reference.starts_on_earlier_page(cur_page_idx)
 			&&shotline_struct_reference.ends_on_later_page(cur_page_idx)):
 			return
 	
-	var cur_pageline_labels: Array[Node] = page_container_children
-	var y_movement_delta: float = global_position.y - last_node_global_pos.y
-	
-	#var begin_point: Vector2 = shotline_node.points[0] + shotline_node.position
-	#var end_point: Vector2 = shotline_node.points[1] + shotline_node.position
+	var cur_pageline_labels: Array[Node] = EventStateManager.page_node.page_container.get_children()
+
+	var y_movement_delta: float = EventStateManager.last_mouse_drag_delta.y
 
 	var line_label_height: float
 	var screenplay_line_offset: int
@@ -390,14 +395,12 @@ func update_page_line_indices_with_points(
 	var new_start_point_set: bool = false
 	var new_end_point_set: bool = false
 
-	#var old_start_line_idx: int
-	#var old_end_line_idx: int
+	var old_start_fnline_uuid: String
+	var old_end_fnline_uuid: String
 
-	#print("Points of this particular shotline: ", begin_point, " | ", end_point)
-	#print("Node position of this Shotline: ", shotline_node.global_position)
+	var old_start_2D_index: Vector2i
+	var old_end_2D_index: Vector2i
 
-	# grab the first PageLineLabel and set the screenplay_line_offset to
-	# the Label's height
 	for cur_screenplay_line: Node in cur_pageline_labels:
 		if not cur_screenplay_line is PageLineLabel:
 			continue
@@ -409,63 +412,85 @@ func update_page_line_indices_with_points(
 			line_label_height_set = true
 			break
 	
-	#var start_page_lines: Array[FNLineGD] = pages[start_page_index].lines
-	#for fnline: FNLineGD in start_page_lines:
-		#if fnline.uuid == start_uuid:
-			#old_start_line_idx = start_page_lines.find(fnline)
-			#print("old_start: ", old_start_line_idx)
+	var start_page_lines: Array[FNLineGD] = pages[shotline_struct_reference.start_page_index].lines
+	for fnline: FNLineGD in start_page_lines:
+		if fnline.uuid == shotline_struct_reference.start_uuid:
+			old_start_2D_index = Vector2i(
+				shotline_struct_reference.start_page_index,
+				start_page_lines.find(fnline))
+			old_start_fnline_uuid = fnline.uuid
 
-	#var end_page_lines: Array[FNLineGD] = pages[end_page_index].lines
-	#for fnline: FNLineGD in end_page_lines:
-	#	if fnline.uuid == end_uuid:
-	#		old_end_line_idx = start_page_lines.find(fnline)
-	#		print("old_end: ", old_end_line_idx)
+	var end_page_lines: Array[FNLineGD] = pages[shotline_struct_reference.end_page_index].lines
+	for fnline: FNLineGD in end_page_lines:
+		if fnline.uuid == shotline_struct_reference.end_uuid:
+			old_end_2D_index = Vector2i(
+				shotline_struct_reference.end_page_index,
+				end_page_lines.find(fnline))
+			old_end_fnline_uuid = fnline.uuid
 
-	#var new_start_line_idx: int = old_start_line_idx + screenplay_line_offset
-	#var new_end_line_idx: int = old_end_line_idx + screenplay_line_offset
+	var new_start_2D_index: Vector2i = old_start_2D_index
+	new_start_2D_index.y += screenplay_line_offset
 
-	# figure out if the offsets point to a valid screenplay line in this array
-	#var start_idx_page: PageContent = pages[start_page_index]
-	#var end_idx_page: PageContent = pages[end_page_index]
+	var new_end_2D_index: Vector2 = old_end_2D_index
+	new_end_2D_index.y += screenplay_line_offset
 
-	#print("Start / end line  indices", new_start_line_idx, " | ", new_end_line_idx)
+	# This code assumes only EITHER  the start or end endcap is being dragged
+	# Therefore, only change either the start or end index, not both
 
-	#if (new_start_line_idx >= 0)&&(new_start_line_idx < (start_idx_page.lines.size() - 1)):
-		new_start_point_set = true
+	if dragged_endcap == begin_cap_grab_region:
+		# figure out if the offsets point to a valid screenplay line in this page
+			# If yes, then update the start or end uuid with that exact place
+			# If no, then update the start or end uuid to:
+				# the last line of the previous page or first line of the next page
+		if range(start_page_lines.size()).has(new_start_2D_index.y):
+			shotline_struct_reference.start_uuid = start_page_lines[new_start_2D_index.y].uuid
+		else:
+			if new_start_2D_index.y < 0:
+				if not range(pages.size()).has(shotline_struct_reference.start_page_index - 1):
+					shotline_struct_reference.start_uuid = pages[0].lines[0].uuid
+				shotline_struct_reference.start_uuid = (
+					pages[shotline_struct_reference.start_page_index - 1].lines[- 1].uuid
+				)
+			else:
+				if not range(pages.size()).has(shotline_struct_reference.start_page_index + 1):
+					shotline_struct_reference.start_uuid = pages[- 1].lines[- 1].uuid
+				shotline_struct_reference.start_uuid = (
+					pages[shotline_struct_reference.start_page_index + 1].lines[0].uuid
+				)
 
-	#if (new_end_line_idx >= 0)&&(new_end_line_idx < (end_idx_page.lines.size() - 1)):
-		new_end_point_set = true
-
-	#if new_start_point_set&&new_end_point_set:
-		#start_uuid = start_idx_page.lines[new_start_line_idx].uuid
-		#end_uuid = end_idx_page.lines[new_end_line_idx].uuid
-	#elif new_end_point_set:
-		# TODO: Actually handle moving the shotline above or below the top or bottom margins
-
-		# too high up;, move down
-		# but what about multipage shotlines AAAUUUGGHHHHH
-		pass
-	#elif new_start_point_set:
-		pass
-		#too low: move up
-	#else:
-		#you fucked up bro lmao
-		pass
+	elif dragged_endcap == end_cap_grab_region:
+		if range(end_page_lines.size()).has(new_end_2D_index.y):
+			shotline_struct_reference.end_uuid = end_page_lines[new_end_2D_index.y].uuid
+		else:
+			if new_end_2D_index.y < 0:
+				if not range(pages.size()).has(shotline_struct_reference.end_page_index - 1):
+					shotline_struct_reference.end_uuid = pages[0].lines[0].uuid
+				shotline_struct_reference.end_uuid = (
+					pages[shotline_struct_reference.end_page_index - 1].lines[- 1].uuid
+				)
+			else:
+				if not range(pages.size()).has(shotline_struct_reference.end_page_index + 1):
+					shotline_struct_reference.end_uuid = pages[- 1].lines[- 1].uuid
+				shotline_struct_reference.end_uuid = (
+					pages[shotline_struct_reference.end_page_index + 1].lines[0].uuid
+				)
+	# Finally, reconstruct the shotline node
+	construct_shotline_node(shotline_struct_reference)
 
 # ------------- SIGNAL CALLBACKS ----------------------
 
 # -------------LOCAL INPUT ------------------
 
 func _input(event: InputEvent) -> void:
+
 	if event is InputEventMouseMotion:
 		if is_hovered_over():
 			if not line_is_hovered_over:
 				line_is_hovered_over = true
-			#print("This line is hovered over")
-			
 		else:
 			if line_is_hovered_over:
 				line_is_hovered_over = false
+
 	if event is InputEventMouseButton:
 		if is_hovered_over():
 			if event.button_index == MOUSE_BUTTON_LEFT:
