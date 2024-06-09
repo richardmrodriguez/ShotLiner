@@ -95,24 +95,16 @@ func construct_shotline_node(shotline: Shotline) -> void:
 
 	var pages: Array[PageContent] = ScreenplayDocument.pages
 	var current_page_index: int = EventStateManager.cur_page_idx
+	var last_mouse_x_pos: float = shotline_struct_reference.x_position
 
 	var cur_start_uuid: String = shotline_struct_reference.start_uuid
 	var cur_end_uuid: String = shotline_struct_reference.end_uuid
 
-	var cur_start_page_line_indices: Vector2i
-	var cur_end_page_line_indices: Vector2i
-	
-	for page: PageContent in pages:
-		for line: FNLineGD in page.lines:
-			if line.uuid == cur_start_uuid:
-				cur_start_page_line_indices = Vector2i(pages.find(page), page.lines.find(line))
-			elif line.uuid == cur_end_uuid:
-				cur_end_page_line_indices = Vector2i(pages.find(page), page.lines.find(line))
+	var cur_start_page_line_indices: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(cur_start_uuid)
+	var cur_end_page_line_indices: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(cur_end_uuid)
 
-	var shotline_start_page_idx: int = shotline_struct_reference.start_page_index
-	var shotline_end_page_idx: int = shotline_struct_reference.end_page_index
-
-	var last_mouse_x_pos: float = shotline_struct_reference.x_position
+	var shotline_start_page_idx: int = cur_start_page_line_indices.x
+	var shotline_end_page_idx: int = cur_end_page_line_indices.x
 
 	var starts_on_earlier_page: bool = false
 	var ends_on_later_page: bool = false
@@ -137,6 +129,8 @@ func construct_shotline_node(shotline: Shotline) -> void:
 	var local_end_label: PageLineLabel
 	var local_start_label: PageLineLabel
 
+	var debug_fnline_str: String = ScreenplayDocument.get_fnline_from_uuid(cur_end_uuid).string.substr(0, 10)
+	print("end_fnline_uuid: ", cur_end_uuid, " | ", debug_fnline_str)
 	if not (starts_on_earlier_page or ends_on_later_page):
 		for pageline: PageLineLabel in cur_pagelines:
 			if pageline.fnline.uuid == cur_start_uuid:
@@ -154,10 +148,13 @@ func construct_shotline_node(shotline: Shotline) -> void:
 		else:
 			local_end_label = pageline_end
 			local_start_label = pageline_start
-	elif starts_on_earlier_page&&ends_on_later_page:
+			print("local_end_label: ", local_end_label, " | ", local_end_label.fnline.string.substr(0, 10))
+			
+	elif starts_on_earlier_page and ends_on_later_page:
 		print("Start earlier and ends later")
 		local_start_label = cur_pagelines[0]
 		local_end_label = cur_pagelines[- 1]
+
 	elif starts_on_earlier_page:
 		print("Starts on previous page")
 		local_start_label = cur_pagelines[0]
@@ -442,7 +439,32 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 			# If yes, then update the start or end uuid with that exact place
 			# If no, then update the start or end uuid to:
 				# the last line of the previous page or first line of the next page
-		if range(start_page_lines.size()).has(new_start_2D_index.y):
+		
+		# NOTE: The following three vars and for loop is necessary because
+		# I appear to have encountered a bug where the following line doesn't resolve properly:
+		# if range(end_page_lines.size()).has(new_end_2D_index.y)
+		# I don't knwo why, but trying that one liner just doesn;t work
+		# the range seems to work when giving it explicit numbers, i.e. if range(10).has(5) == true
+		# And if I PRINT THE VALUES of the variables, it should work:
+		# print(new_end_2D_index.y) == 6 eg.
+		# print(range(end_page_lines.size())) == [0, 1, 2, 3, 4, 5, 6, etc...]
+		#so... I have no god damn idea why that might be failing.
+		# I have got to figure out if / how to replicate it 
+		# I should redownload this project and try it on a different operating system (windows, mac)
+		# I should also try just a new blank project but using arbitrary variables
+		# I also wonder if my gdscript warning settings being "stricter" are causing an issue
+	
+		var line_in_page: bool = false
+		
+		var start_page_line_size: int = start_page_lines.size()
+		var start_page_range: Array = range(start_page_line_size)
+
+		for n: int in start_page_range:
+			if n == new_start_2D_index.y:
+				line_in_page = true
+				break
+		
+		if line_in_page:
 			shotline_struct_reference.start_uuid = start_page_lines[new_start_2D_index.y].uuid
 		else:
 			if new_start_2D_index.y < 0:
@@ -459,7 +481,16 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 				)
 
 	elif dragged_endcap == end_cap_grab_region:
-		if range(end_page_lines.size()).has(new_end_2D_index.y):
+		
+		var line_in_page: bool = false
+
+		var end_page_lines_size: int = end_page_lines.size()
+		var end_page_line_range: Array = range(end_page_lines_size)
+		for n: int in end_page_line_range:
+			if n == new_end_2D_index.y:
+				line_in_page = true
+	
+		if line_in_page:
 			shotline_struct_reference.end_uuid = end_page_lines[new_end_2D_index.y].uuid
 		else:
 			if new_end_2D_index.y < 0:
