@@ -360,14 +360,15 @@ func resize_line_width_on_hover() -> void:
 	else:
 		update_line_width(line_width)
 
-# TODO: Refactor this - separate out the "global line length to pageline length" conversion
-# 		Then, this func takes in two simple "pageline offset" int args;
-#		start_offset: int, end_offset: int
-#		This means we need just one function to set either a new start or end pos
-#		But also, in the future if for some reason we need to update both the start and end pos
-#		we can do that as well I guess
-#	also this is incompatible with the new shotline_container vbox container model
-func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
+# TODO: If a shotline is resized such that it no longer starts or ends on the current page,
+# It fails to construct. So we should do one of the following:
+	# - Delete the SLContainer (and account for this in the ResizeShotlineCommand's undo function)
+	# - 
+
+func update_length_from_endcap_drag(
+	is_endcap_begincap: bool,
+	y_movement_delta: float
+	) -> void:
 
 	var pages: Array[PageContent] = ScreenplayDocument.pages
 	var cur_page_idx: int = EventStateManager.cur_page_idx
@@ -383,7 +384,7 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 	
 	var cur_pageline_labels: Array[Node] = EventStateManager.page_node.page_container.get_children()
 
-	var y_movement_delta: float = EventStateManager.last_mouse_drag_delta.y
+	#var y_movement_delta: float = EventStateManager.last_mouse_drag_delta.y
 
 	var line_label_height: float
 	var screenplay_line_offset: int
@@ -434,7 +435,12 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 	# This code assumes only EITHER  the start or end endcap is being dragged
 	# Therefore, only change either the start or end index, not both
 
-	if dragged_endcap == begin_cap_grab_region:
+	var new_start_later: bool = shotline_struct_reference.starts_on_later_page(cur_page_idx)
+	var new_start_earlier: bool = shotline_struct_reference.starts_on_earlier_page(cur_page_idx)
+	var new_end_later: bool = shotline_struct_reference.ends_on_later_page(cur_page_idx)
+	var new_end_earlier: bool = shotline_struct_reference.ends_on_earlier_page(cur_page_idx)
+
+	if is_endcap_begincap:
 		# figure out if the offsets point to a valid screenplay line in this page
 			# If yes, then update the start or end uuid with that exact place
 			# If no, then update the start or end uuid to:
@@ -468,6 +474,7 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 			shotline_struct_reference.start_uuid = start_page_lines[new_start_2D_index.y].uuid
 		else:
 			if new_start_2D_index.y < 0:
+				new_start_earlier = true
 				if shotline_struct_reference.start_page_index - 1 < 0:
 					shotline_struct_reference.start_uuid = (
 					pages[shotline_struct_reference.start_page_index - 1].lines.back().uuid
@@ -476,7 +483,11 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 				else:
 					shotline_struct_reference.start_uuid = pages.front().lines.front().uuid
 					shotline_struct_reference.start_page_index = 0
+					if EventStateManager.cur_page_idx == 0:
+						new_start_earlier = false
 			else:
+				new_start_later = true
+				print("Begin cap after page")
 				if shotline_struct_reference.start_page_index + 1 < pages.size():
 					shotline_struct_reference.start_uuid = (
 					pages[shotline_struct_reference.start_page_index + 1].lines.front().uuid
@@ -485,8 +496,10 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 				else:
 					shotline_struct_reference.start_uuid = pages.back().lines.back().uuid
 					shotline_struct_reference.start_page_index = pages.size() - 1
+					if EventStateManager.cur_page_idx == pages.size() - 1:
+						new_start_later = false
 
-	elif dragged_endcap == end_cap_grab_region:
+	elif not is_endcap_begincap:
 		
 		var line_in_page: bool = false
 
@@ -501,7 +514,7 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 			shotline_struct_reference.end_uuid = end_page_lines[new_end_2D_index.y].uuid
 		else:
 			if new_end_2D_index.y < 0:
-				print("Endcap before page")
+				new_end_earlier = true
 				if shotline_struct_reference.end_page_index - 1 >= 0:
 					shotline_struct_reference.end_uuid = (
 					pages[shotline_struct_reference.end_page_index - 1].lines.back().uuid
@@ -510,7 +523,10 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 				else:
 					shotline_struct_reference.end_uuid = pages.front().lines.front().uuid
 					shotline_struct_reference.end_page_index = 0
+					if EventStateManager.cur_page_idx == 0:
+						new_end_earlier = false
 			else:
+				new_end_later = true
 				if shotline_struct_reference.end_page_index + 1 < pages.size():
 					shotline_struct_reference.end_uuid = (
 					pages[shotline_struct_reference.end_page_index + 1].lines.front().uuid
@@ -520,7 +536,16 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 				else:
 					shotline_struct_reference.end_uuid = pages.back().lines.back().uuid
 					shotline_struct_reference.end_page_index = pages.size() - 1
-	# Finally, reconstruct the shotline node
+					if EventStateManager.cur_page_idx == pages.size() - 1:
+						new_end_later = false
+	
+	# If the new shotline positions don't include this page, just delete this shotline node
+	print(new_start_earlier, new_start_later, new_end_earlier, new_end_later)
+	if (new_start_earlier and new_end_earlier) or (new_start_later and new_end_later):
+			print_debug("Shotline not on page, removing....")
+			queue_free()
+			return
+	# If the new shotline positions do include somewhere on this page, then reconstruct
 	construct_shotline_node(shotline_struct_reference)
 
 # ------------- SIGNAL CALLBACKS ----------------------

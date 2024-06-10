@@ -66,3 +66,9 @@ func get_fnline_index_from_uuid(uuid: String) -> Vector2i:
 func get_fnline_from_uuid(uuid: String) -> FNLineGD:
 	var index: Vector2i = get_fnline_index_from_uuid(uuid)
 	return pages[index.x].lines[index.y]
+
+func get_shotline_from_uuid(uuid: String) -> Shotline:
+	for shotline: Shotline in shotlines:
+		if shotline.shotline_uuid == uuid:
+			return shotline
+	return null

@@ -386,9 +386,15 @@ func _handle_left_click(event: InputEvent) -> void:
 			TOOL.MOVE:
 				if is_resizing_shotline:
 					is_resizing_shotline = false
-					print("oh goodness")
-					#last_mouse_drag_delta = page_node.get_global_mouse_position() - last_mouse_click_point
-					cur_selected_shotline_container.update_length_from_endcap_drag(cur_selected_shotline_endcap)
+					# TODO: make this a command so it can be undone					
+					var resize_shotline_cmd: ResizeShotlineCommand = ResizeShotlineCommand.new(
+						[
+							cur_selected_shotline_endcap.is_begin_cap,
+							cur_selected_shotline,
+							EventStateManager.last_mouse_drag_delta.y
+						]
+					)
+					CommandHistory.add_command(resize_shotline_cmd)
 
 func _on_new_shotline_added(shotline_struct: Shotline) -> void:
 	inpsector_panel_node.scene_num.line_edit.grab_focus()

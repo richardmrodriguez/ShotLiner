@@ -34,6 +34,16 @@ func starts_on_earlier_page(page_idx: int) -> bool:
 		return true
 	return false
 
+func starts_on_later_page(page_idx: int) -> bool:
+	if start_page_index > page_idx:
+		return true
+	return false
+	
+func ends_on_earlier_page(page_idx: int) -> bool:
+	if end_page_index < page_idx:
+		return true
+	return false
+
 func ends_on_later_page(page_idx: int) -> bool:
 	if end_page_index > page_idx:
 		return true

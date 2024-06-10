@@ -8,6 +8,8 @@ class_name EndcapGrabRegion
 
 var is_open: bool = false
 
+@export var is_begin_cap: bool = false
+
 var cap_region_is_hovered_over: bool = false
 
 signal endcap_clicked(
