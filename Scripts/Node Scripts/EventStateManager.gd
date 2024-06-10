@@ -369,14 +369,14 @@ func _handle_left_click(event: InputEvent) -> void:
 
 							var start_uuid: String
 							if cur_page_idx - 1 >= 0:
-								start_uuid = pages[cur_page_idx - 1].lines[- 1].uuid
+								start_uuid = pages[cur_page_idx - 1].lines.back().uuid
 							else:
-								start_uuid = pages[cur_page_idx].lines[0].uuid
+								start_uuid = pages[cur_page_idx].lines.front().uuid
 							new_shotline = create_new_shotline_obj(start_uuid, last_hovered_line_uuid, event.position)
 						elif last_mouse_click_below_bottom_margin:
 							var end_uuid: String
 							if cur_page_idx + 1 < pages.size():
-								end_uuid = pages[cur_page_idx + 1].lines[0].uuid
+								end_uuid = pages[cur_page_idx + 1].lines.front().uuid
 							else:
 								end_uuid = pages[cur_page_idx].lines.back().uuid
 							new_shotline = create_new_shotline_obj(last_clicked_line_uuid, end_uuid, event.position)

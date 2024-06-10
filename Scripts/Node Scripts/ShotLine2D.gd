@@ -441,18 +441,18 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 				# the last line of the previous page or first line of the next page
 		
 		# NOTE: The following three vars and for loop is necessary because
-		# I appear to have encountered a bug where the following line doesn't resolve properly:
-		# if range(end_page_lines.size()).has(new_end_2D_index.y)
-		# I don't knwo why, but trying that one liner just doesn;t work
-		# the range seems to work when giving it explicit numbers, i.e. if range(10).has(5) == true
-		# And if I PRINT THE VALUES of the variables, it should work:
-		# print(new_end_2D_index.y) == 6 eg.
-		# print(range(end_page_lines.size())) == [0, 1, 2, 3, 4, 5, 6, etc...]
-		#so... I have no god damn idea why that might be failing.
-		# I have got to figure out if / how to replicate it 
-		# I should redownload this project and try it on a different operating system (windows, mac)
-		# I should also try just a new blank project but using arbitrary variables
-		# I also wonder if my gdscript warning settings being "stricter" are causing an issue
+			# I appear to have encountered a bug where the following line doesn't resolve properly:
+			# if range(end_page_lines.size()).has(new_end_2D_index.y)
+			# I don't knwo why, but trying that one liner just doesn;t work
+			# the range seems to work when giving it explicit numbers, i.e. if range(10).has(5) == true
+			# And if I PRINT THE VALUES of the variables, it should work:
+			# print(new_end_2D_index.y) == 6 eg.
+			# print(range(end_page_lines.size())) == [0, 1, 2, 3, 4, 5, 6, etc...]
+			#so... I have no god damn idea why that might be failing.
+			# I have got to figure out if / how to replicate it 
+			# I should redownload this project and try it on a different operating system (windows, mac)
+			# I should also try just a new blank project but using arbitrary variables
+			# I also wonder if my gdscript warning settings being "stricter" are causing an issue
 	
 		var line_in_page: bool = false
 		
@@ -468,17 +468,23 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 			shotline_struct_reference.start_uuid = start_page_lines[new_start_2D_index.y].uuid
 		else:
 			if new_start_2D_index.y < 0:
-				if not range(pages.size()).has(shotline_struct_reference.start_page_index - 1):
-					shotline_struct_reference.start_uuid = pages[0].lines[0].uuid
-				shotline_struct_reference.start_uuid = (
-					pages[shotline_struct_reference.start_page_index - 1].lines[- 1].uuid
-				)
+				if shotline_struct_reference.start_page_index - 1 < 0:
+					shotline_struct_reference.start_uuid = (
+					pages[shotline_struct_reference.start_page_index - 1].lines.back().uuid
+					)
+					shotline_struct_reference.start_page_index -= 1
+				else:
+					shotline_struct_reference.start_uuid = pages.front().lines.front().uuid
+					shotline_struct_reference.start_page_index = 0
 			else:
-				if not range(pages.size()).has(shotline_struct_reference.start_page_index + 1):
-					shotline_struct_reference.start_uuid = pages[- 1].lines[- 1].uuid
-				shotline_struct_reference.start_uuid = (
-					pages[shotline_struct_reference.start_page_index + 1].lines[0].uuid
-				)
+				if shotline_struct_reference.start_page_index + 1 < pages.size():
+					shotline_struct_reference.start_uuid = (
+					pages[shotline_struct_reference.start_page_index + 1].lines.front().uuid
+					)
+					shotline_struct_reference.start_page_index += 1
+				else:
+					shotline_struct_reference.start_uuid = pages.back().lines.back().uuid
+					shotline_struct_reference.start_page_index = pages.size() - 1
 
 	elif dragged_endcap == end_cap_grab_region:
 		
@@ -486,6 +492,7 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 
 		var end_page_lines_size: int = end_page_lines.size()
 		var end_page_line_range: Array = range(end_page_lines_size)
+		
 		for n: int in end_page_line_range:
 			if n == new_end_2D_index.y:
 				line_in_page = true
@@ -494,17 +501,25 @@ func update_length_from_endcap_drag(dragged_endcap: EndcapGrabRegion) -> void:
 			shotline_struct_reference.end_uuid = end_page_lines[new_end_2D_index.y].uuid
 		else:
 			if new_end_2D_index.y < 0:
-				if not range(pages.size()).has(shotline_struct_reference.end_page_index - 1):
-					shotline_struct_reference.end_uuid = pages[0].lines[0].uuid
-				shotline_struct_reference.end_uuid = (
-					pages[shotline_struct_reference.end_page_index - 1].lines[- 1].uuid
-				)
+				print("Endcap before page")
+				if shotline_struct_reference.end_page_index - 1 >= 0:
+					shotline_struct_reference.end_uuid = (
+					pages[shotline_struct_reference.end_page_index - 1].lines.back().uuid
+					)
+					shotline_struct_reference.end_page_index -= 1
+				else:
+					shotline_struct_reference.end_uuid = pages.front().lines.front().uuid
+					shotline_struct_reference.end_page_index = 0
 			else:
-				if not range(pages.size()).has(shotline_struct_reference.end_page_index + 1):
-					shotline_struct_reference.end_uuid = pages[- 1].lines[- 1].uuid
-				shotline_struct_reference.end_uuid = (
-					pages[shotline_struct_reference.end_page_index + 1].lines[0].uuid
-				)
+				if shotline_struct_reference.end_page_index + 1 < pages.size():
+					shotline_struct_reference.end_uuid = (
+					pages[shotline_struct_reference.end_page_index + 1].lines.front().uuid
+					)
+					shotline_struct_reference.end_page_index += 1
+					print_debug(shotline_struct_reference.end_page_index)
+				else:
+					shotline_struct_reference.end_uuid = pages.back().lines.back().uuid
+					shotline_struct_reference.end_page_index = pages.size() - 1
 	# Finally, reconstruct the shotline node
 	construct_shotline_node(shotline_struct_reference)
 
