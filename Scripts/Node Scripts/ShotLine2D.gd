@@ -475,7 +475,7 @@ func update_length_from_endcap_drag(
 		else:
 			if new_start_2D_index.y < 0:
 				new_start_earlier = true
-				if shotline_struct_reference.start_page_index - 1 < 0:
+				if shotline_struct_reference.start_page_index - 1 >= 0:
 					shotline_struct_reference.start_uuid = (
 					pages[shotline_struct_reference.start_page_index - 1].lines.back().uuid
 					)
