@@ -25,7 +25,7 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
   - Resize shotlines
 
 ## What's NOT working so far
-- Creating squiggled lines for unfilmed sections is bugged; not yet saving metadata properly across pages
+- Creating squiggled lines on multipage shotlines is bugged
 - Spreadsheet Export
   - This is the big feature -- After creating your shotlines, you will be able to export a Shot List from your shotlines. This will be a spreadsheet with cells containing the relevant metadata for each Shot:
 	- Shot Number
