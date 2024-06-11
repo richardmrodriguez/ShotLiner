@@ -130,7 +130,7 @@ func construct_shotline_node(shotline: Shotline) -> void:
 	var local_start_label: PageLineLabel
 
 	var debug_fnline_str: String = ScreenplayDocument.get_fnline_from_uuid(cur_end_uuid).string.substr(0, 10)
-	print("end_fnline_uuid: ", cur_end_uuid, " | ", debug_fnline_str)
+	#print("end_fnline_uuid: ", cur_end_uuid, " | ", debug_fnline_str)
 	if not (starts_on_earlier_page or ends_on_later_page):
 		for pageline: PageLineLabel in cur_pagelines:
 			if pageline.fnline.uuid == cur_start_uuid:
@@ -141,22 +141,22 @@ func construct_shotline_node(shotline: Shotline) -> void:
 			if pageline.fnline.uuid == cur_end_uuid:
 				pageline_end = pageline
 				pageline_real_end_idx = pageline.get_index()
-		print("Normal shotline")
+		#print("Normal shotline")
 		if pageline_real_start_idx > pageline_real_end_idx:
 			local_start_label = pageline_end
 			local_end_label = pageline_start
 		else:
 			local_end_label = pageline_end
 			local_start_label = pageline_start
-			print("local_end_label: ", local_end_label, " | ", local_end_label.fnline.string.substr(0, 10))
+			#print("local_end_label: ", local_end_label, " | ", local_end_label.fnline.string.substr(0, 10))
 			
 	elif starts_on_earlier_page and ends_on_later_page:
-		print("Start earlier and ends later")
+		#print("Start earlier and ends later")
 		local_start_label = cur_pagelines[0]
 		local_end_label = cur_pagelines[- 1]
 
 	elif starts_on_earlier_page:
-		print("Starts on previous page")
+		#print("Starts on previous page")
 		local_start_label = cur_pagelines[0]
 		for pageline: PageLineLabel in cur_pagelines:
 			if cur_start_page_line_indices.x < cur_end_page_line_indices.x:
@@ -274,38 +274,37 @@ func populate_shotline_with_segments(
 		segment.queue_free()
 	
 	var section_indices: Array = range(total_shotline_length)
-	# TODO: Fix the order of the god damn start and end indices when CREATING the shotline in the first place...
-	var fnline_start_idx: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(shotline_struct_reference.start_uuid)
-	var fnline_end_idx: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(shotline_struct_reference.end_uuid)
 
-	var real_fnline_start_idx: Vector2i
-	var real_fnline_end_idx: Vector2i
-	if fnline_start_idx.x > fnline_end_idx.x:
-		real_fnline_end_idx = fnline_start_idx
-		real_fnline_start_idx = fnline_end_idx
-	elif fnline_start_idx.x == fnline_end_idx.x:
-		if fnline_start_idx.y > fnline_end_idx.y:
-			real_fnline_end_idx = fnline_start_idx
-			real_fnline_start_idx = fnline_end_idx
-	else:
-		real_fnline_end_idx = fnline_end_idx
-		real_fnline_start_idx = fnline_start_idx
+	var fnline_start_vector: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(shotline_struct_reference.start_uuid)
+	var fnline_end_vector: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(shotline_struct_reference.end_uuid)
 
-	print("Shotline start and end indicices: ", real_fnline_start_idx, " | ", real_fnline_end_idx)
+	var real_fnline_start_vector: Vector2i
+	var real_fnline_end_vector: Vector2i
 
+	if fnline_start_vector.x > fnline_end_vector.x:
+		real_fnline_end_vector = fnline_start_vector
+		real_fnline_start_vector = fnline_end_vector
+	elif fnline_start_vector.x == fnline_end_vector.x:
+		if fnline_start_vector.y > fnline_end_vector.y:
+			real_fnline_end_vector = fnline_start_vector
+			real_fnline_start_vector = fnline_end_vector
+		else:
+			real_fnline_end_vector = fnline_end_vector
+			real_fnline_start_vector = fnline_start_vector
+	
 	var fnline_uuids: Array[String] = []
 
 	for page: PageContent in ScreenplayDocument.pages:
 		for line: FNLineGD in page.lines:
 			var cur_fnline_index: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(line.uuid)
-			if cur_fnline_index.x == real_fnline_start_idx.x:
-				if cur_fnline_index.y < real_fnline_start_idx.y:
+			if cur_fnline_index.x == real_fnline_start_vector.x:
+				if cur_fnline_index.y < real_fnline_start_vector.y:
 
 					continue
-			elif cur_fnline_index.x == real_fnline_end_idx.x:
-				if cur_fnline_index.y > real_fnline_end_idx.y:
+			elif cur_fnline_index.x == real_fnline_end_vector.x:
+				if cur_fnline_index.y > real_fnline_end_vector.y:
 					break
-			elif cur_fnline_index.x > real_fnline_end_idx.x:
+			elif cur_fnline_index.x > real_fnline_end_vector.x:
 				break
 			fnline_uuids.append(line.uuid)
 
@@ -313,7 +312,7 @@ func populate_shotline_with_segments(
 		var new_segment: ShotLineSegment2D = shotline_segment_scene.instantiate()
 		var cur_uuid_for_segment: String = fnline_uuids[idx]
 		segments_container.add_child(new_segment)
-		var shotline_start_index: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(
+		var shotline_start_vector: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(
 			shotline_struct_reference.start_uuid
 		)
 		#print("idx before: ", idx)
@@ -330,11 +329,6 @@ func populate_shotline_with_segments(
 		#shotline_struct_reference.segments_filmed_or_unfilmed[new_segment.pageline_uuid] = new_segment.is_straight
 		
 		new_segment.set_segment_height(line_label_height)
-		# if this index is also in the unfilmed indices, add a squiggle segment to the segment container
-		# else, add a straight segment to the segment container
-		# also the section indices needs to be offset, to start at the Shotline's actual starting index ?	
-	
-	#print(shotline_struct_reference.segments_filmed_or_unfilmed)
 
 # ----------------- UPDATE NODE ---------------------
 func update_line_width(width: float) -> void:

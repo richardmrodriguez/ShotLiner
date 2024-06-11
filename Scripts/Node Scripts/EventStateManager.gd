@@ -30,7 +30,8 @@ var is_dragging_shotline: bool = false
 var cur_tool: TOOL = TOOL.DRAW
 
 var cur_highlighted_pageline_uuids: Array[String] = []
-var cur_already_modified_shotline_segments: Array = []
+var cur_already_marked_shotline_segments: Dictionary
+var cur_segment_change_cmds: Array[ToggleSegmentUnfilmedCommand]
 
 var last_shotline_node_global_pos: Vector2
 
@@ -267,14 +268,37 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 		if is_inverting_line:
 			if is_instance_valid(last_hovered_shotline_node):
 				for segment: ShotLineSegment2D in last_hovered_shotline_node.segments_container.get_children():
-					if not segment:
+					if not ShotLineSegment2D:
 						continue
-					if cur_already_modified_shotline_segments.has(segment.pageline_uuid):
+					var cur_segment_uuid: String = segment.pageline_uuid
+					var cur_shotline_ref: Shotline = last_hovered_shotline_node.shotline_struct_reference
+					var cur_pageline_str_for_segment: String = ScreenplayDocument.get_fnline_from_uuid(cur_segment_uuid).string.substr(0, 10)
+					if not cur_shotline_ref.segments_filmed_or_unfilmed.keys().has(cur_segment_uuid):
+						print_debug("Current Shotline segments: ", cur_shotline_ref.segments_filmed_or_unfilmed)
+						print_debug("Attempted segment to get: ", segment.pageline_uuid, " | ", cur_pageline_str_for_segment)
 						continue
+					#TODO: it seems FUCKING ARBITRARY if I can invert a shotline or not
+					# I am mad
+					var cur_segment_state: bool = cur_shotline_ref.segments_filmed_or_unfilmed[segment.pageline_uuid]
+					var cur_shotline_uuid: String = last_hovered_shotline_node.shotline_struct_reference.shotline_uuid
+					
+					if cur_already_marked_shotline_segments.keys().has(
+						last_hovered_shotline_node.shotline_struct_reference.shotline_uuid
+						):
+						if cur_already_marked_shotline_segments[cur_shotline_uuid].has(
+							segment.pageline_uuid
+							):
+							continue
+					
 					if segment.is_hovered_over:
-						cur_already_modified_shotline_segments.append(segment.pageline_uuid)
+						# Store the current state of the segments before modifying them
+						cur_already_marked_shotline_segments[cur_shotline_uuid] = {
+							segment.pageline_uuid: cur_segment_state
+						}
+						
 						var toggle_segment_cmd: ToggleSegmentUnfilmedCommand = ToggleSegmentUnfilmedCommand.new([segment])
 						toggle_segment_cmd.execute()
+						cur_segment_change_cmds.append(toggle_segment_cmd)
 				if page_node.page_panel.get_children().has(selection_box_rect):
 					selection_box_rect.size = page_node.get_global_mouse_position() - selection_box_rect.global_position
 
@@ -330,7 +354,17 @@ func _handle_right_click(event: InputEvent) -> void:
 				if is_inverting_line:
 					is_inverting_line = false
 					# TODO: setup some more vars and create and utilize a BulkSegmentsChangedCommand
-					cur_already_modified_shotline_segments.clear()
+					var bulk_segments_cmd := BulkSegmentsChangedCommand.new(
+						[
+							cur_segment_change_cmds.duplicate(true),
+							cur_already_marked_shotline_segments.duplicate(true)
+						]
+					)
+
+					print_debug("Adding bulk segments change........", CommandHistory.add_command(bulk_segments_cmd))
+
+					cur_already_marked_shotline_segments.clear()
+					cur_segment_change_cmds.clear()
 					#page_node.page_panel.remove_child(selection_box_rect)
 	print("Is inverting_line: ", is_inverting_line)
 
@@ -362,7 +396,7 @@ func _handle_left_click(event: InputEvent) -> void:
 						var new_shotline: Shotline
 						if not (last_mouse_click_below_bottom_margin or last_mouse_click_above_top_margin):
 							new_shotline = create_new_shotline_obj(last_clicked_line_uuid, last_hovered_line_uuid, event.position)
-					
+							
 						elif last_mouse_click_above_top_margin:
 							# click released past top or bottom margin
 							# give the add_new_shotline the last line of prev page or first line of next page
@@ -383,6 +417,7 @@ func _handle_left_click(event: InputEvent) -> void:
 
 							#print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
 						create_and_add_shotline_node_to_page(new_shotline)
+						
 			TOOL.MOVE:
 				if is_resizing_shotline:
 					is_resizing_shotline = false
