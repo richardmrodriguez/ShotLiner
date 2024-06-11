@@ -22,7 +22,8 @@ func execute() -> bool:
     return true
 
 func undo() -> bool:
-    if not prev_segments_state or completed_cmds:
+    if not (prev_segments_state or completed_cmds):
+        print("uh on not undoing lmao!!!!!")
         return false
 
     for cmd: ToggleSegmentUnfilmedCommand in completed_cmds:
