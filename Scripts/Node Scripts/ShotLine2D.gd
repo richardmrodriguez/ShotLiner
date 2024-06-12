@@ -23,7 +23,7 @@ var unfilmed_sections: Array = []
 var shotline_length: int
 var cur_pageline_label_height: float
 
-var shotline_struct_reference: Shotline
+var shotline_obj: Shotline
 var cap_line_width_offset: float = 8
 
 var begin_cap_open: bool = false
@@ -91,17 +91,17 @@ func is_hovered_over() -> bool:
 
 func construct_shotline_node(shotline: Shotline) -> void:
 	
-	shotline_struct_reference = shotline
+	shotline_obj = shotline
 
 	var pages: Array[PageContent] = ScreenplayDocument.pages
 	var current_page_index: int = EventStateManager.cur_page_idx
-	var last_mouse_x_pos: float = shotline_struct_reference.x_position
+	var last_mouse_x_pos: float = shotline_obj.x_position
 
-	var cur_start_uuid: String = shotline_struct_reference.start_uuid
-	var cur_end_uuid: String = shotline_struct_reference.end_uuid
+	var cur_start_uuid: String = shotline_obj.start_uuid
+	var cur_end_uuid: String = shotline_obj.end_uuid
 
-	var cur_start_page_line_indices: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(cur_start_uuid)
-	var cur_end_page_line_indices: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(cur_end_uuid)
+	var cur_start_page_line_indices: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(cur_start_uuid)
+	var cur_end_page_line_indices: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(cur_end_uuid)
 
 	var shotline_start_page_idx: int = cur_start_page_line_indices.x
 	var shotline_end_page_idx: int = cur_end_page_line_indices.x
@@ -193,10 +193,6 @@ func construct_shotline_node(shotline: Shotline) -> void:
 		(local_end_label.global_position.y + local_end_label.size.y) - (shot_number_label.size.y + 8)
 		)
 
-	var shotline_points: Array[Vector2] = [] # empty array to be filled by the following section
-
-	# Get the start and end positions of each unfilmed (squiggle) section
-
 	if starts_on_earlier_page:
 		print("Shotline starts earlier")
 		begin_cap_open = true
@@ -216,7 +212,8 @@ func construct_shotline_node(shotline: Shotline) -> void:
 
 	cur_pageline_label_height = screenplay_line_vertical_size
 	global_position = start_pos
-
+	print_debug(" -------------- ")
+	shotline_obj.print_segments_and_strings_with_limit()
 	populate_shotline_with_segments(shotline_length, cur_pageline_label_height)
 
 func align_shot_number_label() -> void:
@@ -257,12 +254,16 @@ func align_grab_regions() -> void:
 		cap_grab_region_height
 		)
 
-# TODO: Break this process into two parts: the segments_filmed dictionary population, and the Shotline2D segments population
-# Basically, we don't reconstruct the existing shotline segments which have
 func populate_shotline_with_segments(
-	#unfilmed_pagelines: Array,
 	total_shotline_length: int,
 	line_label_height: float) -> void:
+	var cur_page_idx: int = EventStateManager.cur_page_idx
+
+	print("CHecking shotline length")
+	print(total_shotline_length, " | ", shotline_obj.segments_filmed_or_unfilmed.keys().size())
+	#assert(false, "checking shotline length")
+
+	#total_shotline_length = shotline_obj.segments_filmed_or_unfilmed.keys().size()
 
 	if not segments_container:
 		for child: Node in get_children():
@@ -272,64 +273,49 @@ func populate_shotline_with_segments(
 	for segment: Node in segments_container.get_children():
 		segments_container.remove_child(segment)
 		segment.queue_free()
+
+	var fnline_start_vector: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(shotline_obj.start_uuid)
+	var fnline_end_vector: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(shotline_obj.end_uuid)
+
+	print("Checking new start and end Vec")
+	print(fnline_start_vector, fnline_end_vector)
+
+	# Update the shotline_obj.segments_filmed_or_unfilmed dict
+	# TODO: This incorrectly just puts all the squiggled shotlines at the top of the shotline container
+	# instead, we need to manually insert
+
+	var new_segments_fnlines: Array[FNLineGD] = ScreenplayDocument.get_array_of_fnlines_from_start_and_end_uuids(shotline_obj.start_uuid, shotline_obj.end_uuid)
+	var new_segments_ids: Array[String] = []
+	for fnl: FNLineGD in new_segments_fnlines:
+		new_segments_ids.append(fnl.uuid)
 	
-	var section_indices: Array = range(total_shotline_length)
-
-	var fnline_start_vector: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(shotline_struct_reference.start_uuid)
-	var fnline_end_vector: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(shotline_struct_reference.end_uuid)
-
-	var real_fnline_start_vector: Vector2i
-	var real_fnline_end_vector: Vector2i
-
-	if fnline_start_vector.x > fnline_end_vector.x:
-		real_fnline_end_vector = fnline_start_vector
-		real_fnline_start_vector = fnline_end_vector
-	elif fnline_start_vector.x == fnline_end_vector.x:
-		if fnline_start_vector.y > fnline_end_vector.y:
-			real_fnline_end_vector = fnline_start_vector
-			real_fnline_start_vector = fnline_end_vector
-		else:
-			real_fnline_end_vector = fnline_end_vector
-			real_fnline_start_vector = fnline_start_vector
+	#shotline_obj.segments_filmed_or_unfilmed.clear()
 	
-	var fnline_uuids: Array[String] = []
+	for fnl: FNLineGD in new_segments_fnlines:
+		if shotline_obj.segments_filmed_or_unfilmed.keys().has(fnl.uuid):
+			continue
+		shotline_obj.segments_filmed_or_unfilmed[fnl.uuid] = true
 
-	for page: PageContent in ScreenplayDocument.pages:
-		for line: FNLineGD in page.lines:
-			var cur_fnline_index: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(line.uuid)
-			if cur_fnline_index.x == real_fnline_start_vector.x:
-				if cur_fnline_index.y < real_fnline_start_vector.y:
+	for segment_uuid: String in shotline_obj.segments_filmed_or_unfilmed:
+		if not new_segments_ids.has(segment_uuid):
+			continue
 
-					continue
-			elif cur_fnline_index.x == real_fnline_end_vector.x:
-				if cur_fnline_index.y > real_fnline_end_vector.y:
-					break
-			elif cur_fnline_index.x > real_fnline_end_vector.x:
+		var cur_pagelines: Array[FNLineGD] = ScreenplayDocument.pages[EventStateManager.cur_page_idx].lines
+		var segment_in_cur_page: bool = false
+		for line: FNLineGD in cur_pagelines:
+			if line.uuid == segment_uuid:
+				segment_in_cur_page = true
 				break
-			fnline_uuids.append(line.uuid)
+		
+		if not segment_in_cur_page:
+			continue
 
-	for idx: int in section_indices:
 		var new_segment: ShotLineSegment2D = shotline_segment_scene.instantiate()
-		var cur_uuid_for_segment: String = fnline_uuids[idx]
 		segments_container.add_child(new_segment)
-		var shotline_start_vector: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(
-			shotline_struct_reference.start_uuid
-		)
-		#print("idx before: ", idx)
-		#print("shotline_start_index.y: ", shotline_start_index.y)
-		new_segment.pageline_uuid = fnline_uuids[idx]
-		# TODO: This doesn't quite reconstruct an existing set of filmed or unfilmed segments
-		
-		if cur_uuid_for_segment in shotline_struct_reference.segments_filmed_or_unfilmed.keys():
-			if shotline_struct_reference.segments_filmed_or_unfilmed[cur_uuid_for_segment] == false:
-				new_segment.set_straight_or_jagged(false)
-		else:
-			new_segment.set_straight_or_jagged(true)
-		
-		#shotline_struct_reference.segments_filmed_or_unfilmed[new_segment.pageline_uuid] = new_segment.is_straight
-		
+		new_segment.pageline_uuid = segment_uuid
+		new_segment.set_straight_or_jagged(shotline_obj.segments_filmed_or_unfilmed[segment_uuid])
 		new_segment.set_segment_height(line_label_height)
-
+		
 # ----------------- UPDATE NODE ---------------------
 func update_line_width(width: float) -> void:
 	for node: Node in get_children():
@@ -342,10 +328,10 @@ func update_line_color(color: Color) -> void:
 			node.line.color = color
 
 func update_shot_number_label() -> void:
-	if shotline_struct_reference.scene_number == null:
+	if shotline_obj.scene_number == null:
 		print("funny null shot numbers")
 		return
-	var shotnumber_string: String = str(shotline_struct_reference.scene_number) + "." + str(shotline_struct_reference.shot_number) + "\n" + str(shotline_struct_reference.shot_type)
+	var shotnumber_string: String = str(shotline_obj.scene_number) + "." + str(shotline_obj.shot_number) + "\n" + str(shotline_obj.shot_type)
 	shot_number_label.text = shotnumber_string
 
 func resize_line_width_on_hover() -> void:
@@ -354,26 +340,23 @@ func resize_line_width_on_hover() -> void:
 	else:
 		update_line_width(line_width)
 
-# TODO: If a shotline is resized such that it no longer starts or ends on the current page,
-# It fails to construct. So we should do one of the following:
-	# - Delete the SLContainer (and account for this in the ResizeShotlineCommand's undo function)
-	# - 
-
 func update_length_from_endcap_drag(
 	is_endcap_begincap: bool,
 	y_movement_delta: float
 	) -> void:
 
+	# TODO: This func is messing up squiggle positions when resizing shotlines
+	# All the squiggles just appear at the top of the shotline on the page for whatever reason
 	var pages: Array[PageContent] = ScreenplayDocument.pages
 	var cur_page_idx: int = EventStateManager.cur_page_idx
 	
 	# if this is the middle of a multipage shotline, don't do anything to update the vertical 
 	# position ;
 	# Might change this behavior in the future
-	if shotline_struct_reference.is_multipage():
+	if shotline_obj.is_multipage():
 		if (
-			shotline_struct_reference.starts_on_earlier_page(cur_page_idx)
-			&&shotline_struct_reference.ends_on_later_page(cur_page_idx)):
+			shotline_obj.starts_on_earlier_page(cur_page_idx)
+			&&shotline_obj.ends_on_later_page(cur_page_idx)):
 			return
 	
 	var cur_pageline_labels: Array[Node] = EventStateManager.page_node.page_container.get_children()
@@ -384,6 +367,7 @@ func update_length_from_endcap_drag(
 	var screenplay_line_offset: int
 
 	var line_label_height_set: bool = false
+	
 	var new_start_point_set: bool = false
 	var new_end_point_set: bool = false
 
@@ -393,6 +377,7 @@ func update_length_from_endcap_drag(
 	var old_start_2D_index: Vector2i
 	var old_end_2D_index: Vector2i
 
+	# ------------------ Set the line_label_height
 	for cur_screenplay_line: Node in cur_pageline_labels:
 		if not cur_screenplay_line is PageLineLabel:
 			continue
@@ -404,19 +389,19 @@ func update_length_from_endcap_drag(
 			line_label_height_set = true
 			break
 	
-	var start_page_lines: Array[FNLineGD] = pages[shotline_struct_reference.start_page_index].lines
+	var start_page_lines: Array[FNLineGD] = pages[shotline_obj.start_page_index].lines
 	for fnline: FNLineGD in start_page_lines:
-		if fnline.uuid == shotline_struct_reference.start_uuid:
+		if fnline.uuid == shotline_obj.start_uuid:
 			old_start_2D_index = Vector2i(
-				shotline_struct_reference.start_page_index,
+				shotline_obj.start_page_index,
 				start_page_lines.find(fnline))
 			old_start_fnline_uuid = fnline.uuid
 
-	var end_page_lines: Array[FNLineGD] = pages[shotline_struct_reference.end_page_index].lines
+	var end_page_lines: Array[FNLineGD] = pages[shotline_obj.end_page_index].lines
 	for fnline: FNLineGD in end_page_lines:
-		if fnline.uuid == shotline_struct_reference.end_uuid:
+		if fnline.uuid == shotline_obj.end_uuid:
 			old_end_2D_index = Vector2i(
-				shotline_struct_reference.end_page_index,
+				shotline_obj.end_page_index,
 				end_page_lines.find(fnline))
 			old_end_fnline_uuid = fnline.uuid
 
@@ -429,10 +414,10 @@ func update_length_from_endcap_drag(
 	# This code assumes only EITHER  the start or end endcap is being dragged
 	# Therefore, only change either the start or end index, not both
 
-	var new_start_later: bool = shotline_struct_reference.starts_on_later_page(cur_page_idx)
-	var new_start_earlier: bool = shotline_struct_reference.starts_on_earlier_page(cur_page_idx)
-	var new_end_later: bool = shotline_struct_reference.ends_on_later_page(cur_page_idx)
-	var new_end_earlier: bool = shotline_struct_reference.ends_on_earlier_page(cur_page_idx)
+	var new_start_later: bool = shotline_obj.starts_on_later_page(cur_page_idx)
+	var new_start_earlier: bool = shotline_obj.starts_on_earlier_page(cur_page_idx)
+	var new_end_later: bool = shotline_obj.ends_on_later_page(cur_page_idx)
+	var new_end_earlier: bool = shotline_obj.ends_on_earlier_page(cur_page_idx)
 
 	if is_endcap_begincap:
 		# figure out if the offsets point to a valid screenplay line in this page
@@ -465,31 +450,31 @@ func update_length_from_endcap_drag(
 				break
 		
 		if line_in_page:
-			shotline_struct_reference.start_uuid = start_page_lines[new_start_2D_index.y].uuid
+			shotline_obj.start_uuid = start_page_lines[new_start_2D_index.y].uuid
 		else:
 			if new_start_2D_index.y < 0:
 				new_start_earlier = true
-				if shotline_struct_reference.start_page_index - 1 >= 0:
-					shotline_struct_reference.start_uuid = (
-					pages[shotline_struct_reference.start_page_index - 1].lines.back().uuid
+				if shotline_obj.start_page_index - 1 >= 0:
+					shotline_obj.start_uuid = (
+					pages[shotline_obj.start_page_index - 1].lines.back().uuid
 					)
-					shotline_struct_reference.start_page_index -= 1
+					shotline_obj.start_page_index -= 1
 				else:
-					shotline_struct_reference.start_uuid = pages.front().lines.front().uuid
-					shotline_struct_reference.start_page_index = 0
+					shotline_obj.start_uuid = pages.front().lines.front().uuid
+					shotline_obj.start_page_index = 0
 					if EventStateManager.cur_page_idx == 0:
 						new_start_earlier = false
 			else:
 				new_start_later = true
 				print("Begin cap after page")
-				if shotline_struct_reference.start_page_index + 1 < pages.size():
-					shotline_struct_reference.start_uuid = (
-					pages[shotline_struct_reference.start_page_index + 1].lines.front().uuid
+				if shotline_obj.start_page_index + 1 < pages.size():
+					shotline_obj.start_uuid = (
+					pages[shotline_obj.start_page_index + 1].lines.front().uuid
 					)
-					shotline_struct_reference.start_page_index += 1
+					shotline_obj.start_page_index += 1
 				else:
-					shotline_struct_reference.start_uuid = pages.back().lines.back().uuid
-					shotline_struct_reference.start_page_index = pages.size() - 1
+					shotline_obj.start_uuid = pages.back().lines.back().uuid
+					shotline_obj.start_page_index = pages.size() - 1
 					if EventStateManager.cur_page_idx == pages.size() - 1:
 						new_start_later = false
 
@@ -505,31 +490,31 @@ func update_length_from_endcap_drag(
 				line_in_page = true
 	
 		if line_in_page:
-			shotline_struct_reference.end_uuid = end_page_lines[new_end_2D_index.y].uuid
+			shotline_obj.end_uuid = end_page_lines[new_end_2D_index.y].uuid
 		else:
 			if new_end_2D_index.y < 0:
 				new_end_earlier = true
-				if shotline_struct_reference.end_page_index - 1 >= 0:
-					shotline_struct_reference.end_uuid = (
-					pages[shotline_struct_reference.end_page_index - 1].lines.back().uuid
+				if shotline_obj.end_page_index - 1 >= 0:
+					shotline_obj.end_uuid = (
+					pages[shotline_obj.end_page_index - 1].lines.back().uuid
 					)
-					shotline_struct_reference.end_page_index -= 1
+					shotline_obj.end_page_index -= 1
 				else:
-					shotline_struct_reference.end_uuid = pages.front().lines.front().uuid
-					shotline_struct_reference.end_page_index = 0
+					shotline_obj.end_uuid = pages.front().lines.front().uuid
+					shotline_obj.end_page_index = 0
 					if EventStateManager.cur_page_idx == 0:
 						new_end_earlier = false
 			else:
 				new_end_later = true
-				if shotline_struct_reference.end_page_index + 1 < pages.size():
-					shotline_struct_reference.end_uuid = (
-					pages[shotline_struct_reference.end_page_index + 1].lines.front().uuid
+				if shotline_obj.end_page_index + 1 < pages.size():
+					shotline_obj.end_uuid = (
+					pages[shotline_obj.end_page_index + 1].lines.front().uuid
 					)
-					shotline_struct_reference.end_page_index += 1
-					print_debug(shotline_struct_reference.end_page_index)
+					shotline_obj.end_page_index += 1
+					print_debug(shotline_obj.end_page_index)
 				else:
-					shotline_struct_reference.end_uuid = pages.back().lines.back().uuid
-					shotline_struct_reference.end_page_index = pages.size() - 1
+					shotline_obj.end_uuid = pages.back().lines.back().uuid
+					shotline_obj.end_page_index = pages.size() - 1
 					if EventStateManager.cur_page_idx == pages.size() - 1:
 						new_end_later = false
 	
@@ -540,7 +525,7 @@ func update_length_from_endcap_drag(
 			queue_free()
 			return
 	# If the new shotline positions do include somewhere on this page, then reconstruct
-	construct_shotline_node(shotline_struct_reference)
+	construct_shotline_node(shotline_obj)
 
 # ------------- SIGNAL CALLBACKS ----------------------
 

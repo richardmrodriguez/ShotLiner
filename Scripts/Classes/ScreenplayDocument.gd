@@ -1,7 +1,6 @@
 extends Node
 
-# TODO: This struct handles DOCUMENT-WIDE data such as:
-# - All Pages
+# TODO: Add support for more document wide metadata:
 # - Scenes
 # - Registered Tags
 # - etc.
@@ -15,11 +14,6 @@ var scenes: Array[ScreenplayScene]
 var shotlines: Array[Shotline]
 
 @onready var page_node: ScreenplayPage
-# TODO: Shotlines can span multiple pages, so their data structs need to be stored on a document level;
-# When rendering a new page, it must check if a shotline is "partial" 
-#   - if it only begins, only ends, or spans through the entirety of a page,
-#   the Shotline2D should render for the appropriate amound which a line covers
-# When creating a new shotline, dragging the Shotline past the first or last Documentline make it a "partial" or multipage Shotline
 
 # This Struct could also have some functions to retrieve data such as:
 #   - How many Scenes or Shots contain a certain element:
@@ -56,7 +50,7 @@ func split_fnline_array_into_page_groups(fnlines: Array) -> Array[PageContent]:
 
 	return cur_pages
 
-func get_fnline_index_from_uuid(uuid: String) -> Vector2i:
+func get_fnline_vector_from_uuid(uuid: String) -> Vector2i:
 	for page: PageContent in pages:
 		for line: FNLineGD in page.lines:
 			if line.uuid == uuid:
@@ -64,7 +58,7 @@ func get_fnline_index_from_uuid(uuid: String) -> Vector2i:
 	return Vector2i( - 1, 999) # a page will probably not ever have 999 lines on it...
 
 func get_fnline_from_uuid(uuid: String) -> FNLineGD:
-	var index: Vector2i = get_fnline_index_from_uuid(uuid)
+	var index: Vector2i = get_fnline_vector_from_uuid(uuid)
 	return pages[index.x].lines[index.y]
 
 func get_shotline_from_uuid(uuid: String) -> Shotline:
@@ -72,3 +66,25 @@ func get_shotline_from_uuid(uuid: String) -> Shotline:
 		if shotline.shotline_uuid == uuid:
 			return shotline
 	return null
+
+func get_array_of_fnlines_from_start_and_end_uuids(start: String, end: String) -> Array[FNLineGD]:
+	var found_start: bool = false
+	var found_end: bool = false
+
+	var array: Array[FNLineGD] = []
+
+	for page: PageContent in pages:
+		if found_end:
+			break
+		
+		for line: FNLineGD in page.lines:
+			if line.uuid == start:
+				found_start = true
+			if not found_start:
+				continue
+			array.append(line)
+			if line.uuid == end:
+				found_end = true
+				break
+	
+	return array

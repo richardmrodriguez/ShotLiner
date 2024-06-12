@@ -78,7 +78,6 @@ func get_page_idx_of_fnline_from_uuid(uuid: String) -> int:
 
 # -------------------- SHOTLINE LOGIC -----------------------------------
 
-# TODO: This logic is fucked up but also maybe needs to be somewhere else at some point???? but it is working now so whatever lmao
 func create_and_add_shotline_node_to_page(shotline: Shotline) -> void:
 	
 	var create_shotline_command: CreateShotLineCommand = CreateShotLineCommand.new([shotline])
@@ -89,8 +88,8 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 
 	var new_shotline: Shotline = Shotline.new()
 
-	var start_line_page_idx: int = ScreenplayDocument.get_fnline_index_from_uuid(start_uuid).x
-	var end_line_page_idx: int = ScreenplayDocument.get_fnline_index_from_uuid(end_uuid).x
+	var start_line_page_idx: int = ScreenplayDocument.get_fnline_vector_from_uuid(start_uuid).x
+	var end_line_page_idx: int = ScreenplayDocument.get_fnline_vector_from_uuid(end_uuid).x
 
 	assert(start_line_page_idx != - 1, "Start line page index for shotline does not exist.")
 	assert(end_line_page_idx != - 1, "End line page index for shotline does not exist.")
@@ -118,14 +117,14 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 		var old_start_fnline_substr: String = ScreenplayDocument.get_fnline_from_uuid(old_start_uuid).string.substr(0, 10)
 		var old_end_fnline_substr: String = ScreenplayDocument.get_fnline_from_uuid(old_end_uuid).string.substr(0, 10)
 
-		var old_start_idx: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(old_start_uuid)
-		var old_end_idx: Vector2i = ScreenplayDocument.get_fnline_index_from_uuid(old_end_uuid)
+		var old_start_idx: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(old_start_uuid)
+		var old_end_idx: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(old_end_uuid)
 		if old_start_idx.y > old_end_idx.y:
 			print("rearranged!!!!!!!!!!!!!!!!!")
 			new_shotline.start_uuid = old_end_uuid
 			new_shotline.end_uuid = old_start_uuid
-			print("fixed_start: ", new_shotline.start_uuid.substr(0, 5), "...", old_end_fnline_substr)
-			print("fixed_end: ", new_shotline.end_uuid.substr(0, 5), "...", old_start_fnline_substr)
+			#print("fixed_start: ", new_shotline.start_uuid.substr(0, 5), "...", old_end_fnline_substr)
+			#print("fixed_end: ", new_shotline.end_uuid.substr(0, 5), "...", old_start_fnline_substr)
 
 	new_shotline.x_position = last_mouse_pos.x
 
@@ -136,23 +135,11 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 	var found_start: bool = false
 	var found_end: bool = false
 
-	for page: PageContent in ScreenplayDocument.pages:
-		if found_end:
-			break
-		
-		for line: FNLineGD in page.lines:
-			if line.uuid == new_shotline.start_uuid:
-				found_start = true
-			if not found_start:
-				continue
-			new_shotline.segments_filmed_or_unfilmed[line.uuid] = true
-			if line.uuid == new_shotline.end_uuid:
-				found_end = true
-				break
-				
-	for n: String in new_shotline.segments_filmed_or_unfilmed.keys():
-		var pageline_substr: String = ScreenplayDocument.get_fnline_from_uuid(n).string.substr(0, 10)
-		print(n.substr(0, 5), "...", pageline_substr)
+	var fnlines_in_range: Array[FNLineGD] = ScreenplayDocument.get_array_of_fnlines_from_start_and_end_uuids(new_shotline.start_uuid, new_shotline.end_uuid)
+
+	for fnl: FNLineGD in fnlines_in_range:
+		new_shotline.segments_filmed_or_unfilmed[fnl.uuid] = true
+	
 	return new_shotline
 
 func set_current_tool(tool: TOOL) -> void:
@@ -271,19 +258,23 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 					if not ShotLineSegment2D:
 						continue
 					var cur_segment_uuid: String = segment.pageline_uuid
-					var cur_shotline_ref: Shotline = last_hovered_shotline_node.shotline_struct_reference
+					var cur_shotline_ref: Shotline = last_hovered_shotline_node.shotline_obj
 					var cur_pageline_str_for_segment: String = ScreenplayDocument.get_fnline_from_uuid(cur_segment_uuid).string.substr(0, 10)
 					if not cur_shotline_ref.segments_filmed_or_unfilmed.keys().has(cur_segment_uuid):
 						print_debug("Current Shotline segments: ", cur_shotline_ref.segments_filmed_or_unfilmed)
 						print_debug("Attempted segment to get: ", segment.pageline_uuid, " | ", cur_pageline_str_for_segment)
 						continue
-					#TODO: it seems FUCKING ARBITRARY if I can invert a shotline or not
+					#FIXME: !!! Multipage Shotlines have segment inversion broken
 					# I am mad
+					# The issue is not with setting the segments
+					# The issue must categorically be later in the pipeline
+					# This appears to mostly happen when creating shotlines
+						# that start halfwayish down the page
 					var cur_segment_state: bool = cur_shotline_ref.segments_filmed_or_unfilmed[segment.pageline_uuid]
-					var cur_shotline_uuid: String = last_hovered_shotline_node.shotline_struct_reference.shotline_uuid
+					var cur_shotline_uuid: String = last_hovered_shotline_node.shotline_obj.shotline_uuid
 					
 					if cur_already_marked_shotline_segments.keys().has(
-						last_hovered_shotline_node.shotline_struct_reference.shotline_uuid
+						last_hovered_shotline_node.shotline_obj.shotline_uuid
 						):
 						if cur_already_marked_shotline_segments[cur_shotline_uuid].has(
 							segment.pageline_uuid
@@ -325,8 +316,6 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 								if not pageline is PageLineLabel:
 									continue
 
-								#TODO: Verify that when the shotlines obj is created, it populates the shotline.segments_filmed_or_unfilmed Dict properly
-
 								if pageline.fnline.uuid == pageline_uuid:
 									#print("Pageline Label Highlight: ", pageline.label_highlight)
 									if cur_selected_shotline.segments_filmed_or_unfilmed[pageline_uuid] == true:
@@ -353,7 +342,6 @@ func _handle_right_click(event: InputEvent) -> void:
 			TOOL.DRAW:
 				if is_inverting_line:
 					is_inverting_line = false
-					# TODO: setup some more vars and create and utilize a BulkSegmentsChangedCommand
 					var bulk_segments_cmd := BulkSegmentsChangedCommand.new(
 						[
 							cur_segment_change_cmds.duplicate(true),
@@ -421,7 +409,6 @@ func _handle_left_click(event: InputEvent) -> void:
 			TOOL.MOVE:
 				if is_resizing_shotline:
 					is_resizing_shotline = false
-					# TODO: make this a command so it can be undone					
 					var resize_shotline_cmd: ResizeShotlineCommand = ResizeShotlineCommand.new(
 						[
 							cur_selected_shotline_endcap.is_begin_cap,
@@ -462,14 +449,14 @@ func _on_shotline_clicked(shotline_node: ShotLine2DContainer, button_index: int)
 		TOOL.MOVE:
 			match button_index:
 				1:
-					inpsector_panel_node.populate_fields_from_shotline(shotline_node.shotline_struct_reference)
-					cur_selected_shotline = shotline_node.shotline_struct_reference
+					inpsector_panel_node.populate_fields_from_shotline(shotline_node.shotline_obj)
+					cur_selected_shotline = shotline_node.shotline_obj
 					is_dragging_shotline = true
 					cur_mouse_global_position_delta = shotline_node.global_position - editor_view.get_global_mouse_position()
 					last_shotline_node_global_pos = shotline_node.global_position
 					print(is_dragging_shotline)
 
-# TODO: have a func which calls all the on_something_released whenever the mouse leaves the Screenplay Page area
+# TODO: simulate a mouse button release whenever the mouse leaves the window
 
 func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int) -> void:
 	print("shotline released!!!")
@@ -477,7 +464,7 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 		TOOL.MOVE:
 			if button_index != 1:
 				return
-			if shotline_node.shotline_struct_reference == cur_selected_shotline:
+			if shotline_node.shotline_obj == cur_selected_shotline:
 				if is_dragging_shotline:
 					
 					is_dragging_shotline = false
@@ -508,10 +495,9 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 			if shotline_node == last_hovered_shotline_node:
 				#print("Erasing...?")
 				if last_hovered_shotline_node.is_hovered_over:
-					# TODO: Erasing isnt working because the shotlines arent working again lmao
 					var erase_command: EraseShotLineCommand = EraseShotLineCommand.new(
 						[
-							shotline_node.shotline_struct_reference,
+							shotline_node.shotline_obj,
 							page_node.page_panel
 						]
 					)
@@ -529,7 +515,7 @@ func _on_shotline_endcap_clicked(
 		if not is_resizing_shotline:
 			print("Resizing...")
 			is_resizing_shotline = true
-			cur_selected_shotline = shotline_container.shotline_struct_reference
+			cur_selected_shotline = shotline_container.shotline_obj
 			cur_selected_shotline_container = shotline_container
 			cur_selected_shotline_endcap = shotline_endcap
 

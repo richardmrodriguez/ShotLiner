@@ -71,7 +71,7 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.is_pressed():
 			return
-			# TODO: IDK if I want this logic here...
+			# TODO: Add back single click segment inversion
 			if event.button_index == MOUSE_BUTTON_RIGHT:
 				if EventStateManager.cur_tool == EventStateManager.TOOL.DRAW:
 					if is_hovered_over:

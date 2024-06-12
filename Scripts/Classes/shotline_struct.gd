@@ -74,3 +74,13 @@ func get_fnline_index_from_uuid(uuid: String) -> Vector2i:
 func toggle_segment_filmed(segment_uuid: String, setting: bool) -> void:
 	segments_filmed_or_unfilmed[segment_uuid] = setting
 	#print(segments_filmed_or_unfilmed)
+
+func print_segments_and_strings_with_limit(length_limit: int=10) -> void:
+	for segment: String in segments_filmed_or_unfilmed:
+		var seg_string: String = ScreenplayDocument.get_fnline_from_uuid(segment).string
+		var seg_page_num: int = ScreenplayDocument.get_fnline_vector_from_uuid(segment).x
+		print(
+			segment.substr(0, length_limit),
+			" | page: ", seg_page_num,
+			" | ",
+			seg_string.substr(0, length_limit))

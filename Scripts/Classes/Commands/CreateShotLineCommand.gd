@@ -40,7 +40,7 @@ func undo() -> bool:
 		for shotline_container: Node in page_panel.get_children():
 			if not shotline_container is ShotLine2DContainer:
 				continue
-			if shotline_container.shotline_struct_reference.shotline_uuid == shotline_obj.shotline_uuid:
+			if shotline_container.shotline_obj.shotline_uuid == shotline_obj.shotline_uuid:
 				page_panel.remove_child(shotline_container)
 				shotline_container.queue_free()
 		ScreenplayDocument.shotlines.erase(shotline_obj)

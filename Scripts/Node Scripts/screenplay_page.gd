@@ -28,7 +28,7 @@ var shotlines_for_pages: Dictionary = {}
 #signal shotline_clicked
 signal page_lines_populated
 
-# TODO
+# TODO - Extract Parser Logic
 # - Fountain Parsing logic should be in a different file, probably an autoload
 
 ## EMPHASIS is not handled here -- asterisks need to be removed from the fountain screenplay.
