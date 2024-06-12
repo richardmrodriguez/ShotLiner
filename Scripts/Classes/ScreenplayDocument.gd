@@ -5,13 +5,13 @@ extends Node
 # - Registered Tags
 # - etc.
 
-var document_name: String
-var characters: Array # list of character names
-var registered_tags: Array[String]
+var document_name: String = ""
+var characters: Array = [] # list of character names
+var registered_tags: Array[String] = []
 
-var pages: Array[PageContent]
-var scenes: Array[ScreenplayScene]
-var shotlines: Array[Shotline]
+var pages: Array[PageContent] = []
+var scenes: Array[ScreenplayScene] = []
+var shotlines: Array[Shotline] = []
 
 @onready var page_node: ScreenplayPage
 

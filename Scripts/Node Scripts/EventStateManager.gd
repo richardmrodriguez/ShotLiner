@@ -173,6 +173,14 @@ func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
 				cur_page_idx
 				])
 			CommandHistory.add_command(page_nav_command)
+		toolbar_node.TOOLBAR_BUTTON.SAVE_SHOTLINE_FILE:
+			if SLFileHandler.save_file("/home/rich/shotliner_test.sl"):
+				print("Saved.....")
+			else:
+				print("Uh oh stinky")
+		toolbar_node.TOOLBAR_BUTTON.LOAD_SHOTLINE_FILE:
+			if SLFileHandler.load_file("/home/rich/shotliner_test.sl"):
+				print("loaded....")
 
 		# TOOL SELECTION
 		toolbar_node.TOOLBAR_BUTTON.SELECT:

@@ -49,16 +49,6 @@ func _on_test_layout_toggled(toggled_on: bool) -> void:
 	layout_test_pressed.emit(toggled_on)
 
 func _on_undo_pressed() -> void:
-	var filtered_history: Array = CommandHistory.history.filter(
-		func(command: Command) -> bool:
-			if command:
-				return true
-			return false
-	)
-	if CommandHistory.command_index > 0:
-		pass
-		#print("Current command index: ", CommandHistory.command_index, " | History before undo: ", filtered_history)
-	
 	CommandHistory.undo()
 
 func _on_redo_pressed() -> void:

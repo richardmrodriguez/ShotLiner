@@ -6,7 +6,7 @@ var start_page_index: int
 var end_page_index: int
 var start_uuid: String
 var end_uuid: String
-var x_position: float
+var x_position: float = 0.0
 
 var segments_filmed_or_unfilmed: Dictionary = {} # fnlineuuid: is_filmed_bool
 
@@ -84,3 +84,26 @@ func print_segments_and_strings_with_limit(length_limit: int=10) -> void:
 			" | page: ", seg_page_num,
 			" | ",
 			seg_string.substr(0, length_limit))
+
+func get_shotline_as_dict() -> Dictionary:
+	var shotline_dict: Dictionary = {
+		"start_page_index": start_page_index,
+		"end_page_index": end_page_index,
+		"start_uuid": start_uuid,
+		"end_uuid": end_uuid,
+		"x_position": x_position,
+
+		"segments_filmed_or_unfilmed": segments_filmed_or_unfilmed,
+		
+		"shotline_uuid": shotline_uuid,
+
+		# User - Facing Metadata
+		"scene_number": scene_number,
+		"shot_number": shot_number,
+		"shot_type": shot_type,
+		"shot_subtype": shot_subtype,
+		"setup_number": setup_number,
+		"group": group,
+		"tags": tags,
+	}
+	return shotline_dict

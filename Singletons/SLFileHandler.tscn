@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cfbcj77y8b6fy"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/SLFileHandler.gd" id="1_f6eqr"]
+
+[node name="SLFileHandler" type="Node"]
+script = ExtResource("1_f6eqr")

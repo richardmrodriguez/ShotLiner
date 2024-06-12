@@ -7,7 +7,7 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
 - Navigate between individual pages
 - Create multiple ShotLines per page
   - Resize shotline using Move tool
-    - Shotlines can be Multipage, and span across many pages
+	- Shotlines can be Multipage, and span across many pages
   - A Shotline will have a Closed or Open endcap at each end, to visually distinguish which lines start or end on a previous or following page
   - Click on individual Shotlines to assign unique metadtata
   - delete Shotlines by using eraser tool

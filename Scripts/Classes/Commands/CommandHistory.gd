@@ -73,3 +73,8 @@ func get_filtered_history() -> Array:
 				return false
 			return true
 	)
+
+func clear_history() -> void:
+	history.clear()
+	history.resize(max_size)
+	command_index = 0
