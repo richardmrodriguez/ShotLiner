@@ -181,6 +181,9 @@ func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
 		toolbar_node.TOOLBAR_BUTTON.LOAD_SHOTLINE_FILE:
 			if SLFileHandler.load_file("/home/rich/shotliner_test.sl"):
 				print("loaded....")
+		toolbar_node.TOOLBAR_BUTTON.EXPORT_SPREADSHEET:
+			if SLFileHandler.export_to_csv("/home/rich/shotliner_csvtest.csv"):
+				print("Exported CSV!")
 
 		# TOOL SELECTION
 		toolbar_node.TOOLBAR_BUTTON.SELECT:

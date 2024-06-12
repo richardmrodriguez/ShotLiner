@@ -39,8 +39,8 @@ func _on_eraser_pressed() -> void:
 func _on_draw_pressed() -> void:
 	toolbar_button_pressed.emit(TOOLBAR_BUTTON.DRAW)
 
-func _on_select_pressed() -> void:
-	toolbar_button_pressed.emit(TOOLBAR_BUTTON.SELECT)
+func _on_export_pressed() -> void:
+	toolbar_button_pressed.emit(TOOLBAR_BUTTON.EXPORT_SPREADSHEET)
 
 func _on_move_pressed() -> void:
 	toolbar_button_pressed.emit(TOOLBAR_BUTTON.MOVE)

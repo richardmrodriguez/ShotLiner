@@ -66,16 +66,6 @@ func save_file(filepath: String) -> bool:
 
 func load_file(filepath: String) -> bool:
 	EventStateManager.cur_page_idx = 0
-	#ScreenplayDocument.page_node.page_container.get_children().map(
-	#	func(ch: Node) -> void:
-	#		ScreenplayDocument.page_node.page_container.remove_child(ch)
-	#		ch.queue_free()
-	#		)
-	#ScreenplayDocument.page_node.page_panel.get_children().map(
-	#	func(ch: Node) -> void:
-	#		ScreenplayDocument.page_node.page_panel.remove_child(ch)
-	#		ch.queue_free()
-	#		)
 	var fa := FileAccess.open(filepath, FileAccess.READ)
 	if not fa:
 		return false
@@ -90,6 +80,7 @@ func load_file(filepath: String) -> bool:
 	ScreenplayDocument.shotlines = shotlines_from_serialized_arr(doc_as_dict[shotlines])
 	ScreenplayDocument.pages = pages_from_serialized_arr(doc_as_dict[pages])
 	fa.close()
+
 	CommandHistory.clear_history()
 	EventStateManager.page_node.replace_current_page(ScreenplayDocument.pages[0], 0)
 	return true
@@ -98,8 +89,36 @@ func export_to_csv(filepath: String) -> bool:
 	var cur_shotlines := ScreenplayDocument.shotlines
 	if (not cur_shotlines) or cur_shotlines == []:
 		return false
+	var fa := FileAccess.open(filepath, FileAccess.WRITE)
+	if not fa:
+		return false
+	var csv_lines: Array[PackedStringArray] = generate_csv_lines()
+	if (not csv_lines) or csv_lines == []:
+		return false
+	for ln: PackedStringArray in csv_lines:
+		fa.store_csv_line(ln)
 
 	return true
+
+func generate_csv_lines() -> Array[PackedStringArray]:
+	var new_arr: Array[PackedStringArray] = []
+	var header_line: PackedStringArray = PackedStringArray(
+		[
+		"COMPLETED", "SHOT NUMBER", "SHOT TYPE", "SHOT SUBTYPE", "INT./EXT.", "LOCATION", "TIME", "GROUP", "TAGS", "PROPS"
+		]
+		)
+	new_arr.append(header_line)
+
+	for shotline: Shotline in ScreenplayDocument.shotlines:
+		var new_csv_line: PackedStringArray = PackedStringArray(
+			[
+			" ", str(shotline.scene_number) + "." + str(shotline.shot_number), str(shotline.shot_type), str(shotline.shot_subtype), " ", " ", " ",
+			str(shotline.group), str(shotline.tags), " "
+			]
+		)
+		new_arr.append(new_csv_line)
+
+	return new_arr
 
 func pages_from_serialized_arr(arr: Array) -> Array[PageContent]:
 	if (not arr) or arr == []:
