@@ -13,7 +13,7 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
   - delete Shotlines by using eraser tool
   - Click and drag Shotlines to move them horizontally
   	- When dragged to a new x-position, Shotlines retain that position when the page is refreshed
-  - Right-click drag on segments of Shotline to toggle filmed (Straight line) or unfilmed (jagged line) (not fully working; see below)
+  - Right-click drag over the body of a Shotline to toggle filmed (Straight line) or unfilmed (jagged line) segments
 - Use Toolbar to select either Draw, Erase, or Move tool
 - Create multipage Shotlines (kind of)
   - When creating a Shotline, you can drag the mouse past the top or bottom margins to make the line either start on the previous page or end on the following page
@@ -25,7 +25,6 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
   - Resize shotlines
 
 ## What's NOT working so far
-- Creating squiggled lines on multipage shotlines is bugged
 - Spreadsheet Export
   - This is the big feature -- After creating your shotlines, you will be able to export a Shot List from your shotlines. This will be a spreadsheet with cells containing the relevant metadata for each Shot:
 	- Shot Number
