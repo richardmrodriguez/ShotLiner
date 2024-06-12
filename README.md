@@ -37,9 +37,6 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
   - The Fountain parser used does not natively handle things like `*emphasis*` with asterisks
   - This also does not handle automatic pagination; for immediate testing purposes, the fountain file I am using is manually pre-paginated and has manual page breaks using  `===` delimiters.
 - Select Tool button does nothing
-- Shotline details
-  - Moving multipage shotlines is broken at the moment
-  - No option to resize shotlines yet
 
 ## DEPENDENCIES
 - [Fountain Parser GDExt](https://github.com/richardmrodriguez/fountain-parser-gdext)
