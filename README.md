@@ -24,7 +24,6 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
   - Move shotlines horizontally on page
 
 ## What's NOT working so far
-- "Select" tool button does nothing
 - Spreadsheet Export
   - This is the big feature -- After creating your shotlines, you will be able to export a Shot List from your shotlines. This will be a spreadsheet with cells containing the relevant metadata for each Shot:
 	- Shot Number
