@@ -14,6 +14,7 @@ This tool is in pre-alpha, and is essentially a proof-of-concept until a proper 
   - Click and drag Shotlines to move them horizontally
   	- When dragged to a new x-position, Shotlines retain that position when the page is refreshed
   - Right-click drag over the body of a Shotline to toggle filmed (Straight line) or unfilmed (jagged line) segments
+- Save and Load document and shotline data
 - Use Toolbar to select either Draw, Erase, or Move tool
 - Can Undo and Redo the following:
   - Navigate Pages

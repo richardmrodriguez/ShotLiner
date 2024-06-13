@@ -11,6 +11,14 @@ signal file_saved(successful: bool)
 signal file_loaded(successful: bool)
 signal spreadsheet_exported(successful: bool)
 
+func get_default_directory() -> String:
+
+	match OS.get_name():
+		"Web":
+			return "/"
+		_:
+			return OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+
 # TODO: Must do manual serialization / deserialization for the following:
 	# Screenplay Document
 		# Document name
@@ -185,6 +193,7 @@ func get_file_dialog(
 	fd.min_size = Vector2i(600, 480)
 	fd.max_size = Vector2i(800, 600)
 	fd.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN
+	fd.current_dir = get_default_directory()
 
 	fd.canceled.connect(EventStateManager._on_file_dialog_cancelled.bind(fd))
 	fd.file_selected.connect(EventStateManager._on_file_dialog_file_selected.bind(sl_fileaction, fd))
@@ -195,5 +204,13 @@ func open_file_dialog(file_mode: FileDialog.FileMode, sl_file_action: SLFileActi
 		file_mode,
 		sl_file_action
 		)
+	
+	match sl_file_action:
+		SLFileAction.FILE_ACTION.SAVE_FILE:
+			fd.set_filters(PackedStringArray(["*.sl; ShotLiner file"]))
+		SLFileAction.FILE_ACTION.LOAD_FILE:
+			fd.set_filters(PackedStringArray(["*.sl; ShotLiner file"]))
+		SLFileAction.FILE_ACTION.EXPORT_CSV:
+			fd.set_filters(PackedStringArray(["*.csv; "]))
 	EventStateManager.page_node.add_child(fd)
 	fd.show()
