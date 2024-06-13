@@ -543,8 +543,8 @@ func _on_page_lines_populated() -> void:
 	pass
 	#page_node.populate_page_panel_with_shotlines_for_page()
 
-func _on_file_dialog_cancelled() -> void:
-	pass
+func _on_file_dialog_cancelled(fd: FileDialog) -> void:
+	fd.queue_free()
 
 func _on_file_dialog_file_selected(path: String, sl_fileaction: SLFileAction.FILE_ACTION, fd: FileDialog) -> void:
 	match sl_fileaction:

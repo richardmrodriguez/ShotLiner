@@ -171,6 +171,7 @@ func shotlines_from_serialized_arr(arr: Array) -> Array[Shotline]:
 
 	return new_arr
 
+# TODO: these two funcs just need to be one func tbh
 func get_file_dialog(
 	file_mode: FileDialog.FileMode,
 	sl_fileaction: SLFileAction.FILE_ACTION
@@ -185,7 +186,7 @@ func get_file_dialog(
 	fd.max_size = Vector2i(800, 600)
 	fd.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN
 
-	fd.canceled.connect(EventStateManager._on_file_dialog_cancelled)
+	fd.canceled.connect(EventStateManager._on_file_dialog_cancelled.bind(fd))
 	fd.file_selected.connect(EventStateManager._on_file_dialog_file_selected.bind(sl_fileaction, fd))
 	return fd
 

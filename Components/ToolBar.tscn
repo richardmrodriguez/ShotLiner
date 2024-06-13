@@ -7,15 +7,15 @@ size_flags_vertical = 2
 script = ExtResource("1_5dt8s")
 
 [node name="spacer" type="Control" parent="."]
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 
 [node name="PREV PG" type="Button" parent="."]
 layout_mode = 2
-text = "PREV PG."
+text = "<--"
 
 [node name="spacer2" type="Control" parent="."]
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 
 [node name="DRAW" type="Button" parent="."]
@@ -28,15 +28,27 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Eraser"
 
-[node name="EXPORT CSV" type="Button" parent="."]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Export CSV"
-
 [node name="MOVE" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Move"
+
+[node name="spacer4" type="Control" parent="."]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+
+[node name="Undo" type="Button" parent="."]
+layout_mode = 2
+text = "Undo"
+
+[node name="Redo" type="Button" parent="."]
+layout_mode = 2
+text = "Redo
+"
+
+[node name="spacer5" type="Control" parent="."]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
 
 [node name="SAVE" type="Button" parent="."]
 unique_name_in_owner = true
@@ -48,14 +60,10 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Load"
 
-[node name="Undo" type="Button" parent="."]
+[node name="EXPORT CSV" type="Button" parent="."]
+unique_name_in_owner = true
 layout_mode = 2
-text = "Undo"
-
-[node name="Redo" type="Button" parent="."]
-layout_mode = 2
-text = "Redo
-"
+text = "Export CSV"
 
 [node name="TestLayout" type="Button" parent="."]
 unique_name_in_owner = true
@@ -65,21 +73,21 @@ toggle_mode = true
 text = "Funny"
 
 [node name="spacer3" type="Control" parent="."]
-custom_minimum_size = Vector2(80, 0)
+custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 
 [node name="NEXT PG" type="Button" parent="."]
 layout_mode = 2
-text = "NEXT PG."
+text = "-->"
 
 [connection signal="pressed" from="PREV PG" to="." method="_on_prev_pg_pressed"]
 [connection signal="pressed" from="DRAW" to="." method="_on_draw_pressed"]
 [connection signal="pressed" from="ERASER" to="." method="_on_eraser_pressed"]
-[connection signal="pressed" from="EXPORT CSV" to="." method="_on_export_pressed"]
 [connection signal="pressed" from="MOVE" to="." method="_on_move_pressed"]
-[connection signal="pressed" from="SAVE" to="." method="_on_save_pressed"]
-[connection signal="pressed" from="LOAD" to="." method="_on_load_pressed"]
 [connection signal="pressed" from="Undo" to="." method="_on_undo_pressed"]
 [connection signal="pressed" from="Redo" to="." method="_on_redo_pressed"]
+[connection signal="pressed" from="SAVE" to="." method="_on_save_pressed"]
+[connection signal="pressed" from="LOAD" to="." method="_on_load_pressed"]
+[connection signal="pressed" from="EXPORT CSV" to="." method="_on_export_pressed"]
 [connection signal="toggled" from="TestLayout" to="." method="_on_test_layout_toggled"]
 [connection signal="pressed" from="NEXT PG" to="." method="_on_next_pg_pressed"]
