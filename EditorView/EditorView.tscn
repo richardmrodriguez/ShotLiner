@@ -87,4 +87,7 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
+[node name="FileDialog" type="FileDialog" parent="."]
+use_native_dialog = true
+
 [connection signal="toolbar_button_pressed" from="VBoxContainer/MarginContainer/ToolBar" to="." method="_on_tool_bar_toolbar_button_pressed"]

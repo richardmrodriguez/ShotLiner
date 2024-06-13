@@ -174,20 +174,22 @@ func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
 				])
 			CommandHistory.add_command(page_nav_command)
 		toolbar_node.TOOLBAR_BUTTON.SAVE_SHOTLINE_FILE:
-			if SLFileHandler.save_file("/home/rich/shotliner_test.sl"):
-				print("Saved.....")
-			else:
-				print("Uh oh stinky")
+			SLFileHandler.open_file_dialog(
+				FileDialog.FILE_MODE_SAVE_FILE,
+				SLFileAction.FILE_ACTION.SAVE_FILE)
+
 		toolbar_node.TOOLBAR_BUTTON.LOAD_SHOTLINE_FILE:
-			if SLFileHandler.load_file("/home/rich/shotliner_test.sl"):
-				print("loaded....")
+			SLFileHandler.open_file_dialog(
+				FileDialog.FILE_MODE_OPEN_FILE,
+				SLFileAction.FILE_ACTION.LOAD_FILE
+			)
 		toolbar_node.TOOLBAR_BUTTON.EXPORT_SPREADSHEET:
-			if SLFileHandler.export_to_csv("/home/rich/shotliner_csvtest.csv"):
-				print("Exported CSV!")
+			SLFileHandler.open_file_dialog(
+				FileDialog.FILE_MODE_SAVE_FILE,
+				SLFileAction.FILE_ACTION.EXPORT_CSV
+			)
 
 		# TOOL SELECTION
-		toolbar_node.TOOLBAR_BUTTON.SELECT:
-			cur_tool = TOOL.SELECT
 		toolbar_node.TOOLBAR_BUTTON.MOVE:
 			cur_tool = TOOL.MOVE
 		toolbar_node.TOOLBAR_BUTTON.DRAW:
@@ -540,3 +542,20 @@ func _on_shotline_endcap_released(
 func _on_page_lines_populated() -> void:
 	pass
 	#page_node.populate_page_panel_with_shotlines_for_page()
+
+func _on_file_dialog_cancelled() -> void:
+	pass
+
+func _on_file_dialog_file_selected(path: String, sl_fileaction: SLFileAction.FILE_ACTION, fd: FileDialog) -> void:
+	match sl_fileaction:
+		SLFileAction.FILE_ACTION.SAVE_FILE:
+			if SLFileHandler.save_file(path):
+				print("Saved.....")
+		SLFileAction.FILE_ACTION.EXPORT_CSV:
+			if SLFileHandler.export_to_csv(path):
+				print("Exported")
+		SLFileAction.FILE_ACTION.LOAD_FILE:
+			if SLFileHandler.load_file(path):
+				print("Loaded....")
+
+	fd.queue_free()

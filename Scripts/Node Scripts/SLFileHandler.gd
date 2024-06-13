@@ -170,3 +170,29 @@ func shotlines_from_serialized_arr(arr: Array) -> Array[Shotline]:
 		new_arr.append(new_sl)
 
 	return new_arr
+
+func get_file_dialog(
+	file_mode: FileDialog.FileMode,
+	sl_fileaction: SLFileAction.FILE_ACTION
+	) -> FileDialog:
+	assert(file_mode != null, "File Mode not set.")
+
+	var fd := FileDialog.new()
+	fd.file_mode = file_mode
+	fd.use_native_dialog = true
+	fd.access = FileDialog.ACCESS_FILESYSTEM
+	fd.min_size = Vector2i(600, 480)
+	fd.max_size = Vector2i(800, 600)
+	fd.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN
+
+	fd.canceled.connect(EventStateManager._on_file_dialog_cancelled)
+	fd.file_selected.connect(EventStateManager._on_file_dialog_file_selected.bind(sl_fileaction, fd))
+	return fd
+
+func open_file_dialog(file_mode: FileDialog.FileMode, sl_file_action: SLFileAction.FILE_ACTION) -> void:
+	var fd: FileDialog = SLFileHandler.get_file_dialog(
+		file_mode,
+		sl_file_action
+		)
+	EventStateManager.page_node.add_child(fd)
+	fd.show()
