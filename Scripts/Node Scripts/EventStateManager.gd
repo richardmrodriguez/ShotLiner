@@ -413,7 +413,7 @@ func _handle_left_click(event: InputEvent) -> void:
 
 							#print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
 						create_and_add_shotline_node_to_page(new_shotline)
-			# FIXME: Multipage Shotlines don't update their squiggle lines properly when resized						
+								
 			TOOL.MOVE:
 				if is_resizing_shotline:
 					is_resizing_shotline = false
