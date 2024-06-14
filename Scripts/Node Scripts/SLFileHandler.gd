@@ -174,9 +174,7 @@ func shotlines_from_serialized_arr(arr: Array) -> Array[Shotline]:
 		new_sl.setup_number = element["setup_number"]
 		new_sl.group = element["group"]
 		new_sl.tags = element["tags"]
-		
 		new_arr.append(new_sl)
-
 	return new_arr
 
 # TODO: these two funcs just need to be one func tbh

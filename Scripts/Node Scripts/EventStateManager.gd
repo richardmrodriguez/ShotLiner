@@ -277,12 +277,7 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 						print_debug("Current Shotline segments: ", cur_shotline_ref.segments_filmed_or_unfilmed)
 						print_debug("Attempted segment to get: ", segment.pageline_uuid, " | ", cur_pageline_str_for_segment)
 						continue
-					#FIXME: !!! Multipage Shotlines have segment inversion broken
-					# I am mad
-					# The issue is not with setting the segments
-					# The issue must categorically be later in the pipeline
-					# This appears to mostly happen when creating shotlines
-						# that start halfwayish down the page
+					
 					var cur_segment_state: bool = cur_shotline_ref.segments_filmed_or_unfilmed[segment.pageline_uuid]
 					var cur_shotline_uuid: String = last_hovered_shotline_node.shotline_obj.shotline_uuid
 					
@@ -418,7 +413,7 @@ func _handle_left_click(event: InputEvent) -> void:
 
 							#print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
 						create_and_add_shotline_node_to_page(new_shotline)
-						
+			# FIXME: Multipage Shotlines don't update their squiggle lines properly when resized						
 			TOOL.MOVE:
 				if is_resizing_shotline:
 					is_resizing_shotline = false
@@ -501,7 +496,8 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 						]
 					)
 					print(CommandHistory.add_command(move_shotline_cmd))
-					
+		# FIXME: Can't erase one-segment-long Shotlines..... the endcap regions are just too big and overlap
+		# maybe just change the mouse filter settings on the endcaps?
 		TOOL.ERASE:
 			if button_index != 1:
 				return
@@ -549,7 +545,7 @@ func _on_file_dialog_cancelled(fd: FileDialog) -> void:
 func _on_file_dialog_file_selected(path: String, sl_fileaction: SLFileAction.FILE_ACTION, fd: FileDialog) -> void:
 	match sl_fileaction:
 		SLFileAction.FILE_ACTION.SAVE_FILE:
-			
+
 			if SLFileHandler.save_file(path):
 				print("Saved.....")
 		SLFileAction.FILE_ACTION.EXPORT_CSV:

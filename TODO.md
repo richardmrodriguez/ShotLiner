@@ -22,7 +22,7 @@
 - [x] Improved spacing on begin cap and end cap regions of lines
 - [ ] LAYER SELECTION DROPDOWN - the godot editor has a beautiful feature -- if you click in the scene view over a stack of many layers of nodes, it pops up a little dropdown so you can actually select the layer you want to manipulate. This would be good to have
 - [ ] Implement ShotLine modification ability
-  - [ ] Add different grab regions to a shotline
+  - [x] Add different grab regions to a shotline
   	- Top endpoint
   	- Bottom endpoint
   	- Body (middle, default)
@@ -35,18 +35,18 @@
 	- [ ] When a Shotline Node is moved, it should do the following:
 	  - [x] update the Shotline data struct to reflect this new position
 		- [x] only make the line multipage if creating the line past the top or bottom margins
-	  - [ ] auto-snap its vertical end points to the nearest Label coordinates
+	  - [x] auto-snap its vertical end points to the nearest Label coordinates
 	  - [ ] if while dragging the shotline body, the top or bottom ends up higher than the top line or lower than the bottom line, clip the line to fit
 		- [ ] if the line is already multipage (say, the line continues only down to the next page), when dragging the line body, the bottom of the line stays at the bottom of the page while the line itself moves horizontally, and the line top moves vertically
-  - [ ] Make Shotlines able to be multipage
+  - [x] Make Shotlines able to be multipage
   - [ ] Each Scene has a Shot Count that is updated whenever a new ShotLine is added that covers a particular scene
-  - [ ] RESIZE shotlines by clicking and dragging top or bottom endpoints
-  	- [ ] Add Signals to begin cap and end cap grab regions
-  	- [ ] ShotLines are extended to the next page by dragging a shotline's endpoint down past the final line of the page and into the margin
+  - [x] RESIZE shotlines by clicking and dragging top or bottom endpoints
+  	- [x] Add Signals to begin cap and end cap grab regions
+  	- [x] ShotLines are extended to the next page by dragging a shotline's endpoint down past the final line of the page and into the margin
   	  - Maybe have a ColorRect which appears at the bottom of the page when dragging, to indicate to the user that they are about to make a multipage line
   	  - When user lets go of line, the page automatically changes to the next page so the user can continue dragging the line
   	  - A more elegant solution should exist to acommodate lengthy, multipage oners at some point...
-  - [ ] Add ability to create squiggle sections in the middle of lines (unfilmed areas, useful for OTS / shot-reverse shot)
+  - [x] Add ability to create squiggle sections in the middle of lines (unfilmed areas, useful for OTS / shot-reverse shot)
 - [ ] Make it so that Shotlines CANNOT share the same Shot Numbers (specificially Scene Number AND Shotnumber)
 - [x] Refactored Shotline deletion behavior to be handled by EditorView script
   - [x] Implemented logic to determine if a mouse button release is actually happening over a particular ShotLine node
@@ -69,7 +69,8 @@
   - specifically, if I press ctrl or alt while a field is highlighted, it should not enter text into the field
 
 ## SAVING AND LOADING DOCUMENT
-- [ ] Create save and load mechanism for ShotLiner shotline data (probably just json tbh)
+- [x] Create save and load mechanism for ShotLiner shotline data (probably just json tbh)
+- [x] Able to export to CSV, which can be later opened in a spreadsheet software
 - [ ] !!! Ability to Export to an excel spreadsheet (entire point of the entire software lmao)
 
 ## OTHER TOOLS
@@ -86,6 +87,28 @@
   -  I can imagine using a rotary encoder mapped to arrow keys (or just the mouse wheel) to quickly scroll through lines, then using a button to start drawing a line, then scrolling until the desired end line, then clicking the button again to end the line
   -  This could actually be significant for either speed and efficiency or accessibilty
 -  [ ] Control-Tab cycles through the ShotLine selection on the page
+
+# SCREENPLAY PDF IMPORT
+- [ ] Import any PDF screenplay document
+- [ ] Implement a PDF screenplay parser
+  - [ ] Decide on which PDF library to use
+	- Require robust PDF parsing ability
+	- Should prefer support for Emoji, Cyrillic, CJK, etc.
+	- C#
+	  - PDFPig
+	  - iText7 (AGPL license available)
+	  - QuestPDF
+  - [ ] Parsing stage 1: Get all PDF text as horizontal lines
+	- Special case for Page numbers
+	- special case for headers / footers
+  - [ ] Parsing stage 2: use slightly modified Fountain parser to parse each line
+	- Where does the margins begin and end?
+	- How to handle US Letter vs A4 size?
+	- Spec screenplays are much easier to parse than production screenplays
+	- Special cases for Production Screenplays:
+	  - Scene headings with Scene Numbers
+	  - omitted scenes
+	  - new-to-draft text has `*` bullets in left and right margin of body text
 
 # QUALITY OF LIFE / BONUS
 - [x] Have ShotLines width be skinny by default, but fatter when focused or hovering over

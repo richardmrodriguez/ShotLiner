@@ -212,8 +212,8 @@ func construct_shotline_node(shotline: Shotline) -> void:
 
 	cur_pageline_label_height = screenplay_line_vertical_size
 	global_position = start_pos
-	print_debug(" -------------- ")
-	shotline_obj.print_segments_and_strings_with_limit()
+	#print_debug(" -------------- ")
+	#shotline_obj.print_segments_and_strings_with_limit()
 	populate_shotline_with_segments(shotline_length, cur_pageline_label_height)
 
 func align_shot_number_label() -> void:
@@ -257,6 +257,7 @@ func align_grab_regions() -> void:
 func populate_shotline_with_segments(
 	total_shotline_length: int,
 	line_label_height: float) -> void:
+
 	var cur_page_idx: int = EventStateManager.cur_page_idx
 
 	print("CHecking shotline length")
@@ -281,21 +282,24 @@ func populate_shotline_with_segments(
 	print(fnline_start_vector, fnline_end_vector)
 
 	# Update the shotline_obj.segments_filmed_or_unfilmed dict
-	# TODO: This incorrectly just puts all the squiggled shotlines at the top of the shotline container
-	# instead, we need to manually insert
 
-	var new_segments_fnlines: Array[FNLineGD] = ScreenplayDocument.get_array_of_fnlines_from_start_and_end_uuids(shotline_obj.start_uuid, shotline_obj.end_uuid)
+	var new_segments_fnlines: Array[FNLineGD] = ScreenplayDocument.get_array_of_fnlines_from_start_and_end_uuids(
+		shotline_obj.start_uuid, shotline_obj.end_uuid
+		)
 	var new_segments_ids: Array[String] = []
 	for fnl: FNLineGD in new_segments_fnlines:
 		new_segments_ids.append(fnl.uuid)
-	
-	#shotline_obj.segments_filmed_or_unfilmed.clear()
+
+	var old_segments: Dictionary = shotline_obj.segments_filmed_or_unfilmed.duplicate()
+	shotline_obj.segments_filmed_or_unfilmed.clear()
 	
 	for fnl: FNLineGD in new_segments_fnlines:
-		if shotline_obj.segments_filmed_or_unfilmed.keys().has(fnl.uuid):
+		if old_segments.keys().has(fnl.uuid):
+			shotline_obj.segments_filmed_or_unfilmed[fnl.uuid] = old_segments[fnl.uuid]
 			continue
 		shotline_obj.segments_filmed_or_unfilmed[fnl.uuid] = true
 
+	# This for loop actually creates the segment and adds it to the container
 	for segment_uuid: String in shotline_obj.segments_filmed_or_unfilmed:
 		if not new_segments_ids.has(segment_uuid):
 			continue
@@ -315,6 +319,9 @@ func populate_shotline_with_segments(
 		new_segment.pageline_uuid = segment_uuid
 		new_segment.set_straight_or_jagged(shotline_obj.segments_filmed_or_unfilmed[segment_uuid])
 		new_segment.set_segment_height(line_label_height)
+
+		#print_debug("segments AFTER populate with segments")
+		#shotline_obj.print_segments_and_strings_with_limit()
 		
 # ----------------- UPDATE NODE ---------------------
 func update_line_width(width: float) -> void:
