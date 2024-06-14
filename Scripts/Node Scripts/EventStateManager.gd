@@ -468,6 +468,7 @@ func _on_shotline_clicked(shotline_node: ShotLine2DContainer, button_index: int)
 
 func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int) -> void:
 	print("shotline released!!!")
+	#last_hovered_shotline_node = shotline_node
 	match cur_tool:
 		TOOL.MOVE:
 			if button_index != 1:
@@ -496,13 +497,12 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 						]
 					)
 					print(CommandHistory.add_command(move_shotline_cmd))
-		# FIXME: Can't erase one-segment-long Shotlines..... the endcap regions are just too big and overlap
-		# maybe just change the mouse filter settings on the endcaps?
+		
 		TOOL.ERASE:
 			if button_index != 1:
 				return
 			if shotline_node == last_hovered_shotline_node:
-				#print("Erasing...?")
+				print("Erasing...?")
 				if last_hovered_shotline_node.is_hovered_over:
 					var erase_command: EraseShotLineCommand = EraseShotLineCommand.new(
 						[
@@ -513,8 +513,9 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 					CommandHistory.add_command(erase_command)
 
 func _on_shotline_hovered_over(shotline_container: ShotLine2DContainer) -> void:
+	pass
 	#print("Shotline Hovered changed: ", shotline_node, shotline_node.is_hovered_over)
-	last_hovered_shotline_node = shotline_container
+	#last_hovered_shotline_node = shotline_container
 
 func _on_shotline_endcap_clicked(
 	shotline_endcap: EndcapGrabRegion,

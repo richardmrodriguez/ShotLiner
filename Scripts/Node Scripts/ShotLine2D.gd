@@ -544,6 +544,7 @@ func _input(event: InputEvent) -> void:
 		if is_hovered_over():
 			if not line_is_hovered_over:
 				line_is_hovered_over = true
+				EventStateManager.last_hovered_shotline_node = self
 		else:
 			if line_is_hovered_over:
 				line_is_hovered_over = false
