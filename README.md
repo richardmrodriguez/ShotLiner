@@ -48,11 +48,11 @@ Some of these features may not be implemented until a 2.x release.
 
 - Screenplay Draft merge-forward
   - Ability to merge current shotlines onto a new draft of the screenplay
-    - Because Shotliner stores each pageline with a unique UUID, it should be feasable to diff the current screenplay content with a newly imported draft. 
-    - Shotlines that are only on excised pages will be simply removed, but perhaps with a warning or "ghost" shotline to show what was lost
-    - Some shotlines may be partially cut off, i.e. start on a deleted page but end on a page that is not excised.
-      - these shotline fragments will be marked with a special color or outline or label, so the user can intervene manually
-    - This will be crucial for real production use.
+	- Because Shotliner stores each pageline with a unique UUID, it should be feasable to diff the current screenplay content with a newly imported draft. 
+	- Shotlines that are only on excised pages will be simply removed, but perhaps with a warning or "ghost" shotline to show what was lost
+	- Some shotlines may be partially cut off, i.e. start on a deleted page but end on a page that is not excised.
+	  - these shotline fragments will be marked with a special color or outline or label, so the user can intervene manually
+	- This will be crucial for real production use.
 
 ## DEPENDENCIES
 - [Fountain Parser GDExt](https://github.com/richardmrodriguez/fountain-parser-gdext)

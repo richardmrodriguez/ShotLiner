@@ -60,6 +60,10 @@ var cur_selected_shotline_endcap: EndcapGrabRegion
 
 var cur_page_idx: int = 0
 
+# ------ SIGNALS ----------
+
+signal page_changed
+
 # ------ READY ------
 
 func _ready() -> void:
@@ -165,6 +169,7 @@ func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
 				cur_page_idx
 				])
 			CommandHistory.add_command(page_nav_command)
+			page_changed.emit()
 
 		toolbar_node.TOOLBAR_BUTTON.PREV_PAGE:
 			var prev_page_idx: int = cur_page_idx - 1
@@ -173,6 +178,7 @@ func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
 				cur_page_idx
 				])
 			CommandHistory.add_command(page_nav_command)
+			page_changed.emit()
 		toolbar_node.TOOLBAR_BUTTON.SAVE_SHOTLINE_FILE:
 			SLFileHandler.open_file_dialog(
 				FileDialog.FILE_MODE_SAVE_FILE,
@@ -234,7 +240,7 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 		# highlight a pageline if the mouse is hovering over it
 		# TODO: If is_drawing, this should highlight the labels between the currently hovered pageline and the
 		# Last clicked pageline, and de-highlight any lines that aren't in that range
-		# var cur_highlighted_pageline_uuids: Array[String]
+		
 		for pageline in pageline_labels:
 			if pageline is PageLineLabel:
 				if pageline.get_global_rect().has_point(event.global_position):
@@ -302,8 +308,6 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 					selection_box_rect.size = page_node.get_global_mouse_position() - selection_box_rect.global_position
 
 		match cur_tool:
-			TOOL.DRAW:
-				pass
 			# Handle dragging shotlines
 			TOOL.MOVE:
 				if is_dragging_shotline:
