@@ -66,8 +66,19 @@ signal page_changed
 
 # ------ READY ------
 
+var test_var: String = "oogly boogly boo"
+var temp_doc_path: String = "Screenplay Files/VCR2L-2024-05-08.fountain"
+var temp_PDF_path: String = "/home/rich/Downloads/VCR2L-2024-05-03.pdf"
+
 func _ready() -> void:
 	selection_box_rect.color = Color(0.4, 0.4, 0.4, 0.4)
+
+	#PDFHandlerTesting
+	PDFHandler.EventStateManager = self
+	var file_bytes: PackedByteArray = FileAccess.get_file_as_bytes(temp_doc_path)
+	assert(file_bytes != PackedByteArray(), "file bytes not set.")
+	PDFHandler.DocFileBytes = file_bytes
+	print(PDFHandler.GetStringFromPDFPage(temp_PDF_path))
 	pass
 
 # ----- UITIL FUNCS ------
