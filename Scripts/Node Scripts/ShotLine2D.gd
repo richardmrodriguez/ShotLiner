@@ -2,6 +2,10 @@ extends VBoxContainer
 
 class_name ShotLine2DContainer
 
+# FIXME: TODO: Make the x-position RELATIVE to the pageline's width instead of a global absolute value
+	# This will enable resizing the font size, line spacing, etc. 
+	# but still allow the shotlines to place themselves properly
+
 @onready var shot_number_label: Label = $ShotNumber
 @onready var screenplay_page_panel: Panel = get_parent()
 @onready var begin_cap_grab_region: ColorRect = %BeginCapGrabRegion

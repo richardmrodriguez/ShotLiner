@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d4m6s114ojlv1"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/PDFHandler.cs" id="1_iv5ve"]
+
+[node name="PDFHandler" type="Node"]
+script = ExtResource("1_iv5ve")

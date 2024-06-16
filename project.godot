@@ -12,7 +12,7 @@ config_version=5
 
 config/name="ShotLiner"
 run/main_scene="res://EditorView/EditorView.tscn"
-config/features=PackedStringArray("4.2", "GL Compatibility")
+config/features=PackedStringArray("4.2", "C#", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -21,6 +21,7 @@ ScreenplayDocument="*res://Singletons/ScreenplayDocument.tscn"
 EventStateManager="*res://Singletons/EventStateManager.tscn"
 CommandHistory="*res://Singletons/CommandHistory.tscn"
 SLFileHandler="*res://Singletons/SLFileHandler.tscn"
+PDFHandler="*res://Singletons/PDFHandler.tscn"
 
 [debug]
 
