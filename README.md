@@ -55,6 +55,8 @@ Some of these features may not be implemented until a 2.x release.
 	- This will be crucial for real production use.
 
 ## DEPENDENCIES
+- [PdfPig](https://github.com/UglyToad/PdfPig)
+  - Apache 2.0
 - [Fountain Parser GDExt](https://github.com/richardmrodriguez/fountain-parser-gdext)
   - This is a wrapper for my also-WIP `fountain-parser-rs` ; this simply provides very basic fountain parsing.
 - [godot-uuid](https://github.com/binogure-studio/godot-uuid)
