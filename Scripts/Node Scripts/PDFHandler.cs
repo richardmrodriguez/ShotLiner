@@ -54,6 +54,7 @@ public partial class PDFHandler : Node
 		{
 			foreach (Page page in document.GetPages())
 			{
+				//GD.Print(page.Width, " | ", page.Height);
 				PDFPage NewPage = new();
 				IEnumerable<Word> words = page.GetWords();
 
@@ -74,12 +75,18 @@ public partial class PDFHandler : Node
 	private Godot.Collections.Array<PDFLineFN> GetLinesFromPageWords(IEnumerable<Word> words)
 	{
 		Godot.Collections.Array<PDFLineFN> NewLinesArr = new();
+		Word someWord = words.ElementAt(0);
+		Letter someLetter = someWord.Letters.ElementAt(0);
 
 		var rXYWithParams = new RecursiveXYCut(new RecursiveXYCut.RecursiveXYCutOptions()
 		{
-			MinimumWidth = 40.0,
-			DominantFontWidthFunc = letters => letters.Select(l => l.GlyphRectangle.Width).Average(),
-			DominantFontHeightFunc = letters => letters.Select(l => l.GlyphRectangle.Height).Average()
+
+			// Using RecursiveXYCut, setting the Minimum Width to the Page Width or larger 
+			// results in getting each horizontal line in the correct order. Because A4 scripts are narrower,
+			// I think it's probably fine to just keep this magic number of 86 characters wide.
+			MinimumWidth = someLetter.Width * 86,
+			//DominantFontWidthFunc = letters => letters.Select(l => l.GlyphRectangle.Width).Average(),
+			//DominantFontHeightFunc = letters => letters.Select(l => l.GlyphRectangle.Height).Average()
 		}
 		);
 		var blocks = rXYWithParams.GetBlocks(words);

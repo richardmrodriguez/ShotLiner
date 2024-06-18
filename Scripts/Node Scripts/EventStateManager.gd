@@ -84,6 +84,7 @@ func _ready() -> void:
 	print_debug("strings from PDFGD doc:")
 
 	for page: PDFPage in pdfGD_doc.PDFPages:
+		print("-----------------PAGE-------------")
 		for line: PDFLineFN in page.PDFLines:
 			#print(line.GetLineString())
 			print(line.GetLineString())
