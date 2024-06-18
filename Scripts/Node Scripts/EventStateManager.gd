@@ -77,9 +77,9 @@ func _ready() -> void:
 	#PDFHandler.EventStateManager = self
 	var file_bytes: PackedByteArray = FileAccess.get_file_as_bytes(temp_doc_path)
 	assert(file_bytes != PackedByteArray(), "file bytes not set.")
-	PDFHandler.DocFileBytes = file_bytes
-	print(PDFHandler.GetStringFromPDFPage(temp_PDF_path))
-	var pdfGD_doc: PDFDocGD = PDFHandler.GetDocGD(temp_PDF_path)
+	PDFIngester.DocFileBytes = file_bytes
+	print(PDFIngester.GetStringFromPDFPage(temp_PDF_path))
+	var pdfGD_doc: PDFDocGD = PDFIngester.GetDocGD(temp_PDF_path)
 
 	print_debug("strings from PDFGD doc:")
 
@@ -87,7 +87,7 @@ func _ready() -> void:
 		print("-----------------PAGE-------------")
 		for line: PDFLineFN in page.PDFLines:
 			#print(line.GetLineString())
-			print(line.GetLineString())
+			print(line.GetLinePosition(), " | ", line.GetLineString())
 	#print(pdfGD_doc.PDFPages[0].PDFLines[0].GetLineString())
 
 	#for page: PDFPage in pdfGD_doc.PDFP

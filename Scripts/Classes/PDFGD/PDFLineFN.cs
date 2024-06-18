@@ -28,5 +28,20 @@ public partial class PDFLineFN : GodotObject
         return newLineString;
     }
 
+    public Vector2 GetLinePosition()
+    {
+        if (PDFWords.Count == 0)
+        {
+            GD.Print("NO WORDS");
+            return new Vector2();
+        }
+
+
+        PDFWord FirstWord = PDFWords[0];
+
+        return FirstWord.GetPosition();
+
+    }
+
 
 }

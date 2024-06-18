@@ -13,7 +13,7 @@ using UglyToad.PdfPig.Graphics.Operations.TextState;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
 using PigDocAnalysis = UglyToad.PdfPig.DocumentLayoutAnalysis;
 using UglyToad.PdfPig.Core;
-public partial class PDFHandler : Node
+public partial class PDFIngester : Node
 {
 
 	public string DocFilePath = "";
@@ -117,8 +117,6 @@ public partial class PDFHandler : Node
 							FontSize = (float)l.FontSize,
 							PointSize = (float)l.PointSize
 						};
-						NewWord.GDLetters.Add(new PDFLetter());
-						//GD.Print("Added a bullshit letter");
 						NewWord.GDLetters.Add(NewLetter);
 						//GD.Print("Added a letter!");
 					}
