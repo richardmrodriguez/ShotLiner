@@ -21,7 +21,7 @@ ScreenplayDocument="*res://Singletons/ScreenplayDocument.tscn"
 EventStateManager="*res://Singletons/EventStateManager.tscn"
 CommandHistory="*res://Singletons/CommandHistory.tscn"
 SLFileHandler="*res://Singletons/SLFileHandler.tscn"
-PDFIngester="*res://Scripts/Node Scripts/PDFIngester.cs"
+PDFIngester="*res://addons/PDFGD/PDFIngester.cs"
 
 [debug]
 
@@ -46,6 +46,11 @@ import/blender/enabled=false
 [gui]
 
 theme/custom_font="res://Fonts/Courier Prime.ttf"
+
+[network]
+
+limits/debugger/max_chars_per_second=3276800
+limits/debugger/max_queued_messages=204800
 
 [rendering]
 

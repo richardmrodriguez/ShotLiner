@@ -13,19 +13,14 @@ using UglyToad.PdfPig.Graphics.Operations.TextState;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
 using PigDocAnalysis = UglyToad.PdfPig.DocumentLayoutAnalysis;
 using UglyToad.PdfPig.Core;
+
+// To use PDFIngester in your project, add PDFIngester.cs to your Autoload
 public partial class PDFIngester : Node
 {
 
 	public string DocFilePath = "";
 
 	public byte[] DocFileBytes;
-
-
-	public override void _Ready()
-	{
-
-	}
-
 
 
 	public string GetStringFromPDFPage(string PDFDocPath)
