@@ -73,12 +73,24 @@ var temp_PDF_path: String = "/home/rich/Downloads/VCR2L-2024-05-03.pdf"
 func _ready() -> void:
 	selection_box_rect.color = Color(0.4, 0.4, 0.4, 0.4)
 
-	#PDFHandlerTesting
-	PDFHandler.EventStateManager = self
+	# ------------------- PDFHandlerTesting ----------------------------
+	#PDFHandler.EventStateManager = self
 	var file_bytes: PackedByteArray = FileAccess.get_file_as_bytes(temp_doc_path)
 	assert(file_bytes != PackedByteArray(), "file bytes not set.")
 	PDFHandler.DocFileBytes = file_bytes
 	print(PDFHandler.GetStringFromPDFPage(temp_PDF_path))
+	var pdfGD_doc: PDFDocGD = PDFHandler.GetDocGD(temp_PDF_path)
+
+	print_debug("strings from PDFGD doc:")
+
+	for page: PDFPage in pdfGD_doc.PDFPages:
+		for line: PDFLineFN in page.PDFLines:
+			#print(line.GetLineString())
+			print(line.GetLineString())
+	#print(pdfGD_doc.PDFPages[0].PDFLines[0].GetLineString())
+
+	#for page: PDFPage in pdfGD_doc.PDFP
+	
 	pass
 
 # ----- UITIL FUNCS ------
