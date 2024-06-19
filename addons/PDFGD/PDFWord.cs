@@ -8,7 +8,7 @@ using System.Linq;
 [GlobalClass]
 public partial class PDFWord : GodotObject
 {
-    public Godot.Collections.Array<PDFLetter> GDLetters = new();
+    public Godot.Collections.Array<PDFLetter> PDFLetters = new();
 
     public Vector2 WordPos = new();
     public Vector2 WordBBox = new();
@@ -17,7 +17,7 @@ public partial class PDFWord : GodotObject
     public string GetWordString()
     {
         string newString = "";
-        foreach (PDFLetter letter in GDLetters)
+        foreach (PDFLetter letter in PDFLetters)
         {
             newString += letter.Str;
 
@@ -27,12 +27,12 @@ public partial class PDFWord : GodotObject
 
     public Vector2 GetPosition()
     {
-        if (GDLetters.Count == 0)
+        if (PDFLetters.Count == 0)
         {
             GD.Print(" NO LETTERS");
             return new Vector2();
         }
-        return GDLetters[0].Location;
+        return PDFLetters[0].Location;
     }
 
     private Vector2 GetWordBBoxFromLetters()

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d4m6s114ojlv1"]
+
+[ext_resource type="Script" path="res://Scripts/Node Scripts/PDFScreenplayParser.gd" id="1_n0lk7"]
+
+[node name="PDFScreenplayParser" type="Node"]
+script = ExtResource("1_n0lk7")

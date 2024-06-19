@@ -22,6 +22,7 @@ EventStateManager="*res://Singletons/EventStateManager.tscn"
 CommandHistory="*res://Singletons/CommandHistory.tscn"
 SLFileHandler="*res://Singletons/SLFileHandler.tscn"
 PDFIngester="*res://addons/PDFGD/PDFIngester.cs"
+PDFScreenplayParser="*res://Singletons/PDFScreenplayParser.tscn"
 
 [debug]
 

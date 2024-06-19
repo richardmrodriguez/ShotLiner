@@ -84,8 +84,24 @@ func _ready() -> void:
 
 	for page: PDFPage in pdfGD_doc.PDFPages:
 		print("-----------------PAGE-------------")
-		var table: String = "[table=2]"
+		var table: String = "[table=3]"
+		
 		for line: PDFLineFN in page.PDFLines:
+			var letter_width: float = line.PDFWords[0].PDFLetters[0].Width
+			var letter_point_size: float = line.PDFWords[0].PDFLetters[0].PointSize
+			table += "[cell]%s[/cell]" % (
+				PDFScreenplayParser.PDF_LINE_STATE.keys()[
+					PDFScreenplayParser.get_PDFLine_body_state(
+						line,
+						page.PageSizeInPoints,
+						letter_point_size,
+						letter_width
+						
+						)
+					]
+
+					+ ""
+				)
 			table += "[cell]%s[/cell]" % (line.GetLinePosition())
 			table += "[cell]%s[/cell]" % ("\t" + line.GetLineString())
 			#print(line.GetLineString())

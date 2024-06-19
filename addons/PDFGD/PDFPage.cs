@@ -7,5 +7,6 @@ using System.Collections.Generic;
 public partial class PDFPage : GodotObject
 {
     public string NominalPageNum = ""; // page number could be 3A, for example
+    public Vector2 PageSizeInPoints = new();
     public Godot.Collections.Array<PDFLineFN> PDFLines = new(); // horizontal lines of text, with fountain line type (?)
 }

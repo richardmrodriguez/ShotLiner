@@ -55,6 +55,7 @@ public partial class PDFIngester : Node
 
 				Godot.Collections.Array<PDFLineFN> NewLines = GetLinesFromPageWords(words);
 				NewPage.PDFLines = NewLines;
+				NewPage.PageSizeInPoints = new Vector2((float)page.Width, (float)page.Height);
 				docGD.PDFPages.Add(NewPage);
 
 			}
@@ -112,7 +113,7 @@ public partial class PDFIngester : Node
 							FontSize = (float)l.FontSize,
 							PointSize = (float)l.PointSize
 						};
-						NewWord.GDLetters.Add(NewLetter);
+						NewWord.PDFLetters.Add(NewLetter);
 						//GD.Print("Added a letter!");
 					}
 					NewLine.PDFWords.Add(NewWord);

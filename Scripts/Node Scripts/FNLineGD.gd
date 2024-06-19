@@ -12,3 +12,5 @@ var fn_type: String
 var is_type_forced: String
 #[var]
 var uuid: String
+var scene_number: String
+var is_revised: bool
