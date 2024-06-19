@@ -56,7 +56,7 @@ Some of these features may not be implemented until a 2.x release.
 
 ## DEPENDENCIES
 - [PdfPig](https://github.com/UglyToad/PdfPig)
-  - Apache 2.0
+  - This Library is used to ingest PDF text content, including the exact position of each character or grapheme on a page
 - [Fountain Parser GDExt](https://github.com/richardmrodriguez/fountain-parser-gdext)
   - This is a wrapper for my also-WIP `fountain-parser-rs` ; this simply provides very basic fountain parsing.
 - [godot-uuid](https://github.com/binogure-studio/godot-uuid)
