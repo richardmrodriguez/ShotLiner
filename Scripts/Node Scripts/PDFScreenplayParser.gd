@@ -13,10 +13,10 @@ enum PDF_LINE_STATE {
     BELOW_BOTTOM_MARGIN,
 }
 
-var left_margin_in: float = 1.5
-var right_margin_in: float = 1
-var top_margin_in: float = 1
-var bottom_margin_in: float = 1
+@export var left_margin_in: float = 1.5
+@export var right_margin_in: float = 1
+@export var top_margin_in: float = 1
+@export var bottom_margin_in: float = 1
 
 # TODO: Special Case Parsing for Production Script elements:
 
@@ -36,7 +36,9 @@ var bottom_margin_in: float = 1
 
 #
 
-## Returns false if line's x position is outside the "body" area
+## Returns the state of a PDFLine, if it is within the body margins,
+## or if it is above or below the top and bottom, 
+## or if it is before or after (or both before and after) the left and right-hand margins. 
 func get_PDFLine_body_state(
     line: PDFLineFN,
     pdf_page_size_points: Vector2,
@@ -49,15 +51,7 @@ func get_PDFLine_body_state(
     var is_above_top_margin: bool = false
     var is_below_bottom_margin: bool = false
 
-    var dpi: float = 72.0
-    var page_type: String = "A4"
-    if (pdf_page_size_points.x / pdf_page_size_points.y) > 0.709:
-        page_type = "USLETTER"
-
-    if page_type == "USLETTER":
-        dpi = pdf_page_size_points.x / 8.5
-    else:
-        dpi = pdf_page_size_points.x / 8.3
+    var dpi: float = get_dpi_from_pagesize(pdf_page_size_points)
 
     var page_size_in_letters: Vector2 = Vector2(
         pdf_page_size_points.x / letter_width,
@@ -101,6 +95,63 @@ func get_PDFLine_body_state(
 
     return PDF_LINE_STATE.WITHIN_BODY_MARGINS
 
-func get_PDF_font_size_mode_as_int() -> int:
-    return 0
+func get_dpi_from_pagesize(pagesize: Vector2) -> float:
+    var dpi: float = 72.0
+    var page_type: String = "A4"
+    if (pagesize.x / pagesize.y) > 0.709:
+        page_type = "USLETTER"
+
+    if page_type == "USLETTER":
+        dpi = pagesize.x / 8.5
+    else:
+        dpi = pagesize.x / 8.3
+    
+    return dpi
+
+## Get normalized body text, without line numbers or revision asterisks
+
+func get_normalized_body_text(
+    pdfline: PDFLineFN,
+    pdf_page_size_points: Vector2,
+    letter_point_size: float,
+    letter_width: float, ) -> String:
+
+    var normalized_text: String = ""
+    var dpi: float = get_dpi_from_pagesize(pdf_page_size_points)
+    match get_PDFLine_body_state(
+        pdfline,
+        pdf_page_size_points,
+        letter_point_size,
+        letter_width):
+        PDF_LINE_STATE.BEFORE_LEFT_MARGIN, PDF_LINE_STATE.AFTER_RIGHT_MARGIN, PDF_LINE_STATE.BEFORE_LEFT_AND_AFTER_RIGHT_MARGIN:
+            var last_pdf_word: PDFWord = null
+            for cur_word: PDFWord in pdfline.PDFWords:
+                var first_letter_pos: float = cur_word.PDFLetters[0].Location.x
+                if (first_letter_pos < dpi * left_margin_in) or ((pdf_page_size_points.x - first_letter_pos) < dpi * right_margin_in
+                ):
+                    continue
+                else:
+                    normalized_text += get_spaces_between_character_positions(
+                        cur_word,
+                        last_pdf_word,
+                        dpi)
+                    if not last_pdf_word:
+                        last_pdf_word = cur_word
+                        
+                        #assert(false, normalized_text)
+                        
+                    normalized_text += cur_word.GetWordString()
+                    last_pdf_word = cur_word
+    
+    return normalized_text
+
+func get_spaces_between_character_positions(new_word: PDFWord, old_word: PDFWord, dpi: float) -> String:
+    if not old_word:
+        return ""
+    var new_x: float = new_word.PDFLetters[0].Location.x
+    var old_x: float = old_word.PDFLetters[- 1].Location.x
+    var char_width: float = dpi * 0.1
+    var spaces: int = int(abs(new_x - old_x) / char_width)
+        
+    return " ".repeat(spaces)
     

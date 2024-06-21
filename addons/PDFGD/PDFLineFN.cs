@@ -11,6 +11,8 @@ public partial class PDFLineFN : GodotObject
     public string NominalSceneNum = ""; // Scene num could be 42B for example
     public string LineUUID = "";
 
+    public int LineState = 0; //PDFParser.PDF_LINE_STATE enum
+
     public string GetLineString()
     {
         string newLineString = "";
@@ -18,7 +20,8 @@ public partial class PDFLineFN : GodotObject
         Vector2 old_word_pos = new();
         foreach (PDFWord word in PDFWords)
         {
-            newLineString += word.GetWordString() + " "; // obviously a naive impelementation
+            newLineString += word.GetWordString() + " ";
+            // FIXME: obviously a naive impelementation that does not account for custom spacing or use of tabs
             // TODO: use the space between words to figure out how many character widths of space 
             // go between them
             // Or, figure out a new strategy to get horizontal lines of text or smth idk
@@ -33,7 +36,6 @@ public partial class PDFLineFN : GodotObject
         if (PDFWords.Count == 0)
         {
             GD.Print("NO WORDS");
-            return new Vector2();
         }
 
 

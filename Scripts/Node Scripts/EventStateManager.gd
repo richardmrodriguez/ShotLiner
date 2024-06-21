@@ -81,7 +81,6 @@ func _ready() -> void:
 	var pdfGD_doc: PDFDocGD = PDFIngester.GetDocGD(temp_PDF_path)
 
 	print_debug("strings from PDFGD doc:")
-
 	for page: PDFPage in pdfGD_doc.PDFPages:
 		print("-----------------PAGE-------------")
 		var table: String = "[table=3]"
@@ -89,21 +88,31 @@ func _ready() -> void:
 		for line: PDFLineFN in page.PDFLines:
 			var letter_width: float = line.PDFWords[0].PDFLetters[0].Width
 			var letter_point_size: float = line.PDFWords[0].PDFLetters[0].PointSize
-			table += "[cell]%s[/cell]" % (
-				PDFScreenplayParser.PDF_LINE_STATE.keys()[
-					PDFScreenplayParser.get_PDFLine_body_state(
+			line.LineState = PDFScreenplayParser.get_PDFLine_body_state(
+				line,
+				page.PageSizeInPoints,
+				letter_point_size,
+				letter_width
+				)
+			var line_string: String = line.GetLineString()
+			match line.LineState:
+				PDFScreenplayParser.PDF_LINE_STATE.WITHIN_BODY_MARGINS:
+					pass
+				PDFScreenplayParser.PDF_LINE_STATE.ABOVE_TOP_MARGIN, PDFScreenplayParser.PDF_LINE_STATE.BELOW_BOTTOM_MARGIN:
+					pass
+				_:
+					line_string = PDFScreenplayParser.get_normalized_body_text(
 						line,
 						page.PageSizeInPoints,
 						letter_point_size,
 						letter_width
-						
 						)
-					]
 
-					+ ""
+			table += "[cell]%s[/cell]" % (
+				PDFScreenplayParser.PDF_LINE_STATE.keys()[line.LineState]
 				)
 			table += "[cell]%s[/cell]" % (line.GetLinePosition())
-			table += "[cell]%s[/cell]" % ("\t" + line.GetLineString())
+			table += "[cell]%s[/cell]" % ("\t" + line_string)
 			#print(line.GetLineString())
 			#print(line.GetLinePosition(), " | ", line.GetLineString())
 		table += "[/table]"
