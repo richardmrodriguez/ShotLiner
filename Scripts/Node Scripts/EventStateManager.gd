@@ -84,7 +84,7 @@ func _ready() -> void:
 	for page: PDFPage in pdfGD_doc.PDFPages:
 		print("-----------------PAGE-------------")
 		var table: String = "[table=3]"
-		
+		# TODO: Handle vertical offset between lines, insert "blank lines" in between for spacing
 		for line: PDFLineFN in page.PDFLines:
 			var letter_width: float = line.PDFWords[0].PDFLetters[0].Width
 			var letter_point_size: float = line.PDFWords[0].PDFLetters[0].PointSize
@@ -94,19 +94,9 @@ func _ready() -> void:
 				letter_point_size,
 				letter_width
 				)
-			var line_string: String = line.GetLineString()
-			match line.LineState:
-				PDFScreenplayParser.PDF_LINE_STATE.WITHIN_BODY_MARGINS:
-					pass
-				PDFScreenplayParser.PDF_LINE_STATE.ABOVE_TOP_MARGIN, PDFScreenplayParser.PDF_LINE_STATE.BELOW_BOTTOM_MARGIN:
-					pass
-				_:
-					line_string = PDFScreenplayParser.get_normalized_body_text(
-						line,
-						page.PageSizeInPoints,
-						letter_point_size,
-						letter_width
-						)
+			var line_string: String = PDFScreenplayParser.get_normalized_body_text(
+				line,
+				page.PageSizeInPoints)
 
 			table += "[cell]%s[/cell]" % (
 				PDFScreenplayParser.PDF_LINE_STATE.keys()[line.LineState]

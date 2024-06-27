@@ -10,6 +10,7 @@ public partial class PDFLineFN : GodotObject
     public string FNLineType = "";
     public string NominalSceneNum = ""; // Scene num could be 42B for example
     public string LineUUID = "";
+    public string NormalizedLine = "";
 
     public int LineState = 0; //PDFParser.PDF_LINE_STATE enum
 

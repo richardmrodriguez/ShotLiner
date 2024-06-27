@@ -394,7 +394,7 @@ func update_length_from_endcap_drag(
 			continue
 		if not line_label_height_set:
 			line_label_height = cur_screenplay_line.size.y
-			screenplay_line_offset = int(y_movement_delta / line_label_height)
+			screenplay_line_offset = roundi(y_movement_delta / line_label_height)
 			if screenplay_line_offset == 0:
 				return
 			line_label_height_set = true

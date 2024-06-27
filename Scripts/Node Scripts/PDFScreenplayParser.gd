@@ -108,50 +108,96 @@ func get_dpi_from_pagesize(pagesize: Vector2) -> float:
     
     return dpi
 
-## Get normalized body text, without line numbers or revision asterisks
-
+## Get normalized body text, without line numbers or revision asterisks which lie outside the body margins
 func get_normalized_body_text(
     pdfline: PDFLineFN,
-    pdf_page_size_points: Vector2,
-    letter_point_size: float,
-    letter_width: float, ) -> String:
+    pdf_page_size_points: Vector2) -> String:
+
+    if pdfline.NormalizedLine != "":
+        return pdfline.NormalizedLine
 
     var normalized_text: String = ""
     var dpi: float = get_dpi_from_pagesize(pdf_page_size_points)
-    match get_PDFLine_body_state(
-        pdfline,
-        pdf_page_size_points,
-        letter_point_size,
-        letter_width):
-        PDF_LINE_STATE.BEFORE_LEFT_MARGIN, PDF_LINE_STATE.AFTER_RIGHT_MARGIN, PDF_LINE_STATE.BEFORE_LEFT_AND_AFTER_RIGHT_MARGIN:
-            var last_pdf_word: PDFWord = null
-            for cur_word: PDFWord in pdfline.PDFWords:
-                var first_letter_pos: float = cur_word.PDFLetters[0].Location.x
-                if (first_letter_pos < dpi * left_margin_in) or ((pdf_page_size_points.x - first_letter_pos) < dpi * right_margin_in
-                ):
-                    continue
-                else:
-                    normalized_text += get_spaces_between_character_positions(
-                        cur_word,
-                        last_pdf_word,
-                        dpi)
-                    if not last_pdf_word:
-                        last_pdf_word = cur_word
-                        
-                        #assert(false, normalized_text)
-                        
-                    normalized_text += cur_word.GetWordString()
-                    last_pdf_word = cur_word
-    
+   
+    var last_pdf_word: PDFWord = null
+    for cur_word: PDFWord in pdfline.PDFWords:
+        var first_letter_pos: float = cur_word.PDFLetters[0].Location.x
+        if (first_letter_pos < dpi * left_margin_in) or ((pdf_page_size_points.x - first_letter_pos) < dpi * right_margin_in
+        ):
+            continue
+        else:
+            normalized_text += " ".repeat(get_spaces_between_character_positions(
+                cur_word,
+                last_pdf_word,
+                dpi))
+            if not last_pdf_word:
+                last_pdf_word = cur_word
+                
+                #assert(false, normalized_text)
+                
+            normalized_text += cur_word.GetWordString()
+            last_pdf_word = cur_word
+# TODO: When using this func, put this result in the pdfline's NormalizedLine string
     return normalized_text
 
-func get_spaces_between_character_positions(new_word: PDFWord, old_word: PDFWord, dpi: float) -> String:
+func get_spaces_between_character_positions(new_word: PDFWord, old_word: PDFWord, dpi: float) -> int:
     if not old_word:
-        return ""
+        return 0
     var new_x: float = new_word.PDFLetters[0].Location.x
     var old_x: float = old_word.PDFLetters[- 1].Location.x
     var char_width: float = dpi * 0.1
-    var spaces: int = int(abs(new_x - old_x) / char_width)
+    var spaces: int = roundi(abs(new_x - old_x) / char_width)
         
-    return " ".repeat(spaces)
+    return spaces
+
+# TODO: make use of the following funcs
+
+## Iterates over the pages of a PDFDocGD, returns an Array of local modes of y-height differences between PDFLineFNs.
+## In other words, each element of the Array is the most-occurring y-height difference for that particular page.
+## This func may not return the exact number of elements as there are pages in the PDFDocGD.
+func get_modes_of_line_y_deltas_from_doc(pdfdoc: PDFDocGD, excluded_pages: Array[int]=[]) -> Array[float]:
     
+    var y_deltas: Array[float] = []
+
+    var page_indices: Array = range(pdfdoc.PDFPages.size())
+
+    for ex: int in excluded_pages:
+        if excluded_pages == []:
+            break
+        if page_indices.has(ex):
+            page_indices.remove_at(page_indices.find(ex))
+
+    for pidx: int in page_indices:
+        var page: PDFPage = pdfdoc.PDFPages[pidx]
+        var local_deltas: Array[float] = []
+
+        var last_line: PDFLineFN = null
+        for line: PDFLineFN in page.PDFLines:
+            if not last_line:
+                last_line = line
+                continue
+            local_deltas.append(line.GetLinePosition().y)
+        
+        if local_deltas == []:
+            continue
+
+        y_deltas.append(get_mode(local_deltas))
+    
+    return y_deltas
+
+## Given the y-height delta between two PDFLineFNs, and the line_height (calculated from get_modes_of_line_y_deltas_from_doc()), 
+## returns the amount of carriage returns between the PDFLines.
+func get_carriage_returns_from_y_delta(y_delta: float, line_height: float) -> int:
+    if y_delta < line_height:
+        return 0
+    
+    return roundi(y_delta / line_height)
+
+func get_mode(arr: Array) -> float:
+    var occurance_dict: Dictionary = {}
+    for element: float in arr:
+        occurance_dict[arr.count(element)] = element
+    
+    var sorted_keys: Array = occurance_dict.keys().duplicate(true)
+    sorted_keys.sort()
+    return occurance_dict[sorted_keys[- 1]]
