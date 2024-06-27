@@ -146,7 +146,7 @@ func get_spaces_between_character_positions(new_word: PDFWord, old_word: PDFWord
     var new_x: float = new_word.PDFLetters[0].Location.x
     var old_x: float = old_word.PDFLetters[- 1].Location.x
     var char_width: float = dpi * 0.1
-    var spaces: int = roundi(abs(new_x - old_x) / char_width)
+    var spaces: int = roundi(abs(new_x - old_x) / char_width) - 1
         
     return spaces
 
