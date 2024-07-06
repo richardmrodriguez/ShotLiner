@@ -70,15 +70,22 @@ var test_var: String = "oogly boogly boo"
 var temp_doc_path: String = "Screenplay Files/VCR2L-2024-05-08.fountain"
 var temp_PDF_path: String = "/home/rich/Downloads/VCR2L-2024-05-03.pdf"
 
-func _ready() -> void:
-	selection_box_rect.color = Color(0.4, 0.4, 0.4, 0.4)
-
+func _on_page_node_ready() -> void:
 	# ------------------- PDFIngester Testing ----------------------------
 	#PDFHandler.EventStateManager = self
 	var file_bytes: PackedByteArray = FileAccess.get_file_as_bytes(temp_doc_path)
 	assert(file_bytes != PackedByteArray(), "file bytes not set.")
 	PDFIngester.DocFileBytes = file_bytes
 	var pdfGD_doc: PDFDocGD = PDFIngester.GetDocGD(temp_PDF_path)
+	# TODO - await the other nodes -namely the page node -- to be properly loaded and ready
+	while not page_node:
+		pass
+	
+	ScreenplayDocument.pages = ScreenplayDocument.get_pages_from_pdfdocgd(pdfGD_doc)
+	page_node.populate_container_with_page_lines(
+		ScreenplayDocument.pages[0],
+		0
+	)
 
 	print_debug("strings from PDFGD doc:")
 	for page: PDFPage in pdfGD_doc.PDFPages:
@@ -110,6 +117,10 @@ func _ready() -> void:
 	#print(pdfGD_doc.PDFPages[0].PDFLines[0].GetLineString())
 
 	#for page: PDFPage in pdfGD_doc.PDFP
+	pass
+
+func _ready() -> void:
+	selection_box_rect.color = Color(0.4, 0.4, 0.4, 0.4)
 	
 	pass
 

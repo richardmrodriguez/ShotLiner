@@ -21,3 +21,4 @@ static var foreground_color: Color = Color(
 )
 static var content_color: Color = Color.hex(0xB9B4C7)
 static var text_color: Color = Color.hex(0xEFEFEFEF)
+static var text_highlight_color: Color = Color(1, .8, 1, 0.125)

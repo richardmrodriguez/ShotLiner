@@ -3,6 +3,7 @@ extends Label
 class_name PageLineLabel
 
 var fnline: FNLineGD
+var pdfline: PDFLineFN
 var line_index: int
 
 var label_highlight: ColorRect

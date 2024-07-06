@@ -19,12 +19,6 @@ func _init() -> void:
 func _ready() -> void:
 	EventStateManager.editor_view = self
 	DisplayServer.window_set_min_size(Vector2(920, 920))
-	
-	var screenplay_file_content := ScreenplayDocument.load_screenplay("Screenplay Files/VCR2L-2024-05-08.fountain")
-	var fnlines: Array[FNLineGD] = screenplay_page.get_parsed_lines(screenplay_file_content)
-	ScreenplayDocument.pages = ScreenplayDocument.split_fnline_array_into_page_groups(fnlines)
-
-	screenplay_page.populate_container_with_page_lines(ScreenplayDocument.pages[EventStateManager.cur_page_idx])
 
 	# ------------ set colors ------------------
 	background_color_rect.color = ShotLinerColors.background_color

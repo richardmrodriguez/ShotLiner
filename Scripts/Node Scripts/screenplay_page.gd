@@ -41,6 +41,7 @@ func _ready() -> void:
 	right_page_margin.color = Color.TRANSPARENT
 	top_page_margin.color = Color.TRANSPARENT
 	bottom_page_margin.color = Color.TRANSPARENT
+	ready.connect(EventStateManager._on_page_node_ready)
 	
 func replace_current_page(page_content: PageContent, new_page_number: int=0) -> void:
 	for child in page_container.get_children():
@@ -55,29 +56,46 @@ func replace_current_page(page_content: PageContent, new_page_number: int=0) -> 
 
 func populate_container_with_page_lines(cur_page_content: PageContent, page_number: int=0) -> void:
 	current_page_number = page_number
-	var line_counter: int = 0
 	
-	for fnline: FNLineGD in cur_page_content.lines:
-
-		var screenplay_line: Label = construct_screenplay_line(fnline, line_counter)
+	for pageline: PDFLineFN in cur_page_content.pdflines:
+		var screenplay_line: PageLineLabel = construct_pdfline_label(pageline)
 		page_container.add_child(screenplay_line)
+		screenplay_line.set_position(
+			screenplay_line.pdfline.GetLinePosition()
+			) # TODO: The positions y-coordinate will be wrong; must subtract y coord from the pageheight
 
 		# adds a toggleable highlight to text lines
 		var line_bg := ColorRect.new()
 		screenplay_line.add_child(line_bg)
-		screenplay_line.label_highlight = line_bg
 		line_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		line_bg.color = Color(1, .8, 1, 0.125)
+		line_bg.color = ShotLinerColors.text_highlight_color
 		line_bg.set_size(line_bg.get_parent_area_size())
-		line_bg.set_size(Vector2(500, line_bg.get_rect().size.y))
+		line_bg.set_size(
+			Vector2(
+				6.3 * cur_page_content.dpi, # highlighter rect will be 63 chars wide
+				(13.0 / 72.0) * cur_page_content.dpi # highlighter rect will be a little over 1 char tall
+				)
+			)
 		line_bg.set_position(screenplay_line.position)
+		
+		screenplay_line.label_highlight = line_bg
 
 		screenplay_line.z_index = 0
 		line_bg.z_index = 1
 		line_bg.visible = false
-		line_counter += 1
 
 	page_lines_populated.emit()
+
+func construct_pdfline_label(pageline: PDFLineFN, line_idx: int=0) -> Label:
+	var new_label: PageLineLabel = PageLineLabel.new()
+	new_label.text = pageline.GetLineString()
+	new_label.pdfline = pageline
+	new_label.line_index = line_idx
+	new_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	new_label.add_theme_font_size_override("font_size", SP_FONT_SIZE)
+	new_label.add_theme_color_override("font_color", ShotLinerColors.text_color)
+	
+	return new_label
 
 func populate_page_panel_with_shotlines_for_page() -> void:
 	await get_tree().process_frame
@@ -99,37 +117,6 @@ func populate_page_panel_with_shotlines_for_page() -> void:
 	for sl: Shotline in shotlines_in_page:
 		var create_shotline_command: CreateShotLineCommand = CreateShotLineCommand.new([sl])
 		create_shotline_command.execute()
-
-func construct_screenplay_line(fnline: FNLineGD, idx: int) -> Label:
-
-	var screenplay_line := Label.new()
-	screenplay_line.set_script(preload ("res://Scripts/Node Scripts/LabelWithVars.gd"))
-	screenplay_line.fnline = fnline
-	screenplay_line.line_index = idx
-	screenplay_line.autowrap_mode = TextServer.AUTOWRAP_OFF
-	screenplay_line.add_theme_font_size_override("font_size", SP_FONT_SIZE)
-	screenplay_line.add_theme_color_override("font_color", ShotLinerColors.text_color)
-
-	match fnline.fn_type:
-		"Heading":
-			screenplay_line.add_theme_font_override("font",
-				load("res://Fonts/Courier Prime Bold.ttf"))
-			screenplay_line.text = fnline.string
-			#print("Heading: ", fnline.string)
-		"Character":
-			screenplay_line.text = " ".repeat(20) + fnline.string
-		"Parenthetical":
-			screenplay_line.text = " ".repeat(15) + fnline.string
-		"TransitionLine":
-			
-			screenplay_line.text = " ".repeat(50) + fnline.string
-		_:
-			if fnline.fn_type.begins_with("Dialog"):
-				screenplay_line.text = " ".repeat(10) + fnline.string
-			else:
-				screenplay_line.text = fnline.string
-	
-	return screenplay_line
 
 func set_color_of_all_page_margins(color: Color=Color.TRANSPARENT) -> void:
 	left_page_margin.color = color

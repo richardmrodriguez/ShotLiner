@@ -25,6 +25,18 @@ func load_screenplay(filename: String) -> String:
 	var content := file.get_as_text()
 	return content
 
+func get_pages_from_pdfdocgd(pdf: PDFDocGD) -> Array[PageContent]:
+	var pagearray: Array[PageContent] = []
+	
+	for page: PDFPage in pdf.PDFPages:
+		var cur_page: PageContent = PageContent.new()
+		for line: PDFLineFN in page.PDFLines:
+			cur_page.pdflines.append(line)
+		
+		pagearray.append(cur_page)
+	
+	return pagearray
+
 # This merely splits an array of FNLineGDs into smaller arrays. 
 # It then returns an array of those page arrays. This does not construct a ScreenplayPage object.
 func split_fnline_array_into_page_groups(fnlines: Array) -> Array[PageContent]:
