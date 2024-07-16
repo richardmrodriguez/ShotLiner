@@ -32,6 +32,8 @@ public partial class PDFLineFN : GodotObject
         return newLineString;
     }
 
+    // TODO: ipmlement a func to get the line of text with actual spaces between words,
+
     public Vector2 GetLinePosition()
     {
         if (PDFWords.Count == 0)

@@ -146,8 +146,8 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 
 	var new_shotline: Shotline = Shotline.new()
 
-	var start_line_page_idx: int = ScreenplayDocument.get_fnline_vector_from_uuid(start_uuid).x
-	var end_line_page_idx: int = ScreenplayDocument.get_fnline_vector_from_uuid(end_uuid).x
+	var start_line_page_idx: int = ScreenplayDocument.get_pdfline_vector_from_uuid(start_uuid).x
+	var end_line_page_idx: int = ScreenplayDocument.get_pdfline_vector_from_uuid(end_uuid).x
 
 	assert(start_line_page_idx != - 1, "Start line page index for shotline does not exist.")
 	assert(end_line_page_idx != - 1, "End line page index for shotline does not exist.")
@@ -172,11 +172,11 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 	if start_line_page_idx == end_line_page_idx:
 		var old_start_uuid: String = new_shotline.start_uuid
 		var old_end_uuid: String = new_shotline.end_uuid
-		var old_start_fnline_substr: String = ScreenplayDocument.get_fnline_from_uuid(old_start_uuid).string.substr(0, 10)
-		var old_end_fnline_substr: String = ScreenplayDocument.get_fnline_from_uuid(old_end_uuid).string.substr(0, 10)
+		var old_start_fnline_substr: String = ScreenplayDocument.get_pdfline_from_uuid(old_start_uuid).GetLineString().substr(0, 10)
+		var old_end_fnline_substr: String = ScreenplayDocument.get_pdfline_from_uuid(old_end_uuid).GetLineString().substr(0, 10)
 
-		var old_start_idx: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(old_start_uuid)
-		var old_end_idx: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(old_end_uuid)
+		var old_start_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(old_start_uuid)
+		var old_end_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(old_end_uuid)
 		if old_start_idx.y > old_end_idx.y:
 			print("rearranged!!!!!!!!!!!!!!!!!")
 			new_shotline.start_uuid = old_end_uuid
@@ -259,6 +259,22 @@ func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
 		toolbar_node.TOOLBAR_BUTTON.ERASE:
 			cur_tool = TOOL.ERASE
 
+func _highlight_pageline_if_hovered(pageline_labels: Array, event_global_pos: Vector2) -> void:
+	for pageline: PageLineLabel in pageline_labels:
+		if not pageline is PageLineLabel:
+			continue
+			
+		if pageline.get_global_rect().has_point(event_global_pos):
+			pageline.label_highlight.visible = true
+			var cur_child_uuid: String = pageline.get_uuid()
+			if EventStateManager.last_hovered_line_uuid != cur_child_uuid:
+				EventStateManager.last_hovered_line_uuid = cur_child_uuid
+				#screenplay_line_hovered_over.emit(cur_child_uuid)
+				#print(screenplay_line.get_index(), "   ", screenplay_line.fnline.fn_type)
+		else:
+			if not (is_drawing or is_inverting_line):
+				pageline.label_highlight.visible = false
+
 func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 	
 	if event is InputEventMouseButton:
@@ -288,25 +304,17 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 			_handle_right_click(event)
 
 	if event is InputEventMouseMotion:
-		var pageline_labels: Array[Node] = page_node.page_container.get_children()
+		var pageline_labels: Array = page_node.page_container.get_children().filter(
+			func(child: Node) -> bool:
+				return child is PageLineLabel
+		)
 		var cur_global_mouse_pos: Vector2 = editor_view.get_global_mouse_position()
 
 		# highlight a pageline if the mouse is hovering over it
 		# TODO: If is_drawing, this should highlight the labels between the currently hovered pageline and the
 		# Last clicked pageline, and de-highlight any lines that aren't in that range
 		
-		for pageline in pageline_labels:
-			if pageline is PageLineLabel:
-				if pageline.get_global_rect().has_point(event.global_position):
-					pageline.label_highlight.visible = true
-					var cur_child_uuid: String = pageline.fnline.uuid
-					if EventStateManager.last_hovered_line_uuid != cur_child_uuid:
-						EventStateManager.last_hovered_line_uuid = cur_child_uuid
-						#screenplay_line_hovered_over.emit(cur_child_uuid)
-						#print(screenplay_line.get_index(), "   ", screenplay_line.fnline.fn_type)
-				else:
-					if not (is_drawing or is_inverting_line):
-						pageline.label_highlight.visible = false
+		_highlight_pageline_if_hovered(pageline_labels, event.global_position)
 
 		#Highlight the margins if mouse is over a margin rect
 		if is_drawing:

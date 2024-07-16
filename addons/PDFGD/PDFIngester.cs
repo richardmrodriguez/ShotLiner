@@ -118,6 +118,7 @@ public partial class PDFIngester : Node
 					}
 					NewLine.PDFWords.Add(NewWord);
 				}
+				NewLine.LineUUID = ""; // TODO: Assign each PDFLine a UUID
 				NewLinesArr.Add(NewLine);
 			}
 

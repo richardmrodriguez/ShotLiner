@@ -56,13 +56,20 @@ func replace_current_page(page_content: PageContent, new_page_number: int=0) -> 
 
 func populate_container_with_page_lines(cur_page_content: PageContent, page_number: int=0) -> void:
 	current_page_number = page_number
-	
+	var pdf_height: float = cur_page_content.page_size.y
+
 	for pageline: PDFLineFN in cur_page_content.pdflines:
+		var line_height: float = cur_page_content.dpi * (12.0 / 72.0)
+		var raw_pdf_pos: Vector2 = pageline.GetLinePosition()
 		var screenplay_line: PageLineLabel = construct_pdfline_label(pageline)
 		page_container.add_child(screenplay_line)
+		var new_pdf_pos: Vector2 = Vector2(
+			raw_pdf_pos.x,
+			(pdf_height - raw_pdf_pos.y) - line_height
+		)
 		screenplay_line.set_position(
-			screenplay_line.pdfline.GetLinePosition()
-			) # TODO: The positions y-coordinate will be wrong; must subtract y coord from the pageheight
+			new_pdf_pos
+		) # TODO: The positions y-coordinate will be wrong; must subtract y coord from the pageheight
 
 		# adds a toggleable highlight to text lines
 		var line_bg := ColorRect.new()
@@ -76,7 +83,7 @@ func populate_container_with_page_lines(cur_page_content: PageContent, page_numb
 				(13.0 / 72.0) * cur_page_content.dpi # highlighter rect will be a little over 1 char tall
 				)
 			)
-		line_bg.set_position(screenplay_line.position)
+		line_bg.set_position(Vector2(0, 0))
 		
 		screenplay_line.label_highlight = line_bg
 

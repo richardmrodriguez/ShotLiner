@@ -92,7 +92,7 @@ func is_hovered_over() -> bool:
 	return false
 
 # ---------------- CONSTRUCT NODE ------------------------
-
+	# TODO: Make the shotlines appear at
 func construct_shotline_node(shotline: Shotline) -> void:
 	
 	shotline_obj = shotline
@@ -104,8 +104,8 @@ func construct_shotline_node(shotline: Shotline) -> void:
 	var cur_start_uuid: String = shotline_obj.start_uuid
 	var cur_end_uuid: String = shotline_obj.end_uuid
 
-	var cur_start_page_line_indices: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(cur_start_uuid)
-	var cur_end_page_line_indices: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(cur_end_uuid)
+	var cur_start_page_line_indices: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(cur_start_uuid)
+	var cur_end_page_line_indices: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(cur_end_uuid)
 
 	var shotline_start_page_idx: int = cur_start_page_line_indices.x
 	var shotline_end_page_idx: int = cur_end_page_line_indices.x
@@ -133,16 +133,16 @@ func construct_shotline_node(shotline: Shotline) -> void:
 	var local_end_label: PageLineLabel
 	var local_start_label: PageLineLabel
 
-	var debug_fnline_str: String = ScreenplayDocument.get_fnline_from_uuid(cur_end_uuid).string.substr(0, 10)
+	var debug_pdfline_str: String = ScreenplayDocument.get_pdfline_from_uuid(cur_end_uuid).GetLineString().substr(0, 10)
 	#print("end_fnline_uuid: ", cur_end_uuid, " | ", debug_fnline_str)
 	if not (starts_on_earlier_page or ends_on_later_page):
 		for pageline: PageLineLabel in cur_pagelines:
-			if pageline.fnline.uuid == cur_start_uuid:
+			if pageline.get_uuid() == cur_start_uuid:
 				
 				pageline_start = pageline
 				pageline_real_start_idx = pageline.get_index()
 				#print("start line: ", spl.fnline.fn_type, " | ", spl.text, )
-			if pageline.fnline.uuid == cur_end_uuid:
+			if pageline.get_uuid() == cur_end_uuid:
 				pageline_end = pageline
 				pageline_real_end_idx = pageline.get_index()
 		#print("Normal shotline")
@@ -279,11 +279,11 @@ func populate_shotline_with_segments(
 		segments_container.remove_child(segment)
 		segment.queue_free()
 
-	var fnline_start_vector: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(shotline_obj.start_uuid)
-	var fnline_end_vector: Vector2i = ScreenplayDocument.get_fnline_vector_from_uuid(shotline_obj.end_uuid)
+	var pdfline_start_vec: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(shotline_obj.start_uuid)
+	var pdfline_end_vec: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(shotline_obj.end_uuid)
 
 	print("Checking new start and end Vec")
-	print(fnline_start_vector, fnline_end_vector)
+	print(pdfline_start_vec, pdfline_end_vec)
 
 	# Update the shotline_obj.segments_filmed_or_unfilmed dict
 
