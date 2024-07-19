@@ -12,7 +12,7 @@ func get_pagecontent_as_dict() -> Dictionary:
                 return {
                     "string": line.string,
                     "pos": line.pos,
-                    "uuid": line.uuid
+                    "uuid": line.get_uuid()
                 }
                 )
     }

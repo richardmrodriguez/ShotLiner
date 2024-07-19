@@ -384,7 +384,7 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 								if not pageline is PageLineLabel:
 									continue
 
-								if pageline.fnline.uuid == pageline_uuid:
+								if pageline.get_uuid() == pageline_uuid:
 									#print("Pageline Label Highlight: ", pageline.label_highlight)
 									if cur_selected_shotline.segments_filmed_or_unfilmed[pageline_uuid] == true:
 										pageline.label_highlight.visible = true
@@ -467,14 +467,14 @@ func _handle_left_click(event: InputEvent) -> void:
 							if cur_page_idx - 1 >= 0:
 								start_uuid = pages[cur_page_idx - 1].pdflines.back().uuid
 							else:
-								start_uuid = pages[cur_page_idx].pdflines.front().uuid
+								start_uuid = pages[cur_page_idx].pdflines.front().LineUUID
 							new_shotline = create_new_shotline_obj(start_uuid, last_hovered_line_uuid, event.position)
 						elif last_mouse_click_below_bottom_margin:
 							var end_uuid: String
 							if cur_page_idx + 1 < pages.size():
-								end_uuid = pages[cur_page_idx + 1].pdflines.front().uuid
+								end_uuid = pages[cur_page_idx + 1].pdflines.front().LineUUID
 							else:
-								end_uuid = pages[cur_page_idx].pdflines.back().uuid
+								end_uuid = pages[cur_page_idx].pdflines.back().LineUUID
 							new_shotline = create_new_shotline_obj(
 								last_clicked_line_uuid,
 								end_uuid,
