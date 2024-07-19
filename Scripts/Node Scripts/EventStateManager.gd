@@ -334,10 +334,10 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 						continue
 					var cur_segment_uuid: String = segment.pageline_uuid
 					var cur_shotline_ref: Shotline = last_hovered_shotline_node.shotline_obj
-					var cur_pageline_str_for_segment: String = ScreenplayDocument.get_fnline_from_uuid(cur_segment_uuid).string.substr(0, 10)
+					var dbg_pageline_str_for_segment: String = ScreenplayDocument.get_pdfline_from_uuid(cur_segment_uuid).GetLineString().substr(0, 10)
 					if not cur_shotline_ref.segments_filmed_or_unfilmed.keys().has(cur_segment_uuid):
 						print_debug("Current Shotline segments: ", cur_shotline_ref.segments_filmed_or_unfilmed)
-						print_debug("Attempted segment to get: ", segment.pageline_uuid, " | ", cur_pageline_str_for_segment)
+						print_debug("Attempted segment to get: ", segment.pageline_uuid, " | ", dbg_pageline_str_for_segment)
 						continue
 					
 					var cur_segment_state: bool = cur_shotline_ref.segments_filmed_or_unfilmed[segment.pageline_uuid]
