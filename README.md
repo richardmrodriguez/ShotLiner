@@ -3,6 +3,13 @@
 
 This tool is in pre-alpha, and is essentially a proof-of-concept until a proper mechanism for importing various documents is implemented.
 
+## CURRENT STATUS
+### 2024 - 06 - 19
+
+This tool is in the middle of a major refactor, to support PDF Document import. Before this, some of the features listed below were in fact working, but this refactor is currently breaking most of these for the time being.
+
+What is currently working, is that PDF documents can be imported, and creating shotlines are partially working.
+
 ## Current Features
 - Navigate between individual pages
 - Create multiple ShotLines per page
@@ -57,6 +64,4 @@ Some of these features may not be implemented until a 2.x release.
 ## DEPENDENCIES
 - [PdfPig](https://github.com/UglyToad/PdfPig)
   - This Library is used to ingest PDF text content, including the exact position of each character or grapheme on a page
-- [Fountain Parser GDExt](https://github.com/richardmrodriguez/fountain-parser-gdext)
-  - This is a wrapper for my also-WIP `fountain-parser-rs` ; this simply provides very basic fountain parsing.
 - [godot-uuid](https://github.com/binogure-studio/godot-uuid)
