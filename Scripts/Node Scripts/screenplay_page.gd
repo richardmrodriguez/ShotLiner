@@ -79,7 +79,7 @@ func populate_container_with_page_lines(cur_page_content: PageContent, page_numb
 		line_bg.set_size(line_bg.get_parent_area_size())
 		line_bg.set_size(
 			Vector2(
-				6.3 * cur_page_content.dpi, # highlighter rect will be 63 chars wide
+				screenplay_line.size.x,
 				(13.0 / 72.0) * cur_page_content.dpi # highlighter rect will be a little over 1 char tall
 				)
 			)
@@ -130,66 +130,6 @@ func set_color_of_all_page_margins(color: Color=Color.TRANSPARENT) -> void:
 	right_page_margin.color = color
 	bottom_page_margin.color = color
 	top_page_margin.color = color
-
-# -------- FOUNTAIN / STRING MANIPULATION --------
-
-func split_string_by_newline(string: String) -> PackedStringArray:
-	var split := string.split("\n", true, ) as PackedStringArray
-	return split
-
-func get_parsed_lines(screenplay_as_str: String) -> Array:
-	var pre_paginated_string := pre_paginate_lines_from_raw_string(screenplay_as_str)
-	var parsed_lines := FountainParser.get_parsed_lines_from_raw_string(pre_paginated_string)
-
-	var fnline_arr := construct_fnline_arr(parsed_lines)
-
-	for ln: FNLineGD in fnline_arr:
-		if ln.is_type_forced == "true":
-			ln.string = ln.string.erase(0)
-
-	return fnline_arr
-
-func pre_paginate_lines_from_raw_string(screenplay_str: String) -> String:
-	var preparsed_lines := FountainParser.get_parsed_lines_from_raw_string(screenplay_str)
-	var pre_fnline_arr: Array[FNLineGD] = construct_fnline_arr(preparsed_lines)
-	var paginated_lines: Array[String] = get_paginated_lines_from_fnline_arr(pre_fnline_arr)
-	var paginated_multiline_str: String = ""
-	for pgln: String in paginated_lines:
-		paginated_multiline_str += pgln + "\n"
-	return paginated_multiline_str
-
-func construct_fnline_arr(lines_dict: Dictionary) -> Array[FNLineGD]:
-	var linekeys := lines_dict.keys()
-	var fnline_arr: Array[FNLineGD] = []
-	linekeys.sort()
-	for key: int in linekeys:
-
-		var fnline_struct := FNLineGD.new()
-		fnline_struct.pos = key
-		fnline_struct.string = lines_dict[key][0]
-		fnline_struct.fn_type = lines_dict[key][1]
-		fnline_struct.is_type_forced = lines_dict[key][2]
-		fnline_arr.append(fnline_struct)
-	return fnline_arr
-
-func get_paginated_lines_from_fnline_arr(fnline_arr: Array) -> Array[String]:
-	var new_arr: Array[String] = []
-	var forced_type_offset: int = 0
-
-	for ln: FNLineGD in fnline_arr:
-		if ln.is_type_forced == "true":
-			forced_type_offset = 1
-		else:
-			forced_type_offset = 0
-		var s := ln.string
-		var sub_arr := []
-		if not ln.fn_type.begins_with("Dialog"):
-			sub_arr = recursive_line_splitter(s, SP_ACTION_WIDTH + forced_type_offset)
-		else:
-			sub_arr = recursive_line_splitter(s, SP_DIALOGUE_WIDTH + forced_type_offset)
-		for sub_s: String in sub_arr:
-			new_arr.append(sub_s)
-	return new_arr
 
 func recursive_line_splitter(line: String, max_length: int) -> Array:
 	var final_arr: Array = []

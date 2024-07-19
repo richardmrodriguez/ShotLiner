@@ -137,13 +137,14 @@ func pages_from_serialized_arr(arr: Array) -> Array[PageContent]:
 	for element: Dictionary in arr:
 		var new_pc: PageContent = PageContent.new()
 		for fnline_dict: Dictionary in element["lines"]:
-			var new_fnl: FNLineGD = FNLineGD.new()
-			new_fnl.string = fnline_dict["string"]
-			new_fnl.fn_type = fnline_dict["fn_type"]
-			new_fnl.is_type_forced = fnline_dict["is_type_forced"]
-			new_fnl.pos = fnline_dict["pos"] as int
-			new_fnl.uuid = fnline_dict["uuid"]
-			new_pc.lines.append(new_fnl)
+			assert(false, "NOT YET FIXED")
+			var new_pdfln: PDFLineFN = PDFLineFN.new()
+			new_pdfln.string = fnline_dict["string"]
+			new_pdfln.fn_type = fnline_dict["fn_type"]
+			new_pdfln.is_type_forced = fnline_dict["is_type_forced"]
+			new_pdfln.pos = fnline_dict["pos"] as int
+			new_pdfln.uuid = fnline_dict["uuid"]
+			new_pc.lines.append(new_pdfln)
 		new_arr.append(new_pc)
 	
 	return new_arr

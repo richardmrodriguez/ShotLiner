@@ -126,14 +126,6 @@ func _ready() -> void:
 
 # ----- UITIL FUNCS ------
 
-func get_page_idx_of_fnline_from_uuid(uuid: String) -> int:
-	for page: PageContent in ScreenplayDocument.pages:
-		for line: FNLineGD in page.lines:
-			if line.uuid == uuid:
-				return ScreenplayDocument.pages.find(page)
-
-	return - 1
-
 # -------------------- SHOTLINE LOGIC -----------------------------------
 
 func create_and_add_shotline_node_to_page(shotline: Shotline) -> void:
@@ -146,8 +138,13 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 
 	var new_shotline: Shotline = Shotline.new()
 
-	var start_line_page_idx: int = ScreenplayDocument.get_pdfline_vector_from_uuid(start_uuid).x
-	var end_line_page_idx: int = ScreenplayDocument.get_pdfline_vector_from_uuid(end_uuid).x
+	var start_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(start_uuid)
+	var end_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(end_uuid)
+
+	var start_line_page_idx: int = start_idx.x
+	var end_line_page_idx: int = end_idx.x
+
+	#assert(false, "start and end of current shotline: " + str(start_idx) + " | " + str(end_idx))
 
 	assert(start_line_page_idx != - 1, "Start line page index for shotline does not exist.")
 	assert(end_line_page_idx != - 1, "End line page index for shotline does not exist.")
@@ -172,8 +169,8 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 	if start_line_page_idx == end_line_page_idx:
 		var old_start_uuid: String = new_shotline.start_uuid
 		var old_end_uuid: String = new_shotline.end_uuid
-		var old_start_fnline_substr: String = ScreenplayDocument.get_pdfline_from_uuid(old_start_uuid).GetLineString().substr(0, 10)
-		var old_end_fnline_substr: String = ScreenplayDocument.get_pdfline_from_uuid(old_end_uuid).GetLineString().substr(0, 10)
+		var old_start_pdfline_substr: String = ScreenplayDocument.get_pdfline_from_uuid(old_start_uuid).GetLineString().substr(0, 10)
+		var old_end_pdfline_substr: String = ScreenplayDocument.get_pdfline_from_uuid(old_end_uuid).GetLineString().substr(0, 10)
 
 		var old_start_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(old_start_uuid)
 		var old_end_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(old_end_uuid)
@@ -181,9 +178,6 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 			print("rearranged!!!!!!!!!!!!!!!!!")
 			new_shotline.start_uuid = old_end_uuid
 			new_shotline.end_uuid = old_start_uuid
-			#print("fixed_start: ", new_shotline.start_uuid.substr(0, 5), "...", old_end_fnline_substr)
-			#print("fixed_end: ", new_shotline.end_uuid.substr(0, 5), "...", old_start_fnline_substr)
-
 	new_shotline.x_position = last_mouse_pos.x
 
 	print("Start and end page indices: ", new_shotline.start_page_index, " | ", new_shotline.end_page_index)
@@ -193,10 +187,10 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 	var found_start: bool = false
 	var found_end: bool = false
 
-	var fnlines_in_range: Array[FNLineGD] = ScreenplayDocument.get_array_of_fnlines_from_start_and_end_uuids(new_shotline.start_uuid, new_shotline.end_uuid)
+	var pdflines_in_range: Array[PDFLineFN] = ScreenplayDocument.get_array_of_pdflines_from_start_and_end_uuids(new_shotline.start_uuid, new_shotline.end_uuid)
 
-	for fnl: FNLineGD in fnlines_in_range:
-		new_shotline.segments_filmed_or_unfilmed[fnl.uuid] = true
+	for fnl: PDFLineFN in pdflines_in_range:
+		new_shotline.segments_filmed_or_unfilmed[fnl.LineUUID] = true
 	
 	return new_shotline
 
@@ -456,8 +450,14 @@ func _handle_left_click(event: InputEvent) -> void:
 						last_mouse_click_past_left_margin or
 						last_mouse_click_past_right_margin):
 						var new_shotline: Shotline
+						#assert(false, "Current shotline pageline UUIDS: " + str(last_clicked_line_uuid) + " | " + str(last_hovered_line_uuid))
+						assert(last_clicked_line_uuid, "No last clicked line.")
+						assert(last_hovered_line_uuid, "No last hovered line.")
 						if not (last_mouse_click_below_bottom_margin or last_mouse_click_above_top_margin):
-							new_shotline = create_new_shotline_obj(last_clicked_line_uuid, last_hovered_line_uuid, event.position)
+							new_shotline = create_new_shotline_obj(
+								last_clicked_line_uuid,
+								last_hovered_line_uuid,
+								event.position)
 							
 						elif last_mouse_click_above_top_margin:
 							# click released past top or bottom margin
@@ -465,17 +465,20 @@ func _handle_left_click(event: InputEvent) -> void:
 
 							var start_uuid: String
 							if cur_page_idx - 1 >= 0:
-								start_uuid = pages[cur_page_idx - 1].lines.back().uuid
+								start_uuid = pages[cur_page_idx - 1].pdflines.back().uuid
 							else:
-								start_uuid = pages[cur_page_idx].lines.front().uuid
+								start_uuid = pages[cur_page_idx].pdflines.front().uuid
 							new_shotline = create_new_shotline_obj(start_uuid, last_hovered_line_uuid, event.position)
 						elif last_mouse_click_below_bottom_margin:
 							var end_uuid: String
 							if cur_page_idx + 1 < pages.size():
-								end_uuid = pages[cur_page_idx + 1].lines.front().uuid
+								end_uuid = pages[cur_page_idx + 1].pdflines.front().uuid
 							else:
-								end_uuid = pages[cur_page_idx].lines.back().uuid
-							new_shotline = create_new_shotline_obj(last_clicked_line_uuid, end_uuid, event.position)
+								end_uuid = pages[cur_page_idx].pdflines.back().uuid
+							new_shotline = create_new_shotline_obj(
+								last_clicked_line_uuid,
+								end_uuid,
+								event.position)
 
 							#print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
 						create_and_add_shotline_node_to_page(new_shotline)

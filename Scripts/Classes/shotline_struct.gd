@@ -62,15 +62,6 @@ func pretty_print_properties(props: Array) -> void:
 	for prop: Variant in props:
 		print("- ", prop)
 
-func get_fnline_index_from_uuid(uuid: String) -> Vector2i:
-	for page: PageContent in ScreenplayDocument.pages:
-		for line: FNLineGD in page.lines:
-			if line.uuid == uuid:
-				return Vector2i(
-					ScreenplayDocument.pages.find(page),
-					page.lines.find(line))
-	return Vector2i()
-
 func toggle_segment_filmed(segment_uuid: String, setting: bool) -> void:
 	segments_filmed_or_unfilmed[segment_uuid] = setting
 	#print(segments_filmed_or_unfilmed)

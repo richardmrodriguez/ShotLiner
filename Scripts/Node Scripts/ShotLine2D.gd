@@ -97,7 +97,6 @@ func construct_shotline_node(shotline: Shotline) -> void:
 	
 	shotline_obj = shotline
 
-	var pages: Array[PageContent] = ScreenplayDocument.pages
 	var current_page_index: int = EventStateManager.cur_page_idx
 	var last_mouse_x_pos: float = shotline_obj.x_position
 
@@ -152,7 +151,6 @@ func construct_shotline_node(shotline: Shotline) -> void:
 		else:
 			local_end_label = pageline_end
 			local_start_label = pageline_start
-			#print("local_end_label: ", local_end_label, " | ", local_end_label.fnline.string.substr(0, 10))
 			
 	elif starts_on_earlier_page and ends_on_later_page:
 		#print("Start earlier and ends later")
@@ -164,10 +162,10 @@ func construct_shotline_node(shotline: Shotline) -> void:
 		local_start_label = cur_pagelines[0]
 		for pageline: PageLineLabel in cur_pagelines:
 			if cur_start_page_line_indices.x < cur_end_page_line_indices.x:
-				if pageline.fnline.uuid == cur_end_uuid:
+				if pageline.pdfline.LineUUID == cur_end_uuid:
 					local_end_label = pageline
 			else:
-				if pageline.fnline.uuid == cur_start_uuid:
+				if pageline.pdfline.LineUUID == cur_start_uuid:
 					local_end_label = pageline
 				
 	elif ends_on_later_page:
@@ -175,10 +173,10 @@ func construct_shotline_node(shotline: Shotline) -> void:
 		local_end_label = cur_pagelines[- 1]
 		for pageline: PageLineLabel in cur_pagelines:
 			if cur_start_page_line_indices.x < cur_end_page_line_indices.x:
-				if pageline.fnline.uuid == cur_start_uuid:
+				if pageline.pdfline.LineUUID == cur_start_uuid:
 					local_start_label = pageline
 			else:
-				if pageline.fnline.uuid == cur_end_uuid:
+				if pageline.pdfline.LineUUID == cur_end_uuid:
 					local_start_label = pageline
 
 	# ------------ SET POINTS AND POSITION FOR SHOTLINE NODE -------------------
@@ -287,31 +285,31 @@ func populate_shotline_with_segments(
 
 	# Update the shotline_obj.segments_filmed_or_unfilmed dict
 
-	var new_segments_fnlines: Array[FNLineGD] = ScreenplayDocument.get_array_of_fnlines_from_start_and_end_uuids(
+	var new_segments_pdflines: Array[PDFLineFN] = ScreenplayDocument.get_array_of_pdflines_from_start_and_end_uuids(
 		shotline_obj.start_uuid, shotline_obj.end_uuid
 		)
 	var new_segments_ids: Array[String] = []
-	for fnl: FNLineGD in new_segments_fnlines:
-		new_segments_ids.append(fnl.uuid)
+	for pdfl: PDFLineFN in new_segments_pdflines:
+		new_segments_ids.append(pdfl.LineUUID)
 
 	var old_segments: Dictionary = shotline_obj.segments_filmed_or_unfilmed.duplicate()
 	shotline_obj.segments_filmed_or_unfilmed.clear()
 	
-	for fnl: FNLineGD in new_segments_fnlines:
-		if old_segments.keys().has(fnl.uuid):
-			shotline_obj.segments_filmed_or_unfilmed[fnl.uuid] = old_segments[fnl.uuid]
+	for pdfl: PDFLineFN in new_segments_pdflines:
+		if old_segments.keys().has(pdfl.LineUUID):
+			shotline_obj.segments_filmed_or_unfilmed[pdfl.LineUUID] = old_segments[pdfl.LineUUID]
 			continue
-		shotline_obj.segments_filmed_or_unfilmed[fnl.uuid] = true
+		shotline_obj.segments_filmed_or_unfilmed[pdfl.LineUUID] = true
 
 	# This for loop actually creates the segment and adds it to the container
 	for segment_uuid: String in shotline_obj.segments_filmed_or_unfilmed:
 		if not new_segments_ids.has(segment_uuid):
 			continue
 
-		var cur_pagelines: Array[FNLineGD] = ScreenplayDocument.pages[EventStateManager.cur_page_idx].lines
+		var cur_pagelines: Array[PDFLineFN] = ScreenplayDocument.pages[EventStateManager.cur_page_idx].pdflines
 		var segment_in_cur_page: bool = false
-		for line: FNLineGD in cur_pagelines:
-			if line.uuid == segment_uuid:
+		for line: PDFLineFN in cur_pagelines:
+			if line.LineUUID == segment_uuid:
 				segment_in_cur_page = true
 				break
 		
@@ -400,21 +398,21 @@ func update_length_from_endcap_drag(
 			line_label_height_set = true
 			break
 	
-	var start_page_lines: Array[FNLineGD] = pages[shotline_obj.start_page_index].lines
-	for fnline: FNLineGD in start_page_lines:
-		if fnline.uuid == shotline_obj.start_uuid:
+	var start_page_lines: Array[PDFLineFN] = pages[shotline_obj.start_page_index].pdflines
+	for pdfln: PDFLineFN in start_page_lines:
+		if pdfln.uuid == shotline_obj.start_uuid:
 			old_start_2D_index = Vector2i(
 				shotline_obj.start_page_index,
-				start_page_lines.find(fnline))
-			old_start_fnline_uuid = fnline.uuid
+				start_page_lines.find(pdfln))
+			old_start_fnline_uuid = pdfln.uuid
 
-	var end_page_lines: Array[FNLineGD] = pages[shotline_obj.end_page_index].lines
-	for fnline: FNLineGD in end_page_lines:
-		if fnline.uuid == shotline_obj.end_uuid:
+	var end_page_lines: Array[PDFLineFN] = pages[shotline_obj.end_page_index].pdflines
+	for pdfln: PDFLineFN in end_page_lines:
+		if pdfln.LineUUID == shotline_obj.end_uuid:
 			old_end_2D_index = Vector2i(
 				shotline_obj.end_page_index,
-				end_page_lines.find(fnline))
-			old_end_fnline_uuid = fnline.uuid
+				end_page_lines.find(pdfln))
+			old_end_fnline_uuid = pdfln.LineUUID
 
 	var new_start_2D_index: Vector2i = old_start_2D_index
 	new_start_2D_index.y += screenplay_line_offset
@@ -467,11 +465,11 @@ func update_length_from_endcap_drag(
 				new_start_earlier = true
 				if shotline_obj.start_page_index - 1 >= 0:
 					shotline_obj.start_uuid = (
-					pages[shotline_obj.start_page_index - 1].lines.back().uuid
+					pages[shotline_obj.start_page_index - 1].pdflines.back().LineUUID
 					)
 					shotline_obj.start_page_index -= 1
 				else:
-					shotline_obj.start_uuid = pages.front().lines.front().uuid
+					shotline_obj.start_uuid = pages.front().pdflines.front().LineUUID
 					shotline_obj.start_page_index = 0
 					if EventStateManager.cur_page_idx == 0:
 						new_start_earlier = false
@@ -480,11 +478,11 @@ func update_length_from_endcap_drag(
 				print("Begin cap after page")
 				if shotline_obj.start_page_index + 1 < pages.size():
 					shotline_obj.start_uuid = (
-					pages[shotline_obj.start_page_index + 1].lines.front().uuid
+					pages[shotline_obj.start_page_index + 1].pdflines.front().LineUUID
 					)
 					shotline_obj.start_page_index += 1
 				else:
-					shotline_obj.start_uuid = pages.back().lines.back().uuid
+					shotline_obj.start_uuid = pages.back().pdflines.back().LineUUID
 					shotline_obj.start_page_index = pages.size() - 1
 					if EventStateManager.cur_page_idx == pages.size() - 1:
 						new_start_later = false
@@ -507,11 +505,11 @@ func update_length_from_endcap_drag(
 				new_end_earlier = true
 				if shotline_obj.end_page_index - 1 >= 0:
 					shotline_obj.end_uuid = (
-					pages[shotline_obj.end_page_index - 1].lines.back().uuid
+					pages[shotline_obj.end_page_index - 1].pdflines.back().LineUUID
 					)
 					shotline_obj.end_page_index -= 1
 				else:
-					shotline_obj.end_uuid = pages.front().lines.front().uuid
+					shotline_obj.end_uuid = pages.front().pdflines.front().LineUUID
 					shotline_obj.end_page_index = 0
 					if EventStateManager.cur_page_idx == 0:
 						new_end_earlier = false
@@ -519,12 +517,12 @@ func update_length_from_endcap_drag(
 				new_end_later = true
 				if shotline_obj.end_page_index + 1 < pages.size():
 					shotline_obj.end_uuid = (
-					pages[shotline_obj.end_page_index + 1].lines.front().uuid
+					pages[shotline_obj.end_page_index + 1].pdflines.front().LineUUID
 					)
 					shotline_obj.end_page_index += 1
 					print_debug(shotline_obj.end_page_index)
 				else:
-					shotline_obj.end_uuid = pages.back().lines.back().uuid
+					shotline_obj.end_uuid = pages.back().pdflines.back().LineUUID
 					shotline_obj.end_page_index = pages.size() - 1
 					if EventStateManager.cur_page_idx == pages.size() - 1:
 						new_end_later = false
