@@ -113,10 +113,7 @@ func get_normalized_body_text(
     pdfline: PDFLineFN,
     pdf_page_size_points: Vector2) -> String:
 
-    #FIXME: This doesn't yet account for the horizontal offset of the text in the page,
-    #only for the horizontal offset between words
-    #but, perhaps the LINE OFFSET should be simply handled by the placement of the lines on the page...
-
+    # TODO: Use some code from this func to get the un-normalized text as well...
     if pdfline.NormalizedLine != "":
         return pdfline.NormalizedLine
 

@@ -18,9 +18,6 @@ func execute() -> bool:
 	# two steps:
 	# 1. Add shotline object to shotlines array
 	# 2. Add Shotline container to current page
-	# to undo:
-	# 1. get shotline container by uuid, queue free
-	# 2. remove shotline obj from array by uuid
 	if not ScreenplayDocument.shotlines.has(shotline_obj):
 		ScreenplayDocument.shotlines.append(shotline_obj)
 	
@@ -34,6 +31,9 @@ func execute() -> bool:
 	
 func undo() -> bool:
 
+	# to undo:
+	# 1. get shotline container by uuid, queue free
+	# 2. remove shotline obj from array by uuid
 	if ScreenplayDocument.shotlines.has(shotline_obj):
 		print("removing shotline node...")
 

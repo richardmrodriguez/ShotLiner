@@ -93,7 +93,7 @@ func is_hovered_over() -> bool:
 
 # ---------------- CONSTRUCT NODE ------------------------
 	# TODO: Make the shotlines appear at
-func construct_shotline_node(shotline: Shotline) -> void:
+func construct_shotline_node(shotline: Shotline, page_container: ScreenplayPage=EventStateManager.page_node) -> void:
 	
 	shotline_obj = shotline
 
@@ -169,7 +169,7 @@ func construct_shotline_node(shotline: Shotline) -> void:
 					local_end_label = pageline
 				
 	elif ends_on_later_page:
-		print("Ends on later page")
+		#print("Ends on later page")
 		local_end_label = cur_pagelines[- 1]
 		for pageline: PageLineLabel in cur_pagelines:
 			if cur_start_page_line_indices.x < cur_end_page_line_indices.x:
@@ -216,7 +216,7 @@ func construct_shotline_node(shotline: Shotline) -> void:
 	global_position = start_pos
 	#print_debug(" -------------- ")
 	#shotline_obj.print_segments_and_strings_with_limit()
-	populate_shotline_with_segments(shotline_length, cur_pageline_label_height)
+	_populate_shotline_with_segments(shotline_length, cur_pageline_label_height, shotline, page_container)
 
 func align_shot_number_label() -> void:
 	var x: float = true_start_pos.x
@@ -256,15 +256,18 @@ func align_grab_regions() -> void:
 		cap_grab_region_height
 		)
 
-func populate_shotline_with_segments(
+func _populate_shotline_with_segments(
 	total_shotline_length: int,
-	line_label_height: float) -> void:
+	line_label_height: float,
+	shotline_obj: Shotline,
+	page_container: ScreenplayPage) -> void:
+	# FIXME: Make each segment the actual height difference between `ScreenplayLineLabel`s
+	# instead of just each segment being a fixed height
+	# need to pass in an array of each `ScreenplayLineLabel` that is covered by this shotline
+	var segments_size: int = shotline_obj.segments_filmed_or_unfilmed.keys().size()
+	assert(segments_size == total_shotline_length, "Shotline length mismatch: " + str(segments_size) + " | " + str(total_shotline_length))
 
 	var cur_page_idx: int = EventStateManager.cur_page_idx
-
-	print("CHecking shotline length")
-	print(total_shotline_length, " | ", shotline_obj.segments_filmed_or_unfilmed.keys().size())
-	#assert(false, "checking shotline length")
 
 	#total_shotline_length = shotline_obj.segments_filmed_or_unfilmed.keys().size()
 
@@ -295,13 +298,29 @@ func populate_shotline_with_segments(
 	var old_segments: Dictionary = shotline_obj.segments_filmed_or_unfilmed.duplicate()
 	shotline_obj.segments_filmed_or_unfilmed.clear()
 	
+	var segment_heights: Dictionary = {}
+
+	var prev_line_y_pos: float = -1.0
 	for pdfl: PDFLineFN in new_segments_pdflines:
+		var cur_pageline: PageLineLabel = page_container.get_pageline_from_lineuuid(pdfl.LineUUID)
+		var cur_segment_height: float = cur_pageline.size.y
+		var cur_segment_y_pos: float = cur_pageline.position.y
+		if prev_line_y_pos != - 1.0:
+			print("y positions: ", prev_line_y_pos, " | ", cur_segment_y_pos)
+			cur_segment_height = abs(prev_line_y_pos - cur_segment_y_pos)
+		
+		segment_heights[pdfl.LineUUID] = cur_segment_height
+
+		prev_line_y_pos = cur_segment_y_pos
+
+		# ---
+
 		if old_segments.keys().has(pdfl.LineUUID):
 			shotline_obj.segments_filmed_or_unfilmed[pdfl.LineUUID] = old_segments[pdfl.LineUUID]
 			continue
 		shotline_obj.segments_filmed_or_unfilmed[pdfl.LineUUID] = true
 
-	# This for loop actually creates the segment and adds it to the container
+	# This for loop creates the segments and adds them to the container
 	for segment_uuid: String in shotline_obj.segments_filmed_or_unfilmed:
 		if not new_segments_ids.has(segment_uuid):
 			continue
@@ -309,18 +328,20 @@ func populate_shotline_with_segments(
 		var cur_pagelines: Array[PDFLineFN] = ScreenplayDocument.pages[EventStateManager.cur_page_idx].pdflines
 		var segment_in_cur_page: bool = false
 		for line: PDFLineFN in cur_pagelines:
+
 			if line.LineUUID == segment_uuid:
 				segment_in_cur_page = true
 				break
-		
 		if not segment_in_cur_page:
 			continue
 
+		var cur_segment_height: float = segment_heights[segment_uuid] # FIXME: Pre-calculate all the heights upon DOC IMPORT instead of calculating on the fly
+		
 		var new_segment: ShotLineSegment2D = shotline_segment_scene.instantiate()
 		segments_container.add_child(new_segment)
 		new_segment.pageline_uuid = segment_uuid
 		new_segment.set_straight_or_jagged(shotline_obj.segments_filmed_or_unfilmed[segment_uuid])
-		new_segment.set_segment_height(line_label_height)
+		new_segment.set_segment_height(cur_segment_height)
 
 		#print_debug("segments AFTER populate with segments")
 		#shotline_obj.print_segments_and_strings_with_limit()
@@ -534,7 +555,7 @@ func update_length_from_endcap_drag(
 			queue_free()
 			return
 	# If the new shotline positions do include somewhere on this page, then reconstruct
-	construct_shotline_node(shotline_obj)
+	construct_shotline_node(shotline_obj, EventStateManager.page_node)
 
 # ------------- SIGNAL CALLBACKS ----------------------
 

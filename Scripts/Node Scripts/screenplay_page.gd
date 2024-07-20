@@ -131,6 +131,16 @@ func set_color_of_all_page_margins(color: Color=Color.TRANSPARENT) -> void:
 	bottom_page_margin.color = color
 	top_page_margin.color = color
 
+func get_pageline_from_lineuuid(uuid: String) -> PageLineLabel:
+	for pll: PageLineLabel in page_container.get_children():
+		if not pll is PageLineLabel:
+			continue
+		if pll.get_uuid() == uuid:
+			return pll
+	
+	assert(false, "Could not find pageline label.")
+	return null
+
 func recursive_line_splitter(line: String, max_length: int) -> Array:
 	var final_arr: Array = []
 	if line.length() <= max_length:
