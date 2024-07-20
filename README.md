@@ -4,11 +4,13 @@
 This tool is in pre-alpha, and is essentially a proof-of-concept until a proper mechanism for importing various documents is implemented.
 
 ## CURRENT STATUS
-### 2024 - 06 - 19
+### 2024 - 06 - 20
 
 This tool is in the middle of a major refactor, to support PDF Document import. Before this, some of the features listed below were in fact working, but this refactor is currently breaking most of these for the time being.
 
-What is currently working, is that PDF documents can be imported, and creating shotlines are partially working.
+- Drawing shotlines makes them the correct height again
+- Resizing shotlines needs to be refactored still
+- Multipage Shotlines needs to be refactored still
 
 ## Current Features
 - Navigate between individual pages

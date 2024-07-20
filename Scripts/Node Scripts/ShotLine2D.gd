@@ -291,6 +291,7 @@ func _populate_shotline_with_segments(
 	var new_segments_pdflines: Array[PDFLineFN] = ScreenplayDocument.get_array_of_pdflines_from_start_and_end_uuids(
 		shotline_obj.start_uuid, shotline_obj.end_uuid
 		)
+		
 	var new_segments_ids: Array[String] = []
 	for pdfl: PDFLineFN in new_segments_pdflines:
 		new_segments_ids.append(pdfl.LineUUID)
