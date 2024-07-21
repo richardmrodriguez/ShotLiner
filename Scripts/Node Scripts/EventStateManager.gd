@@ -252,8 +252,9 @@ func _highlight_pageline_if_hovered(pageline_labels: Array, event_global_pos: Ve
 	for pageline: PageLineLabel in pageline_labels:
 		if not pageline is PageLineLabel:
 			continue
-			
-		if pageline.get_global_rect().has_point(event_global_pos):
+		var y_pos: float = pageline.global_position.y
+		var y_size: float = pageline.size.y
+		if (y_pos <= event_global_pos.y) and ((y_pos + y_size) >= event_global_pos.y):
 			pageline.label_highlight.visible = true
 			var cur_child_uuid: String = pageline.get_uuid()
 			if EventStateManager.last_hovered_line_uuid != cur_child_uuid:
