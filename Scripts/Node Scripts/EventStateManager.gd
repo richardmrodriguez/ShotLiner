@@ -66,17 +66,11 @@ var cur_page_idx: int = 0
 signal page_changed
 
 # ------ READY ------
-
-var test_var: String = "oogly boogly boo"
-var temp_doc_path: String = "Screenplay Files/VCR2L-2024-05-08.fountain"
 var temp_PDF_path: String = "/home/rich/Downloads/VCR2L-2024-05-03.pdf"
 
 func _on_page_node_ready() -> void:
 	# ------------------- PDFIngester Testing ----------------------------
-	#PDFHandler.EventStateManager = self
-	var file_bytes: PackedByteArray = FileAccess.get_file_as_bytes(temp_doc_path)
-	assert(file_bytes != PackedByteArray(), "file bytes not set.")
-	PDFIngester.DocFileBytes = file_bytes
+	
 	var pdfGD_doc: PDFDocGD = PDFIngester.GetDocGD(temp_PDF_path)
 	# TODO - await the other nodes -namely the page node -- to be properly loaded and ready
 	while not page_node:
