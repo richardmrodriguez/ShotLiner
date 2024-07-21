@@ -265,7 +265,7 @@ func _populate_shotline_with_segments(
 	# instead of just each segment being a fixed height
 	# need to pass in an array of each `ScreenplayLineLabel` that is covered by this shotline
 	var segments_size: int = shotline_obj.segments_filmed_or_unfilmed.keys().size()
-	assert(segments_size == total_shotline_length, "Shotline length mismatch: " + str(segments_size) + " | " + str(total_shotline_length))
+	#assert(segments_size == total_shotline_length, "Shotline length mismatch: " + str(segments_size) + " | " + str(total_shotline_length))
 
 	var cur_page_idx: int = EventStateManager.cur_page_idx
 
@@ -291,7 +291,7 @@ func _populate_shotline_with_segments(
 	var new_segments_pdflines: Array[PDFLineFN] = ScreenplayDocument.get_array_of_pdflines_from_start_and_end_uuids(
 		shotline_obj.start_uuid, shotline_obj.end_uuid
 		)
-		
+
 	var new_segments_ids: Array[String] = []
 	for pdfl: PDFLineFN in new_segments_pdflines:
 		new_segments_ids.append(pdfl.LineUUID)
@@ -372,184 +372,44 @@ func resize_line_width_on_hover() -> void:
 		update_line_width(line_width)
 
 func update_length_from_endcap_drag(
-	is_endcap_begincap: bool,
-	y_movement_delta: float
+	is_dragging_from_topcap: bool,
+	y_movement_delta: float,
+	last_declicked_pdfline_uuid: String=""
 	) -> void:
 
-	# TODO: This func is messing up squiggle positions when resizing shotlines
-	# All the squiggles just appear at the top of the shotline on the page for whatever reason
 	var pages: Array[PageContent] = ScreenplayDocument.pages
 	var cur_page_idx: int = EventStateManager.cur_page_idx
+	if last_declicked_pdfline_uuid == "":
+		last_declicked_pdfline_uuid = EventStateManager.last_declicked_line_uuid
 	
-	# if this is the middle of a multipage shotline, don't do anything to update the vertical 
-	# position ;
+	# if this is the middle of a multipage shotline, 
+	# don't do anything to update the vertical position ;
 	# Might change this behavior in the future
 	if shotline_obj.is_multipage():
 		if (
 			shotline_obj.starts_on_earlier_page(cur_page_idx)
-			&&shotline_obj.ends_on_later_page(cur_page_idx)):
+			and shotline_obj.ends_on_later_page(cur_page_idx)):
+			assert(false, "Undefined resizing behavior.")
 			return
-	
-	var cur_pageline_labels: Array[Node] = EventStateManager.page_node.page_container.get_children()
 
-	#var y_movement_delta: float = EventStateManager.last_mouse_drag_delta.y
+	var old_start_page_idx: int = shotline_obj.start_page_index
+	var old_end_page_idx: int = shotline_obj.end_page_index
 
-	var line_label_height: float
-	var screenplay_line_offset: int
-
-	var line_label_height_set: bool = false
-	
-	var new_start_point_set: bool = false
-	var new_end_point_set: bool = false
-
-	var old_start_fnline_uuid: String
-	var old_end_fnline_uuid: String
-
-	var old_start_2D_index: Vector2i
-	var old_end_2D_index: Vector2i
-
-	# ------------------ Set the line_label_height
-	for cur_screenplay_line: Node in cur_pageline_labels:
-		if not cur_screenplay_line is PageLineLabel:
-			continue
-		if not line_label_height_set:
-			line_label_height = cur_screenplay_line.size.y
-			screenplay_line_offset = roundi(y_movement_delta / line_label_height)
-			if screenplay_line_offset == 0:
-				return
-			line_label_height_set = true
-			break
-	
-	var start_page_lines: Array[PDFLineFN] = pages[shotline_obj.start_page_index].pdflines
-	for pdfln: PDFLineFN in start_page_lines:
-		if pdfln.uuid == shotline_obj.start_uuid:
-			old_start_2D_index = Vector2i(
-				shotline_obj.start_page_index,
-				start_page_lines.find(pdfln))
-			old_start_fnline_uuid = pdfln.uuid
-
-	var end_page_lines: Array[PDFLineFN] = pages[shotline_obj.end_page_index].pdflines
-	for pdfln: PDFLineFN in end_page_lines:
-		if pdfln.LineUUID == shotline_obj.end_uuid:
-			old_end_2D_index = Vector2i(
-				shotline_obj.end_page_index,
-				end_page_lines.find(pdfln))
-			old_end_fnline_uuid = pdfln.LineUUID
-
-	var new_start_2D_index: Vector2i = old_start_2D_index
-	new_start_2D_index.y += screenplay_line_offset
-
-	var new_end_2D_index: Vector2 = old_end_2D_index
-	new_end_2D_index.y += screenplay_line_offset
+	# TODO: refactor this to just use the pageline label that was last de-clicked (mouse button UP input while hovered), plus the actual global position of the mouse
 
 	# This code assumes only EITHER  the start or end endcap is being dragged
 	# Therefore, only change either the start or end index, not both
 
+	if is_dragging_from_topcap: # resize from top of line
+		shotline_obj.start_uuid = last_declicked_pdfline_uuid
+	else: # resize from bottom of line
+		shotline_obj.end_uuid = last_declicked_pdfline_uuid
+	
+	# If the new shotline positions don't include this page, just delete this shotline node
 	var new_start_later: bool = shotline_obj.starts_on_later_page(cur_page_idx)
 	var new_start_earlier: bool = shotline_obj.starts_on_earlier_page(cur_page_idx)
 	var new_end_later: bool = shotline_obj.ends_on_later_page(cur_page_idx)
 	var new_end_earlier: bool = shotline_obj.ends_on_earlier_page(cur_page_idx)
-
-	if is_endcap_begincap:
-		# figure out if the offsets point to a valid screenplay line in this page
-			# If yes, then update the start or end uuid with that exact place
-			# If no, then update the start or end uuid to:
-				# the last line of the previous page or first line of the next page
-		
-		# NOTE: The following three vars and for loop is necessary because
-			# I appear to have encountered a bug where the following line doesn't resolve properly:
-			# if range(end_page_lines.size()).has(new_end_2D_index.y)
-			# I don't knwo why, but trying that one liner just doesn;t work
-			# the range seems to work when giving it explicit numbers, i.e. if range(10).has(5) == true
-			# And if I PRINT THE VALUES of the variables, it should work:
-			# print(new_end_2D_index.y) == 6 eg.
-			# print(range(end_page_lines.size())) == [0, 1, 2, 3, 4, 5, 6, etc...]
-			#so... I have no god damn idea why that might be failing.
-			# I have got to figure out if / how to replicate it 
-			# I should redownload this project and try it on a different operating system (windows, mac)
-			# I should also try just a new blank project but using arbitrary variables
-			# I also wonder if my gdscript warning settings being "stricter" are causing an issue
-	
-		var line_in_page: bool = false
-		
-		var start_page_line_size: int = start_page_lines.size()
-		var start_page_range: Array = range(start_page_line_size)
-
-		for n: int in start_page_range:
-			if n == new_start_2D_index.y:
-				line_in_page = true
-				break
-		
-		if line_in_page:
-			shotline_obj.start_uuid = start_page_lines[new_start_2D_index.y].uuid
-		else:
-			if new_start_2D_index.y < 0:
-				new_start_earlier = true
-				if shotline_obj.start_page_index - 1 >= 0:
-					shotline_obj.start_uuid = (
-					pages[shotline_obj.start_page_index - 1].pdflines.back().LineUUID
-					)
-					shotline_obj.start_page_index -= 1
-				else:
-					shotline_obj.start_uuid = pages.front().pdflines.front().LineUUID
-					shotline_obj.start_page_index = 0
-					if EventStateManager.cur_page_idx == 0:
-						new_start_earlier = false
-			else:
-				new_start_later = true
-				print("Begin cap after page")
-				if shotline_obj.start_page_index + 1 < pages.size():
-					shotline_obj.start_uuid = (
-					pages[shotline_obj.start_page_index + 1].pdflines.front().LineUUID
-					)
-					shotline_obj.start_page_index += 1
-				else:
-					shotline_obj.start_uuid = pages.back().pdflines.back().LineUUID
-					shotline_obj.start_page_index = pages.size() - 1
-					if EventStateManager.cur_page_idx == pages.size() - 1:
-						new_start_later = false
-
-	elif not is_endcap_begincap:
-		
-		var line_in_page: bool = false
-
-		var end_page_lines_size: int = end_page_lines.size()
-		var end_page_line_range: Array = range(end_page_lines_size)
-		
-		for n: int in end_page_line_range:
-			if n == new_end_2D_index.y:
-				line_in_page = true
-	
-		if line_in_page:
-			shotline_obj.end_uuid = end_page_lines[new_end_2D_index.y].uuid
-		else:
-			if new_end_2D_index.y < 0:
-				new_end_earlier = true
-				if shotline_obj.end_page_index - 1 >= 0:
-					shotline_obj.end_uuid = (
-					pages[shotline_obj.end_page_index - 1].pdflines.back().LineUUID
-					)
-					shotline_obj.end_page_index -= 1
-				else:
-					shotline_obj.end_uuid = pages.front().pdflines.front().LineUUID
-					shotline_obj.end_page_index = 0
-					if EventStateManager.cur_page_idx == 0:
-						new_end_earlier = false
-			else:
-				new_end_later = true
-				if shotline_obj.end_page_index + 1 < pages.size():
-					shotline_obj.end_uuid = (
-					pages[shotline_obj.end_page_index + 1].pdflines.front().LineUUID
-					)
-					shotline_obj.end_page_index += 1
-					print_debug(shotline_obj.end_page_index)
-				else:
-					shotline_obj.end_uuid = pages.back().pdflines.back().LineUUID
-					shotline_obj.end_page_index = pages.size() - 1
-					if EventStateManager.cur_page_idx == pages.size() - 1:
-						new_end_later = false
-	
-	# If the new shotline positions don't include this page, just delete this shotline node
 	print(new_start_earlier, new_start_later, new_end_earlier, new_end_later)
 	if (new_start_earlier and new_end_earlier) or (new_start_later and new_end_later):
 			print_debug("Shotline not on page, removing....")

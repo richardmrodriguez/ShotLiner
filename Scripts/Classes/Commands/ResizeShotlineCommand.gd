@@ -9,10 +9,12 @@ var y_drag_delta: float
 var old_shotline_start_uuid: String
 var old_shotline_end_uuid: String
 
-var old_start_page_idx: int
-var old_end_page_idx: int
+var new_shotline_end_uuid: String
+var new_shotline_start_uuid: String
 
 var shotline_uuid: String
+
+var new_start_end_set: bool = false
 
 func _init(_params: Array) -> void:
     is_moved_endcap_begincap = _params[0]
@@ -21,31 +23,47 @@ func _init(_params: Array) -> void:
 
     old_shotline_start_uuid = shotline.start_uuid
     old_shotline_end_uuid = shotline.end_uuid
-    old_start_page_idx = shotline.start_page_index
-    old_end_page_idx = shotline.end_page_index
 
     shotline_uuid = shotline.shotline_uuid
 
 func execute() -> bool:
-
     var shotline: Shotline = ScreenplayDocument.get_shotline_from_uuid(shotline_uuid)
     if shotline == null:
         return false
-    shotline.shotline_node.update_length_from_endcap_drag(is_moved_endcap_begincap, y_drag_delta)
+    var uuid_to_resize_to: String = ""
+    if new_start_end_set:
+        if is_moved_endcap_begincap:
+            uuid_to_resize_to = new_shotline_start_uuid
+        else:
+            uuid_to_resize_to = new_shotline_end_uuid
+    shotline.shotline_node.update_length_from_endcap_drag(is_moved_endcap_begincap, y_drag_delta, uuid_to_resize_to)
+    if not new_start_end_set:
+        new_shotline_start_uuid = shotline.start_uuid
+        new_shotline_end_uuid = shotline.end_uuid
+        new_start_end_set = true
+
     return true
 
 func undo() -> bool:
     var shotline: Shotline = ScreenplayDocument.get_shotline_from_uuid(shotline_uuid)
     if shotline == null:
         return false
-    if not shotline.shotline_node:
+    if not shotline.shotline_node: # WTF is this if block???
+        # FIXME: This block is supposed to handle the case where resizing a shotline results in that shotline being
+        # erased from the current page (i.e. resizing a multipage shotline so that it does not exist on this page)
+        # But this seems probably very wrong; 
         shotline.start_uuid = old_shotline_start_uuid
         shotline.end_uuid = old_shotline_end_uuid
-        shotline.start_page_index = old_start_page_idx
-        shotline.end_page_index = old_end_page_idx
 
         var create_shotline_cmd: CreateShotLineCommand = CreateShotLineCommand.new([shotline])
         create_shotline_cmd.execute()
     else:
-        shotline.shotline_node.update_length_from_endcap_drag(is_moved_endcap_begincap, -y_drag_delta)
+        var old_uuid: String = ""
+        if is_moved_endcap_begincap:
+            old_uuid = old_shotline_start_uuid
+        else:
+            old_uuid = old_shotline_end_uuid
+            
+        shotline.shotline_node.update_length_from_endcap_drag(is_moved_endcap_begincap, -y_drag_delta, old_uuid)
+        
     return true

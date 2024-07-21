@@ -8,7 +8,7 @@ var start_uuid: String
 var end_uuid: String
 var x_position: float = 0.0
 
-var segments_filmed_or_unfilmed: Dictionary = {} # fnlineuuid: is_filmed_bool
+var segments_filmed_or_unfilmed: Dictionary = {} # pdfline_uuid: is_filmed_bool
 
 var shotline_node: ShotLine2DContainer
 var shotline_uuid: String

@@ -47,6 +47,7 @@ var last_mouse_click_past_left_margin: bool = false
 
 var last_hovered_line_uuid: String = ""
 var last_clicked_line_uuid: String = ""
+var last_declicked_line_uuid: String = ""
 
 var last_hovered_shotline_node: ShotLine2DContainer
 var last_valid_shotline_position: Vector2
@@ -486,6 +487,7 @@ func _handle_left_click(event: InputEvent) -> void:
 			TOOL.MOVE:
 				if is_resizing_shotline:
 					is_resizing_shotline = false
+					last_declicked_line_uuid = last_hovered_line_uuid
 					var resize_shotline_cmd: ResizeShotlineCommand = ResizeShotlineCommand.new(
 						[
 							cur_selected_shotline_endcap.is_begin_cap,
@@ -533,10 +535,7 @@ func _on_shotline_clicked(shotline_node: ShotLine2DContainer, button_index: int)
 					last_shotline_node_global_pos = shotline_node.global_position
 					print(is_dragging_shotline)
 
-# TODO: simulate a mouse button release whenever the mouse leaves the window
-
-func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int) -> void:
-	print("shotline released!!!")
+# TODO: simulate a mouse button release whenever the mouse leaves theupdate_len
 	#last_hovered_shotline_node = shotline_node
 	match cur_tool:
 		TOOL.MOVE:
