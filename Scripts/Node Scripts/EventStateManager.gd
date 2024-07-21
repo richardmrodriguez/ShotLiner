@@ -535,8 +535,10 @@ func _on_shotline_clicked(shotline_node: ShotLine2DContainer, button_index: int)
 					last_shotline_node_global_pos = shotline_node.global_position
 					print(is_dragging_shotline)
 
-# TODO: simulate a mouse button release whenever the mouse leaves theupdate_len
-	#last_hovered_shotline_node = shotline_node
+# TODO: simulate a mouse button release whenever the mouse leaves the window
+
+func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int) -> void:
+	print("shotline released!!!")
 	match cur_tool:
 		TOOL.MOVE:
 			if button_index != 1:
@@ -583,7 +585,7 @@ func _on_shotline_clicked(shotline_node: ShotLine2DContainer, button_index: int)
 func _on_shotline_hovered_over(shotline_container: ShotLine2DContainer) -> void:
 	pass
 	#print("Shotline Hovered changed: ", shotline_node, shotline_node.is_hovered_over)
-	#last_hovered_shotline_node = shotline_container
+	last_hovered_shotline_node = shotline_container
 
 func _on_shotline_endcap_clicked(
 	shotline_endcap: EndcapGrabRegion,
