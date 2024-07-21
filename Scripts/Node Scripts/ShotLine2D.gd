@@ -81,7 +81,7 @@ func _ready() -> void:
 	end_cap_grab_region.color = Color.TRANSPARENT
 	#line_body_grab_region.gui_input.connect(_on_line_body_gui_input)
 	mouse_clicked_on_shotline.connect(EventStateManager._on_shotline_clicked)
-	mouse_released_on_shotline.connect(EventStateManager._on_shotline_released)
+	#mouse_released_on_shotline.connect(EventStateManager._on_shotline_released)
 
 func is_hovered_over() -> bool:
 	for segment: Node in segments_container.get_children():
