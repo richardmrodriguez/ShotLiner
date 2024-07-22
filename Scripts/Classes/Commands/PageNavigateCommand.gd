@@ -19,6 +19,7 @@ func execute() -> bool:
             EventStateManager.cur_page_idx
         )
         print("Current shotlines: ", ScreenplayDocument.shotlines)
+        
         return true
     return false
 

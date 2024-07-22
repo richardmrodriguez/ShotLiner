@@ -91,14 +91,12 @@
 # SCREENPLAY PDF IMPORT
 - [ ] Import any PDF screenplay document
 - [ ] Implement a PDF screenplay parser
-  - [ ] Decide on which PDF library to use
+  - [x] Decide on which PDF library to use
 	- Require robust PDF parsing ability
 	- Should prefer support for Emoji, Cyrillic, CJK, etc.
 	- C#
 	  - PDFPig
-	  - iText7 (AGPL license available)
-	  - QuestPDF
-  - [ ] Parsing stage 1: Get all PDF text as horizontal lines
+  - [x] Parsing stage 1: Get all PDF text as horizontal lines
 	- Special case for Page numbers
 	- special case for headers / footers
   - [ ] Parsing stage 2: use slightly modified Fountain parser to parse each line
@@ -110,7 +108,7 @@
 	  - omitted scenes
 	  - new-to-draft text has `*` bullets in left and right margin of body text
 
-# QUALITY OF LIFE / BONUS
+# QUALITY OF LIFE
 - [x] Have ShotLines width be skinny by default, but fatter when focused or hovering over
 - [ ] Ability to filter out (fade out or gray out) Shotlines of a certain kind
   - Filter by:
@@ -138,6 +136,8 @@
   - If you know you're going to have a flashback for example, and you know you're going to use exact shots from an earlier scene, you can mark those shots from that later scene as done when you film it the first time
 - [ ] Add Tooltips when hovering over ShotLines
   - But what would these tooltips be though lmao
+- [ ] Ability to tie / combine shotlines together
+  - [ ] take the existing visibile coverage of two lines and create a new line with the existing coverage
 
 # V2.0 FEATURES
 - [ ] Image support
@@ -150,7 +150,7 @@
   - [ ] Quick lining controls (see the Quality of Life section)
 	- [ ] Gamepad support
 	- [ ] Touch Screen support
-- [ ] Android / iOS tablet support (tricky with godot-rust, might have to do a full rewrite of the fountain parser in gdscript)
+- [ ] Android / iOS tablet support
 
 # SOFTWARE / UX LANGUAGE
 

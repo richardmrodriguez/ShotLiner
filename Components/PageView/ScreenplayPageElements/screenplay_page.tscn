@@ -1,10 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://ciildxrlfiuf5"]
+[gd_scene load_steps=5 format=3 uid="uid://ciildxrlfiuf5"]
 
 [ext_resource type="Script" path="res://Scripts/Node Scripts/screenplay_page.gd" id="1_0ob0q"]
 [ext_resource type="Script" path="res://Scripts/Node Scripts/ScreenplayPageContentVBox.gd" id="2_n17d7"]
 [ext_resource type="Script" path="res://Scripts/Node Scripts/ScreenplayPagePanel.gd" id="2_ykdv6"]
 [ext_resource type="PackedScene" uid="uid://oummcfocj72r" path="res://Components/PageMarginRegion.tscn" id="3_v3s51"]
-[ext_resource type="Script" path="res://Scripts/Node Scripts/PageNumLabel.gd" id="4_lrgqs"]
 
 [node name="ScreenplayPage" type="Control"]
 layout_mode = 3
@@ -24,6 +23,7 @@ SP_FONT_SIZE = 12
 [node name="ScreenplayPagePanel" type="Panel" parent="."]
 unique_name_in_owner = true
 clip_contents = true
+custom_minimum_size = Vector2(612, 846)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -50,6 +50,8 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -16.0
+offset_bottom = 16.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -70,27 +72,10 @@ layout_mode = 2
 mouse_filter = 1
 color = Color(0.345098, 0.431373, 0.458824, 1)
 
-[node name="PageNumLabel" type="Label" parent="ScreenplayPagePanel/H/VBoxContainer/TopPageMarginRegion"]
-visible = false
-z_index = 1
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 420.0
-offset_top = -18.0
-offset_right = 450.0
-grow_vertical = 0
-theme_override_font_sizes/font_size = 13
-text = "PG."
-horizontal_alignment = 2
-vertical_alignment = 2
-script = ExtResource("4_lrgqs")
-
 [node name="ScreenplayPageContentVBox" type="Container" parent="ScreenplayPagePanel/H/VBoxContainer"]
 unique_name_in_owner = true
 clip_contents = true
-custom_minimum_size = Vector2(600, 800)
+custom_minimum_size = Vector2(612, 844)
 layout_mode = 2
 mouse_force_pass_scroll_events = false
 script = ExtResource("2_n17d7")

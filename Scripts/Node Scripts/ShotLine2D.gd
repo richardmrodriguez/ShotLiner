@@ -131,7 +131,7 @@ func construct_shotline_node(shotline: Shotline, page_container: ScreenplayPage=
 
 	var local_end_label: PageLineLabel
 	var local_start_label: PageLineLabel
-
+	# FIXME: This whole nasty if else block needs to be really debugged...
 	var debug_pdfline_str: String = ScreenplayDocument.get_pdfline_from_uuid(cur_end_uuid).GetLineString().substr(0, 10)
 	#print("end_fnline_uuid: ", cur_end_uuid, " | ", debug_fnline_str)
 	if not (starts_on_earlier_page or ends_on_later_page):
@@ -139,11 +139,11 @@ func construct_shotline_node(shotline: Shotline, page_container: ScreenplayPage=
 			if pageline.get_uuid() == cur_start_uuid:
 				
 				pageline_start = pageline
-				pageline_real_start_idx = pageline.get_index()
+				pageline_real_start_idx = ScreenplayDocument.get_pdfline_vector_from_uuid(pageline.pdfline.LineUUID).y
 				#print("start line: ", spl.fnline.fn_type, " | ", spl.text, )
 			if pageline.get_uuid() == cur_end_uuid:
 				pageline_end = pageline
-				pageline_real_end_idx = pageline.get_index()
+				pageline_real_end_idx = ScreenplayDocument.get_pdfline_vector_from_uuid(pageline.pdfline.LineUUID).y
 		#print("Normal shotline")
 		if pageline_real_start_idx > pageline_real_end_idx:
 			local_start_label = pageline_end
@@ -261,10 +261,7 @@ func _populate_shotline_with_segments(
 	line_label_height: float,
 	shotline_obj: Shotline,
 	page_container: ScreenplayPage) -> void:
-	# FIXME: Make each segment the actual height difference between `ScreenplayLineLabel`s
-	# instead of just each segment being a fixed height
-	# need to pass in an array of each `ScreenplayLineLabel` that is covered by this shotline
-	var segments_size: int = shotline_obj.segments_filmed_or_unfilmed.keys().size()
+	
 	#assert(segments_size == total_shotline_length, "Shotline length mismatch: " + str(segments_size) + " | " + str(total_shotline_length))
 
 	var cur_page_idx: int = EventStateManager.cur_page_idx
@@ -377,9 +374,8 @@ func update_length_from_endcap_drag(
 	last_declicked_pdfline_uuid: String=""
 	) -> void:
 
-	var pages: Array[PageContent] = ScreenplayDocument.pages
 	var cur_page_idx: int = EventStateManager.cur_page_idx
-	if last_declicked_pdfline_uuid == "":
+	if last_declicked_pdfline_uuid == "": # FIXME: This if block is a questionable catch at best, why have this?
 		last_declicked_pdfline_uuid = EventStateManager.last_declicked_line_uuid
 	
 	# if this is the middle of a multipage shotline, 
@@ -392,18 +388,26 @@ func update_length_from_endcap_drag(
 			assert(false, "Undefined resizing behavior.")
 			return
 
-	var old_start_page_idx: int = shotline_obj.start_page_index
-	var old_end_page_idx: int = shotline_obj.end_page_index
-
-	# TODO: refactor this to just use the pageline label that was last de-clicked (mouse button UP input while hovered), plus the actual global position of the mouse
-
 	# This code assumes only EITHER  the start or end endcap is being dragged
 	# Therefore, only change either the start or end index, not both
+	var old_start_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(shotline_obj.start_uuid)
+	var old_end_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(shotline_obj.end_uuid)
+	var last_declicked_pdfline_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(last_declicked_pdfline_uuid)
 
+	var above_old_start: bool = last_declicked_pdfline_idx.x < old_start_idx.x or (last_declicked_pdfline_idx.x == old_start_idx.x and last_declicked_pdfline_idx.y < old_start_idx.y)
+	var below_old_end: bool = last_declicked_pdfline_idx.x > old_end_idx.x or (last_declicked_pdfline_idx.x == old_end_idx.x and last_declicked_pdfline_idx.y > old_end_idx.y)
 	if is_dragging_from_topcap: # resize from top of line
-		shotline_obj.start_uuid = last_declicked_pdfline_uuid
+		if below_old_end:
+			shotline_obj.start_uuid = shotline_obj.end_uuid
+			shotline_obj.end_uuid = last_declicked_pdfline_uuid
+		else:
+			shotline_obj.start_uuid = last_declicked_pdfline_uuid
 	else: # resize from bottom of line
-		shotline_obj.end_uuid = last_declicked_pdfline_uuid
+		if above_old_start:
+			shotline_obj.end_uuid = shotline_obj.start_uuid
+			shotline_obj.start_uuid = last_declicked_pdfline_uuid
+		else:
+			shotline_obj.end_uuid = last_declicked_pdfline_uuid
 	
 	# If the new shotline positions don't include this page, just delete this shotline node
 	var new_start_later: bool = shotline_obj.starts_on_later_page(cur_page_idx)
@@ -415,7 +419,8 @@ func update_length_from_endcap_drag(
 			print_debug("Shotline not on page, removing....")
 			queue_free()
 			return
-	# If the new shotline positions do include somewhere on this page, then reconstruct
+
+	# Finally, the new shotline positions do include somewhere on this page, reconstruct
 	construct_shotline_node(shotline_obj, EventStateManager.page_node)
 
 # ------------- SIGNAL CALLBACKS ----------------------

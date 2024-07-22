@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://buckmobb4nbc7"]
+[gd_scene load_steps=3 format=3 uid="uid://buckmobb4nbc7"]
 
 [ext_resource type="Script" path="res://Scripts/Node Scripts/ToolBar.gd" id="1_5dt8s"]
+[ext_resource type="Script" path="res://Components/ToolbarPageNumField.gd" id="2_5bgty"]
 
 [node name="HBoxContainer" type="HBoxContainer"]
 size_flags_vertical = 2
@@ -12,7 +13,25 @@ layout_mode = 2
 
 [node name="PREV PG" type="Button" parent="."]
 layout_mode = 2
-text = "<--"
+text = "⬅️"
+
+[node name="PageNumber" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0"
+placeholder_text = "Page Number"
+select_all_on_focus = true
+script = ExtResource("2_5bgty")
+
+[node name="TotalPages" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+text = "/ 000"
+
+[node name="NEXT PG" type="Button" parent="."]
+layout_mode = 2
+text = "➡️"
 
 [node name="spacer2" type="Control" parent="."]
 custom_minimum_size = Vector2(40, 0)
@@ -21,17 +40,17 @@ layout_mode = 2
 [node name="DRAW" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Draw"
+text = "✏️ Draw"
 
 [node name="ERASER" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Eraser"
+text = "❌ Erase"
 
 [node name="MOVE" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Move"
+text = "↔️ Move ↕️"
 
 [node name="spacer4" type="Control" parent="."]
 custom_minimum_size = Vector2(20, 0)
@@ -39,12 +58,11 @@ layout_mode = 2
 
 [node name="Undo" type="Button" parent="."]
 layout_mode = 2
-text = "Undo"
+text = "↩️ Undo"
 
 [node name="Redo" type="Button" parent="."]
 layout_mode = 2
-text = "Redo
-"
+text = "Redo ↪️"
 
 [node name="spacer5" type="Control" parent="."]
 custom_minimum_size = Vector2(20, 0)
@@ -76,11 +94,8 @@ text = "Funny"
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 
-[node name="NEXT PG" type="Button" parent="."]
-layout_mode = 2
-text = "-->"
-
 [connection signal="pressed" from="PREV PG" to="." method="_on_prev_pg_pressed"]
+[connection signal="pressed" from="NEXT PG" to="." method="_on_next_pg_pressed"]
 [connection signal="pressed" from="DRAW" to="." method="_on_draw_pressed"]
 [connection signal="pressed" from="ERASER" to="." method="_on_eraser_pressed"]
 [connection signal="pressed" from="MOVE" to="." method="_on_move_pressed"]
@@ -90,4 +105,3 @@ text = "-->"
 [connection signal="pressed" from="LOAD" to="." method="_on_load_pressed"]
 [connection signal="pressed" from="EXPORT CSV" to="." method="_on_export_pressed"]
 [connection signal="toggled" from="TestLayout" to="." method="_on_test_layout_toggled"]
-[connection signal="pressed" from="NEXT PG" to="." method="_on_next_pg_pressed"]

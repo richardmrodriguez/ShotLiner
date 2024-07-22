@@ -22,6 +22,7 @@ signal layout_test_pressed(toggle: bool)
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	EventStateManager.toolbar_node = self
+	EventStateManager.page_changed.connect(_on_page_changed)
 
 func _on_prev_pg_pressed() -> void:
 	toolbar_button_pressed.emit(TOOLBAR_BUTTON.PREV_PAGE)
@@ -53,3 +54,7 @@ func _on_undo_pressed() -> void:
 
 func _on_redo_pressed() -> void:
 	CommandHistory.redo()
+
+func _on_page_changed() -> void:
+	print("DOUBLE AMONG US 400000")
+	%PageNumber.text = str(EventStateManager.cur_page_idx) # TODO: DISPLAY NOMINAL PAGE NUMBERS

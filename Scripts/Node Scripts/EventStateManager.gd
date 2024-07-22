@@ -18,6 +18,7 @@ enum TOOL {
 @onready var toolbar_node: ToolBar
 @onready var editor_view: Node
 @onready var selection_box_rect: ColorRect = ColorRect.new()
+@onready var toolbar_page_num_field: Node
 
 # ------ STATES ------
 var is_drawing: bool = false
@@ -164,8 +165,6 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 	if start_line_page_idx == end_line_page_idx:
 		var old_start_uuid: String = new_shotline.start_uuid
 		var old_end_uuid: String = new_shotline.end_uuid
-		var old_start_pdfline_substr: String = ScreenplayDocument.get_pdfline_from_uuid(old_start_uuid).GetLineString().substr(0, 10)
-		var old_end_pdfline_substr: String = ScreenplayDocument.get_pdfline_from_uuid(old_end_uuid).GetLineString().substr(0, 10)
 
 		var old_start_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(old_start_uuid)
 		var old_end_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(old_end_uuid)
@@ -179,18 +178,12 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 
 	# pre-populate the shotline.segments_filmed_or_unfilmed Dict with default values of true
 
-	var found_start: bool = false
-	var found_end: bool = false
-
 	var pdflines_in_range: Array[PDFLineFN] = ScreenplayDocument.get_array_of_pdflines_from_start_and_end_uuids(new_shotline.start_uuid, new_shotline.end_uuid)
 
 	for fnl: PDFLineFN in pdflines_in_range:
 		new_shotline.segments_filmed_or_unfilmed[fnl.LineUUID] = true
 	
 	return new_shotline
-
-func set_current_tool(tool: TOOL) -> void:
-	EventStateManager.cur_tool = tool
 
 #
 #
@@ -604,6 +597,9 @@ func _on_shotline_endcap_released(
 func _on_page_lines_populated() -> void:
 	pass
 	#page_node.populate_page_panel_with_shotlines_for_page()
+
+func _on_page_num_field_entered(text: String) -> void:
+	pass # TODO: support entering the page number, catch false entries, and especially support nominal page numbers
 
 func _on_file_dialog_cancelled(fd: FileDialog) -> void:
 	fd.queue_free()
