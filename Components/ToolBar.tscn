@@ -58,11 +58,11 @@ layout_mode = 2
 
 [node name="Undo" type="Button" parent="."]
 layout_mode = 2
-text = "↩️ Undo"
+text = "↩️"
 
 [node name="Redo" type="Button" parent="."]
 layout_mode = 2
-text = "Redo ↪️"
+text = "↪️"
 
 [node name="spacer5" type="Control" parent="."]
 custom_minimum_size = Vector2(20, 0)

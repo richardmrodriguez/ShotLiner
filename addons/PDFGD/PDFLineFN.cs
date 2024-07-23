@@ -2,12 +2,12 @@ using Godot;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using Godot.Collections;
 
 [GlobalClass]
 public partial class PDFLineFN : GodotObject
 {
     public Godot.Collections.Array<PDFWord> PDFWords = new();
-    public string FNLineType = "";
     public string NominalSceneNum = ""; // Scene num could be 42B for example
     public string LineUUID = "";
     public string NormalizedLine = "";
@@ -17,8 +17,6 @@ public partial class PDFLineFN : GodotObject
     public string GetLineString()
     {
         string newLineString = "";
-        Vector2 old_word_bbox = new();
-        Vector2 old_word_pos = new();
         foreach (PDFWord word in PDFWords)
         {
             newLineString += word.GetWordString() + " ";
@@ -48,5 +46,15 @@ public partial class PDFLineFN : GodotObject
 
     }
 
+    public Dictionary GetSerializedLine()
+    // TODO: Serializing this Line means serializing the PDFWords 
+    {
+        Dictionary newDict = new();
+
+
+
+
+        return newDict;
+    }
 
 }

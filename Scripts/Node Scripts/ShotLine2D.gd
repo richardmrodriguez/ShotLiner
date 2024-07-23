@@ -103,11 +103,11 @@ func construct_shotline_node(shotline: Shotline, page_container: ScreenplayPage=
 	var cur_start_uuid: String = shotline_obj.start_uuid
 	var cur_end_uuid: String = shotline_obj.end_uuid
 
-	var cur_start_page_line_indices: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(cur_start_uuid)
-	var cur_end_page_line_indices: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(cur_end_uuid)
+	var given_start_page_line_indices: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(cur_start_uuid)
+	var given_end_page_line_indices: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(cur_end_uuid)
 
-	var shotline_start_page_idx: int = cur_start_page_line_indices.x
-	var shotline_end_page_idx: int = cur_end_page_line_indices.x
+	var shotline_start_page_idx: int = given_start_page_line_indices.x
+	var shotline_end_page_idx: int = given_end_page_line_indices.x
 
 	var starts_on_earlier_page: bool = false
 	var ends_on_later_page: bool = false
@@ -161,7 +161,7 @@ func construct_shotline_node(shotline: Shotline, page_container: ScreenplayPage=
 		#print("Starts on previous page")
 		local_start_label = cur_pagelines[0]
 		for pageline: PageLineLabel in cur_pagelines:
-			if cur_start_page_line_indices.x < cur_end_page_line_indices.x:
+			if given_start_page_line_indices.x < given_end_page_line_indices.x:
 				if pageline.pdfline.LineUUID == cur_end_uuid:
 					local_end_label = pageline
 			else:
@@ -172,7 +172,7 @@ func construct_shotline_node(shotline: Shotline, page_container: ScreenplayPage=
 		#print("Ends on later page")
 		local_end_label = cur_pagelines[- 1]
 		for pageline: PageLineLabel in cur_pagelines:
-			if cur_start_page_line_indices.x < cur_end_page_line_indices.x:
+			if given_start_page_line_indices.x < given_end_page_line_indices.x:
 				if pageline.pdfline.LineUUID == cur_start_uuid:
 					local_start_label = pageline
 			else:

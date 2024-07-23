@@ -128,22 +128,19 @@ func generate_csv_lines() -> Array[PackedStringArray]:
 
 	return new_arr
 
-func pages_from_serialized_arr(arr: Array) -> Array[PageContent]:
-	if (not arr) or arr == []:
+func pages_from_serialized_arr(page_arr: Array) -> Array[PageContent]:
+	if (not page_arr) or page_arr == []:
 		return []
 
 	var new_arr: Array[PageContent] = []
 
-	for element: Dictionary in arr:
+	for page: Dictionary in page_arr:
 		var new_pc: PageContent = PageContent.new()
-		for fnline_dict: Dictionary in element["lines"]:
+		for pdfline_dict: Dictionary in page["lines"]:
 			assert(false, "NOT YET FIXED")
 			var new_pdfln: PDFLineFN = PDFLineFN.new()
-			new_pdfln.string = fnline_dict["string"]
-			new_pdfln.fn_type = fnline_dict["fn_type"]
-			new_pdfln.is_type_forced = fnline_dict["is_type_forced"]
-			new_pdfln.pos = fnline_dict["pos"] as int
-			new_pdfln.uuid = fnline_dict["uuid"]
+			new_pdfln.string = pdfline_dict["string"]
+			new_pdfln.LineUUID = pdfline_dict["uuid"]
 			new_pc.lines.append(new_pdfln)
 		new_arr.append(new_pc)
 	
