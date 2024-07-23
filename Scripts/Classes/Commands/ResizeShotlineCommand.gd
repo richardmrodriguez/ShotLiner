@@ -19,6 +19,8 @@ var shotline_uuid: String
 
 var new_start_end_set: bool = false
 
+var old_segments: Dictionary = {}
+
 func _init(_params: Array) -> void:
 	is_moved_from_topcap = _params[0]
 	var shotline: Shotline = _params[1]
@@ -28,6 +30,9 @@ func _init(_params: Array) -> void:
 	old_shotline_end_uuid = shotline.end_uuid
 
 	shotline_uuid = shotline.shotline_uuid
+	old_segments = shotline.segments_filmed_or_unfilmed.duplicate(true)
+
+# FIXME: Keep track of the old dictionary of segments so that the filmed and unfilmed sections can be restored upon undo
 
 func execute() -> bool:
 	var shotline: Shotline = ScreenplayDocument.get_shotline_from_uuid(shotline_uuid)
@@ -84,6 +89,8 @@ func undo() -> bool:
 		if was_inverted:
 			resized_maybe_inverted = not resized_maybe_inverted
 
+		shotline.segments_filmed_or_unfilmed = old_segments.duplicate(true)
 		shotline.shotline_node.update_length_from_endcap_drag(resized_maybe_inverted, y_drag_delta, last_uuid_resized_from)
+		#shotline.shotline_node.construct_shotline_node(shotline)
 		
 	return true

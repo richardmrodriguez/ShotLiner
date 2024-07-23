@@ -57,6 +57,7 @@ func get_shotline_from_uuid(uuid: String) -> Shotline:
 	for shotline: Shotline in shotlines:
 		if shotline.shotline_uuid == uuid:
 			return shotline
+	assert(false, "Could not find shotline with this UUID: " + uuid)
 	return null
 
 func get_array_of_pdflines_from_start_and_end_uuids(start: String, end: String) -> Array[PDFLineFN]:

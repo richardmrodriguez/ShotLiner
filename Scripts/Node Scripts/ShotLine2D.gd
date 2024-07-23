@@ -311,7 +311,7 @@ func _populate_shotline_with_segments(
 
 		prev_line_y_pos = cur_segment_y_pos
 
-		# ---
+		# --- FIXME: This block is supposed to catch previously squiggled segments, but I'm not sure that it's actually working...
 
 		if old_segments.keys().has(pdfl.LineUUID):
 			shotline_obj.segments_filmed_or_unfilmed[pdfl.LineUUID] = old_segments[pdfl.LineUUID]
@@ -371,7 +371,8 @@ func resize_line_width_on_hover() -> void:
 func update_length_from_endcap_drag(
 	is_dragging_from_topcap: bool,
 	y_movement_delta: float,
-	last_declicked_pdfline_uuid: String=""
+	last_declicked_pdfline_uuid: String="",
+	old_segments: Dictionary={}
 	) -> void:
 
 	var cur_page_idx: int = EventStateManager.cur_page_idx
@@ -396,13 +397,16 @@ func update_length_from_endcap_drag(
 
 	var above_old_start: bool = last_declicked_pdfline_idx.x < old_start_idx.x or (last_declicked_pdfline_idx.x == old_start_idx.x and last_declicked_pdfline_idx.y < old_start_idx.y)
 	var below_old_end: bool = last_declicked_pdfline_idx.x > old_end_idx.x or (last_declicked_pdfline_idx.x == old_end_idx.x and last_declicked_pdfline_idx.y > old_end_idx.y)
-	if is_dragging_from_topcap: # resize from top of line
+	
+	# resize from top of line
+	if is_dragging_from_topcap:
 		if below_old_end:
 			shotline_obj.start_uuid = shotline_obj.end_uuid
 			shotline_obj.end_uuid = last_declicked_pdfline_uuid
 		else:
 			shotline_obj.start_uuid = last_declicked_pdfline_uuid
-	else: # resize from bottom of line
+	# resize from bottom of line
+	else:
 		if above_old_start:
 			shotline_obj.end_uuid = shotline_obj.start_uuid
 			shotline_obj.start_uuid = last_declicked_pdfline_uuid
@@ -421,6 +425,8 @@ func update_length_from_endcap_drag(
 			return
 
 	# Finally, the new shotline positions do include somewhere on this page, reconstruct
+	if old_segments != {}:
+		shotline_obj.segments_filmed_or_unfilmed = old_segments
 	construct_shotline_node(shotline_obj, EventStateManager.page_node)
 
 # ------------- SIGNAL CALLBACKS ----------------------

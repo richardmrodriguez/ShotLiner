@@ -480,7 +480,7 @@ func _handle_left_click(event: InputEvent) -> void:
 						[
 							cur_selected_shotline_endcap.is_begin_cap,
 							cur_selected_shotline,
-							EventStateManager.last_mouse_drag_delta.y
+							EventStateManager.last_mouse_drag_delta.y,
 						]
 					)
 					CommandHistory.add_command(resize_shotline_cmd)
