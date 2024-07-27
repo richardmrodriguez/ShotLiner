@@ -10,9 +10,9 @@ public partial class PDFLineFN : GodotObject
     public Godot.Collections.Array<PDFWord> PDFWords = new();
     public string NominalSceneNum = ""; // Scene num could be 42B for example
     public string LineUUID = "";
-    public string NormalizedLine = "";
 
     public int LineState = 0; //PDFParser.PDF_LINE_STATE enum
+    public string NormalizedLine = "";
 
     public string GetLineString()
     {
@@ -46,15 +46,41 @@ public partial class PDFLineFN : GodotObject
 
     }
 
-    public Dictionary GetSerializedLine()
+    public Dictionary GetLineAsDict()
     // TODO: Serializing this Line means serializing the PDFWords 
     {
-        Dictionary newDict = new();
+        Godot.Collections.Array WordsArray = new();
+        foreach (PDFWord w in PDFWords)
+        {
+            WordsArray.Add(w.GetWordAsDict());
+        }
+        Dictionary LineDict = new()
+        {
+            {"pdfwords", WordsArray},
+            {"lineuuid", LineUUID},
+            {"nominalscenenum", NominalSceneNum},
+            {"linestate", LineState}
+        };
 
 
 
 
-        return newDict;
+        return LineDict;
+    }
+
+    public void SetLineFromDict(Dictionary LineDict)
+    {
+        PDFWords = new();
+        foreach (Dictionary NWDict in (Array<Dictionary>)LineDict["pdfwords"])
+        {
+            PDFWord NewWord = new();
+            NewWord.SetWordFromDict(NWDict);
+            PDFWords.Add(NewWord);
+        }
+        LineUUID = (string)LineDict["lineuuid"];
+        NominalSceneNum = (string)LineDict["nominalscenenum"];
+        LineState = (int)LineDict["linestate"];
+
     }
 
 }

@@ -78,15 +78,26 @@ func load_file(filepath: String) -> bool:
 	if not fa:
 		return false
 	var doc_file_str: String = fa.get_as_text()
-	var doc_as_dict: Dictionary = JSON.parse_string(doc_file_str)
-	if not doc_as_dict:
-		return false
+	var json := JSON.new()
+	var error := json.parse(doc_file_str)
+
+	assert(not error, "Could not parse file.")
+
+	var doc_as_dict: Dictionary = json.data
+
 	ScreenplayDocument.document_name = doc_as_dict[docname]
 	ScreenplayDocument.characters.assign(doc_as_dict[characters])
 	ScreenplayDocument.registered_tags.assign(doc_as_dict[registered_tags])
 	ScreenplayDocument.scenes.assign(doc_as_dict[scenes])
-	ScreenplayDocument.shotlines = shotlines_from_serialized_arr(doc_as_dict[shotlines])
-	ScreenplayDocument.pages = pages_from_serialized_arr(doc_as_dict[pages])
+	ScreenplayDocument.shotlines.assign(shotlines_from_serialized_arr(doc_as_dict[shotlines]))
+	#var newpages := pages_from_serialized_arr(doc_as_dict[pages])
+	
+	#assert(false)
+
+	# After the data is set
+	#print("PDFLetter: ", newpages[0].pdflines[0].PDFWords[0].PDFLetters[0].Location)
+	#assert(false)
+	ScreenplayDocument.pages.assign(pages_from_serialized_arr(doc_as_dict[pages]))
 	fa.close()
 
 	CommandHistory.clear_history()
@@ -129,19 +140,13 @@ func generate_csv_lines() -> Array[PackedStringArray]:
 	return new_arr
 
 func pages_from_serialized_arr(page_arr: Array) -> Array[PageContent]:
-	if (not page_arr) or page_arr == []:
-		return []
+	assert(page_arr, "No Page Array found.")
 
 	var new_arr: Array[PageContent] = []
 
-	for page: Dictionary in page_arr:
+	for page_dict: Dictionary in page_arr:
 		var new_pc: PageContent = PageContent.new()
-		for pdfline_dict: Dictionary in page["lines"]:
-			assert(false, "NOT YET FIXED")
-			var new_pdfln: PDFLineFN = PDFLineFN.new()
-			new_pdfln.string = pdfline_dict["string"]
-			new_pdfln.LineUUID = pdfline_dict["uuid"]
-			new_pc.lines.append(new_pdfln)
+		new_pc.set_pagecontent_from_dict(page_dict)
 		new_arr.append(new_pc)
 	
 	return new_arr

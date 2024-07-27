@@ -4,13 +4,20 @@
 This tool is in pre-alpha, and is essentially a proof-of-concept until a proper mechanism for importing various documents is implemented.
 
 ## CURRENT STATUS
-### 2024 - 06 - 20
+### 2024 - 06 - 27
 
-This tool is in the middle of a major refactor, to support PDF Document import. Before this, some of the features listed below were in fact working, but this refactor is currently breaking most of these for the time being.
+Shotliner is nearing enough features to warrant an alpha release.
 
-- Drawing shotlines makes them the correct height again
-- Resizing shotlines needs to be refactored still
-- Multipage Shotlines needs to be refactored still
+Here's what's currently working:
+- Drawing, moving, resizing shotlines
+- Assigning unique metadata to each shotline
+- Saving and loading the document to and from a .sl file (just json for now, unreasonably large file size)
+- Exporting to CSV *(Tags field is not supported yet in editor)
+
+The last features that need to be implemented:
+- Make shotlines able to be multi-page (again)
+- Load PDF from user's file system (Load PDF Button)
+- Fix some quirks with Undo/Redo
 
 ## Current Features
 - Navigate between individual pages

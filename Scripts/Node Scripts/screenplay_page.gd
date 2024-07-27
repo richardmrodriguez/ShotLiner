@@ -94,7 +94,10 @@ func populate_container_with_page_lines(cur_page_content: PageContent, page_numb
 	page_lines_populated.emit()
 
 func construct_pdfline_label(pageline: PDFLineFN, line_idx: int=0) -> Label:
+	assert(pageline, "Pageline not passed through.")
+
 	var new_label: PageLineLabel = PageLineLabel.new()
+	print(typeof(pageline), " | ", pageline)
 	new_label.text = pageline.GetLineString()
 	new_label.pdfline = pageline
 	new_label.line_index = line_idx
