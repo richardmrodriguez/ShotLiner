@@ -76,12 +76,15 @@ func load_file(filepath: String) -> bool:
 	EventStateManager.cur_page_idx = 0
 	var fa := FileAccess.open(filepath, FileAccess.READ)
 	if not fa:
+		print_debug("Could not open file.")
 		return false
 	var doc_file_str: String = fa.get_as_text()
 	var json := JSON.new()
 	var error := json.parse(doc_file_str)
 
-	assert(not error, "Could not parse file.")
+	if error:
+		print_debug("Could not parse file.")
+		return false
 
 	var doc_as_dict: Dictionary = json.data
 
@@ -117,6 +120,24 @@ func export_to_csv(filepath: String) -> bool:
 	for ln: PackedStringArray in csv_lines:
 		fa.store_csv_line(ln)
 
+	return true
+
+func import_pdf(filepath: String) -> bool:
+
+	var pdfGD_doc: PDFDocGD = PDFIngester.GetDocGD(filepath)
+	if not pdfGD_doc:
+		return false
+	
+	ScreenplayDocument.clear()
+
+	var page_node := EventStateManager.page_node
+	ScreenplayDocument.pages = ScreenplayDocument.get_pages_from_pdfdocgd(pdfGD_doc)
+	page_node.replace_current_page(
+		ScreenplayDocument.pages[0],
+		0
+	)
+	EventStateManager.cur_page_idx = 0
+	
 	return true
 
 func generate_csv_lines() -> Array[PackedStringArray]:
@@ -213,5 +234,7 @@ func open_file_dialog(file_mode: FileDialog.FileMode, sl_file_action: SLFileActi
 			fd.set_filters(PackedStringArray(["*.sl; ShotLiner file"]))
 		SLFileAction.FILE_ACTION.EXPORT_CSV:
 			fd.set_filters(PackedStringArray(["*.csv; "]))
+		SLFileAction.FILE_ACTION.IMPORT_PDF:
+			fd.set_filters(PackedStringArray(["*.pdf; PDF Document"]))
 	EventStateManager.page_node.add_child(fd)
 	fd.show()

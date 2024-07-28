@@ -81,3 +81,11 @@ func get_array_of_pdflines_from_start_and_end_uuids(start: String, end: String) 
 				break
 	
 	return array
+
+func clear() -> void:
+	document_name = ""
+	characters = [] # list of character names
+	registered_tags = []
+	pages = []
+	scenes = []
+	shotlines = []

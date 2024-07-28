@@ -72,47 +72,45 @@ var temp_PDF_path: String = "/home/rich/Downloads/VCR2L-2024-05-03.pdf"
 func _on_page_node_ready() -> void:
 	# ------------------- PDFIngester Testing ----------------------------
 	
-	var pdfGD_doc: PDFDocGD = PDFIngester.GetDocGD(temp_PDF_path)
-	# TODO - await the other nodes -namely the page node -- to be properly loaded and ready
-	while not page_node:
-		pass
+	#var pdfGD_doc: PDFDocGD = PDFIngester.GetDocGD(temp_PDF_path)
+	## TODO - await the other nodes -namely the page node -- to be properly loaded and ready
+	#while not page_node:
+	#	pass
+	#
+	#ScreenplayDocument.pages = ScreenplayDocument.get_pages_from_pdfdocgd(pdfGD_doc)
+	#page_node.populate_container_with_page_lines(
+	#	ScreenplayDocument.pages[0],
+	#	0
+	#)
+#
+	#print_debug("strings from PDFGD doc:")
+	#for page: PDFPage in pdfGD_doc.PDFPages:
+	#	print("-----------------PAGE-------------")
+	#	var table: String = "[table=3]"
+	#	# TODO: Handle vertical offset between lines, insert "blank lines" in between for spacing
+	#	for line: PDFLineFN in page.PDFLines:
+	#		var letter_width: float = line.PDFWords[0].PDFLetters[0].Width
+	#		var letter_point_size: float = line.PDFWords[0].PDFLetters[0].PointSize
+	#		line.LineState = PDFScreenplayParser.get_PDFLine_body_state(
+	#			line,
+	#			page.PageSizeInPoints,
+	#			letter_point_size,
+	#			letter_width
+	#			)
+	#		var line_string: String = PDFScreenplayParser.get_normalized_body_text(
+	#			line,
+	#			page.PageSizeInPoints)
+#
+	#		table += "[cell]%s[/cell]" % (
+	#			PDFScreenplayParser.PDF_LINE_STATE.keys()[line.LineState]
+	#			)
+	#		table += "[cell]%s[/cell]" % (line.GetLinePosition())
+	#		table += "[cell]%s[/cell]" % ("\t" + line_string)
+	#		#print(line.GetLineString())
+	#		#print(line.GetLinePosition(), " | ", line.GetLineString())
+	#	table += "[/table]"
+	#	print_rich(table)
 	
-	ScreenplayDocument.pages = ScreenplayDocument.get_pages_from_pdfdocgd(pdfGD_doc)
-	page_node.populate_container_with_page_lines(
-		ScreenplayDocument.pages[0],
-		0
-	)
-
-	print_debug("strings from PDFGD doc:")
-	for page: PDFPage in pdfGD_doc.PDFPages:
-		print("-----------------PAGE-------------")
-		var table: String = "[table=3]"
-		# TODO: Handle vertical offset between lines, insert "blank lines" in between for spacing
-		for line: PDFLineFN in page.PDFLines:
-			var letter_width: float = line.PDFWords[0].PDFLetters[0].Width
-			var letter_point_size: float = line.PDFWords[0].PDFLetters[0].PointSize
-			line.LineState = PDFScreenplayParser.get_PDFLine_body_state(
-				line,
-				page.PageSizeInPoints,
-				letter_point_size,
-				letter_width
-				)
-			var line_string: String = PDFScreenplayParser.get_normalized_body_text(
-				line,
-				page.PageSizeInPoints)
-
-			table += "[cell]%s[/cell]" % (
-				PDFScreenplayParser.PDF_LINE_STATE.keys()[line.LineState]
-				)
-			table += "[cell]%s[/cell]" % (line.GetLinePosition())
-			table += "[cell]%s[/cell]" % ("\t" + line_string)
-			#print(line.GetLineString())
-			#print(line.GetLinePosition(), " | ", line.GetLineString())
-		table += "[/table]"
-		print_rich(table)
-	#print(pdfGD_doc.PDFPages[0].PDFLines[0].GetLineString())
-
-	#for page: PDFPage in pdfGD_doc.PDFP
 	pass
 
 func _ready() -> void:
@@ -196,7 +194,6 @@ func _on_tool_changed() -> void:
 
 func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
 	await get_tree().process_frame
-	var pages: Array[PageContent] = ScreenplayDocument.pages
 	match toolbar_button:
 		toolbar_node.TOOLBAR_BUTTON.NEXT_PAGE:
 			var next_page_idx: int = cur_page_idx + 1
@@ -215,6 +212,11 @@ func _on_tool_bar_toolbar_button_pressed(toolbar_button: int) -> void:
 				])
 			CommandHistory.add_command(page_nav_command)
 			page_changed.emit()
+		toolbar_node.TOOLBAR_BUTTON.IMPORT_PDF:
+			SLFileHandler.open_file_dialog(
+				FileDialog.FILE_MODE_OPEN_FILE,
+				SLFileAction.FILE_ACTION.IMPORT_PDF
+			)
 		toolbar_node.TOOLBAR_BUTTON.SAVE_SHOTLINE_FILE:
 			SLFileHandler.open_file_dialog(
 				FileDialog.FILE_MODE_SAVE_FILE,
@@ -616,5 +618,9 @@ func _on_file_dialog_file_selected(path: String, sl_fileaction: SLFileAction.FIL
 		SLFileAction.FILE_ACTION.LOAD_FILE:
 			if SLFileHandler.load_file(path):
 				print("Loaded....")
+		SLFileAction.FILE_ACTION.IMPORT_PDF:
+			if SLFileHandler.import_pdf(path):
+				print_debug("PDF Imported...")
+				pass
 
 	fd.queue_free()

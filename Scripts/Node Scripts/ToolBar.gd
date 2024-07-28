@@ -14,6 +14,7 @@ enum TOOLBAR_BUTTON {
 	LOAD_SHOTLINE_FILE,
 	EXPORT_SPREADSHEET,
 	OPEN_SCREENPLAY_FILE,
+	IMPORT_PDF,
 }
 
 signal toolbar_button_pressed(toolbar_button: TOOLBAR_BUTTON)
@@ -55,6 +56,9 @@ func _on_undo_pressed() -> void:
 func _on_redo_pressed() -> void:
 	CommandHistory.redo()
 
+func _on_import_pressed() -> void:
+	toolbar_button_pressed.emit(TOOLBAR_BUTTON.IMPORT_PDF)
+
 func _on_page_changed() -> void:
-	print("DOUBLE AMONG US 400000")
+	#print("DOUBLE AMONG US 400000")
 	%PageNumber.text = str(EventStateManager.cur_page_idx) # TODO: DISPLAY NOMINAL PAGE NUMBERS
