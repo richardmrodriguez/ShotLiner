@@ -604,9 +604,10 @@ func _on_file_dialog_cancelled(fd: FileDialog) -> void:
 func _on_file_dialog_file_selected(path: String, sl_fileaction: SLFileAction.FILE_ACTION, fd: FileDialog) -> void:
 	match sl_fileaction:
 		SLFileAction.FILE_ACTION.SAVE_FILE:
-
+			if not path.ends_with(".sl"):
+				path = path + ".sl"
 			if SLFileHandler.save_file(path):
-				print("Saved.....")
+				print("Saved to: ", path)
 		SLFileAction.FILE_ACTION.EXPORT_CSV:
 			if SLFileHandler.export_to_csv(path):
 				print("Exported")

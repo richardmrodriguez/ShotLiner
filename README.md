@@ -1,26 +1,16 @@
 # ShotLiner
 ## A screenplay lining tool built with Godot 4.2
 
-This tool is in pre-alpha, and is essentially a proof-of-concept until a proper mechanism for importing various documents is implemented.
+ShotLiner is a free and open-source tool for creating shotlists from a screenplay PDF.
 
-## CURRENT STATUS
-### 2024 - 06 - 27
+The current alpha release is 0.1.1, and provides barebones, basic functionality.
 
-Shotliner is nearing enough features to warrant an alpha release.
+I am currently developing this solo, and would greatly appreciate any and all feedback. Please open a GitHub issue, or send me an e-mail for a feature request or bug report: 
 
-Here's what's currently working:
-- Drawing, moving, resizing shotlines
-- Assigning unique metadata to each shotline
-- Saving and loading the document to and from a .sl file (just json for now, unreasonably large file size)
-- Exporting to CSV *(Tags field is not supported yet in editor)
-
-The last features that need to be implemented:
-- Make shotlines able to be multi-page (again)
-- Load PDF from user's file system (Load PDF Button)
-- Fix some quirks with Undo/Redo
+`richardmamarilrodriguez@gmail.com`
 
 ## Current Features
-- Navigate between individual pages
+- Import any screenplay-formatted PDF
 - Create multiple ShotLines per page
   - Resize shotline using Move tool
 	- Shotlines can be Multipage, and span across many pages
@@ -41,25 +31,23 @@ The last features that need to be implemented:
   - Resize shotlines
   - Move shotlines horizontally on page
 
-## Not Yet Implemented
-- Spreadsheet Export
-  - This is the big feature -- After creating your shotlines, you will be able to export a Shot List from your shotlines. This will be a spreadsheet with cells containing the relevant metadata for each Shot:
-	- Shot Number
-	- Shot Type / Subtype (Wide Shot, OTS, etc.)
-	- Setup Number
-	- Group Number
-	- Location & Time of Day
-	- misc. tags
-- Document import
-  - TODO: Import a document from any screenplay-formatted PDF file
-  - as of right now, this tool just reads from an fountain formatted file with several caveats:
-  - The Fountain parser used does not natively handle things like `*emphasis*` with asterisks
-  - This also does not handle automatic pagination; for immediate testing purposes, the fountain file I am using is manually pre-paginated and has manual page breaks using  `===` delimiters.
-- Select Tool button does nothing
 
-## Backburner / Roadmap
-These are features that are significant, but will not be taking focus until a stable 1.0 version is released.
+## Feature Roadmap
 
+### v1.0 
+These are features that are critical to the eventual 1.0 release:
+- Keyboard Shortcuts
+- Document highlighting / Tagging
+- User registered / searchable tags
+  - i.e. User can create their own tags such as "Magnifying glass prop" or "Big car VFX" and then recall them from a drop-down menu
+- Quality of Life
+  - Auto-populate ShotLine fields with relevant metadata
+    - Automatic nominal scene number and page number detection
+    - Automatically assign next shot number in sequence
+- Filterable output based upon scenes or tags
+  - Export only a CSV of chosen, relevant shots
+
+### v2.0
 Some of these features may not be implemented until a 2.x release.
 
 - Screenplay Draft merge-forward
@@ -68,9 +56,8 @@ Some of these features may not be implemented until a 2.x release.
 	- Shotlines that are only on excised pages will be simply removed, but perhaps with a warning or "ghost" shotline to show what was lost
 	- Some shotlines may be partially cut off, i.e. start on a deleted page but end on a page that is not excised.
 	  - these shotline fragments will be marked with a special color or outline or label, so the user can intervene manually
-	- This will be crucial for real production use.
 
-## DEPENDENCIES
+## DEPENDENCIES / ATTRIBUTION
 - [PdfPig](https://github.com/UglyToad/PdfPig)
   - This Library is used to ingest PDF text content, including the exact position of each character or grapheme on a page
 - [godot-uuid](https://github.com/binogure-studio/godot-uuid)
