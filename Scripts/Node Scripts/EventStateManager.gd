@@ -1,7 +1,7 @@
 extends Node
 
 const FIELD_CATEGORY = TextInputField.FIELD_CATEGORY
-const uuid_util = preload ("res://addons/uuid/uuid.gd")
+const uuid_util = preload("res://addons/uuid/uuid.gd")
 
 var line_hover_width: float
 
@@ -67,56 +67,9 @@ var cur_page_idx: int = 0
 signal page_changed
 
 # ------ READY ------
-var temp_PDF_path: String = "/home/rich/Downloads/VCR2L-2024-05-03.pdf"
-
-func _on_page_node_ready() -> void:
-	# ------------------- PDFIngester Testing ----------------------------
-	
-	#var pdfGD_doc: PDFDocGD = PDFIngester.GetDocGD(temp_PDF_path)
-	## TODO - await the other nodes -namely the page node -- to be properly loaded and ready
-	#while not page_node:
-	#	pass
-	#
-	#ScreenplayDocument.pages = ScreenplayDocument.get_pages_from_pdfdocgd(pdfGD_doc)
-	#page_node.populate_container_with_page_lines(
-	#	ScreenplayDocument.pages[0],
-	#	0
-	#)
-#
-	#print_debug("strings from PDFGD doc:")
-	#for page: PDFPage in pdfGD_doc.PDFPages:
-	#	print("-----------------PAGE-------------")
-	#	var table: String = "[table=3]"
-	#	# TODO: Handle vertical offset between lines, insert "blank lines" in between for spacing
-	#	for line: PDFLineFN in page.PDFLines:
-	#		var letter_width: float = line.PDFWords[0].PDFLetters[0].Width
-	#		var letter_point_size: float = line.PDFWords[0].PDFLetters[0].PointSize
-	#		line.LineState = PDFScreenplayParser.get_PDFLine_body_state(
-	#			line,
-	#			page.PageSizeInPoints,
-	#			letter_point_size,
-	#			letter_width
-	#			)
-	#		var line_string: String = PDFScreenplayParser.get_normalized_body_text(
-	#			line,
-	#			page.PageSizeInPoints)
-#
-	#		table += "[cell]%s[/cell]" % (
-	#			PDFScreenplayParser.PDF_LINE_STATE.keys()[line.LineState]
-	#			)
-	#		table += "[cell]%s[/cell]" % (line.GetLinePosition())
-	#		table += "[cell]%s[/cell]" % ("\t" + line_string)
-	#		#print(line.GetLineString())
-	#		#print(line.GetLinePosition(), " | ", line.GetLineString())
-	#	table += "[/table]"
-	#	print_rich(table)
-	
-	pass
 
 func _ready() -> void:
 	selection_box_rect.color = Color(0.4, 0.4, 0.4, 0.4)
-	
-	pass
 
 # ----- UITIL FUNCS ------
 
@@ -135,24 +88,22 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 	var start_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(start_uuid)
 	var end_idx: Vector2i = ScreenplayDocument.get_pdfline_vector_from_uuid(end_uuid)
 
-	var start_line_page_idx: int = start_idx.x
-	var end_line_page_idx: int = end_idx.x
-
+	
 	#assert(false, "start and end of current shotline: " + str(start_idx) + " | " + str(end_idx))
 
-	assert(start_line_page_idx != - 1, "Start line page index for shotline does not exist.")
-	assert(end_line_page_idx != - 1, "End line page index for shotline does not exist.")
+	assert(start_idx.x != -1, "Start line page index for shotline does not exist.")
+	assert(end_idx.x != -1, "End line page index for shotline does not exist.")
 
 	new_shotline.shotline_uuid = uuid_util.v4()
 	
-	if start_line_page_idx < end_line_page_idx:
-		new_shotline.start_page_index = start_line_page_idx
-		new_shotline.end_page_index = end_line_page_idx
+	if start_idx.x < end_idx.x:
+	#	new_shotline.start_page_index = start_line_page_idx
+	#	new_shotline.end_page_index = end_line_page_idx
 		new_shotline.start_uuid = start_uuid
 		new_shotline.end_uuid = end_uuid
 	else:
-		new_shotline.start_page_index = end_line_page_idx
-		new_shotline.end_page_index = start_line_page_idx
+	#	new_shotline.start_page_index = end_line_page_idx
+	#	new_shotline.end_page_index = start_line_page_idx
 		new_shotline.start_uuid = end_uuid
 		new_shotline.end_uuid = start_uuid
 
@@ -160,7 +111,7 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 	# right now, the following block relies on the previous block assigning something
 
 	# The right thing to to is fix both blocks... but it seems tricky.... idk lmao
-	if start_line_page_idx == end_line_page_idx:
+	if start_idx.x == end_idx.x:
 		var old_start_uuid: String = new_shotline.start_uuid
 		var old_end_uuid: String = new_shotline.end_uuid
 
@@ -172,7 +123,7 @@ func create_new_shotline_obj(start_uuid: String, end_uuid: String, last_mouse_po
 			new_shotline.end_uuid = old_start_uuid
 	new_shotline.x_position = last_mouse_pos.x
 
-	print("Start and end page indices: ", new_shotline.start_page_index, " | ", new_shotline.end_page_index)
+	print("Start and end page indices: ", new_shotline.get_start_idx(), " | ", new_shotline.get_end_idx())
 
 	# pre-populate the shotline.segments_filmed_or_unfilmed Dict with default values of true
 
@@ -264,25 +215,58 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 	
 	if event is InputEventMouseButton:
 		var cur_global_pos: Vector2 = event.global_position
-		last_mouse_click_below_bottom_margin = (
-			page_node.bottom_page_margin.global_position.y
-			< cur_global_pos.y
-			)
-		last_mouse_click_above_top_margin = (
-			page_node.top_page_margin.global_position.y +
-			page_node.top_page_margin.size.y
-			> cur_global_pos.y
-			)
-		last_mouse_click_past_left_margin = (
-				page_node.left_page_margin.global_position.x +
-				page_node.left_page_margin.size.x
-				> cur_global_pos.x
-			)
-		last_mouse_click_past_right_margin = (
-			page_node.right_page_margin.global_position.x
-			< cur_global_pos.x
-			)
-		
+		#if page_node.bottom_page_margin:
+		#	last_mouse_click_below_bottom_margin = (
+		#		page_node.bottom_page_margin.global_position.y
+		#		< cur_global_pos.y
+		#		)
+		#if page_node.top_page_margin:
+		#	last_mouse_click_above_top_margin = (
+		#		page_node.top_page_margin.global_position.y +
+		#		page_node.top_page_margin.size.y
+		#		> cur_global_pos.y
+		#		)
+		#if page_node.left_page_margin:
+		#	last_mouse_click_past_left_margin = (
+		#			page_node.left_page_margin.global_position.x +
+		#			page_node.left_page_margin.size.x
+		#			> cur_global_pos.x
+		#		)
+		#if page_node.right_page_margin:
+		#	last_mouse_click_past_right_margin = (
+		#		page_node.right_page_margin.global_position.x
+		#		< cur_global_pos.x
+		#		)
+		# TODO: Instead of the above blocks, just handle the mouse being above or below the
+		# first or last pageline in the page when clicked
+
+		if not event.pressed:
+			var bottom_margin: float = 0
+			var top_margin: float = 20000
+			var pageline_height: float
+			var height_set: bool = false
+			for pll: Node in page_node.page_container.get_children():
+				if not pll is PageLineLabel:
+					continue
+				if not height_set:
+					pageline_height = pll.size.y
+				if pll.global_position.y > bottom_margin:
+					bottom_margin = pll.global_position.y
+				if pll.global_position.y < top_margin:
+					top_margin = pll.global_position.y
+			
+			#top_margin = top_margin - pageline_height
+			
+			if event.global_position.y > top_margin and event.global_position.y < bottom_margin + pageline_height:
+				last_mouse_click_above_top_margin = false
+				last_mouse_click_below_bottom_margin = false
+			elif event.global_position.y > bottom_margin + pageline_height:
+				last_mouse_click_below_bottom_margin = true
+				last_mouse_click_above_top_margin = false
+			elif event.global_position.y < top_margin:
+				last_mouse_click_above_top_margin = true
+				last_mouse_click_below_bottom_margin = false
+			
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			_handle_left_click(event)
 		if event.button_index == MOUSE_BUTTON_RIGHT:
@@ -303,20 +287,21 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 
 		#Highlight the margins if mouse is over a margin rect
 		if is_drawing:
-			if page_node.top_page_margin.get_global_rect().has_point(cur_global_mouse_pos):
-				if cur_page_idx == 0:
-					page_node.top_page_margin.color = Color.DARK_RED
+			if page_node.top_page_margin and page_node.bottom_page_margin and page_node.left_page_margin and page_node.right_page_margin:
+				if page_node.top_page_margin.get_global_rect().has_point(cur_global_mouse_pos):
+					if cur_page_idx == 0:
+						page_node.top_page_margin.color = Color.DARK_RED
+					else:
+						page_node.top_page_margin.color = ShotLinerColors.content_color
 				else:
-					page_node.top_page_margin.color = ShotLinerColors.content_color
-			else:
-				page_node.top_page_margin.color = Color.TRANSPARENT
-			if page_node.bottom_page_margin.get_global_rect().has_point(cur_global_mouse_pos):
-				if cur_page_idx == ScreenplayDocument.pages.size() - 1:
-					page_node.bottom_page_margin.color = Color.DARK_RED
+					page_node.top_page_margin.color = Color.TRANSPARENT
+				if page_node.bottom_page_margin.get_global_rect().has_point(cur_global_mouse_pos):
+					if cur_page_idx == ScreenplayDocument.pages.size() - 1:
+						page_node.bottom_page_margin.color = Color.DARK_RED
+					else:
+						page_node.bottom_page_margin.color = ShotLinerColors.content_color
 				else:
-					page_node.bottom_page_margin.color = ShotLinerColors.content_color
-			else:
-				page_node.bottom_page_margin.color = Color.TRANSPARENT
+					page_node.bottom_page_margin.color = Color.TRANSPARENT
 
 		if is_inverting_line:
 			if is_instance_valid(last_hovered_shotline_node):
@@ -436,14 +421,16 @@ func _handle_left_click(event: InputEvent) -> void:
 			TOOL.DRAW:
 				if is_drawing:
 					is_drawing = false
-					page_node.set_color_of_all_page_margins()
+					#page_node.set_color_of_all_page_margins()
 					if not (
 						last_mouse_click_past_left_margin or
 						last_mouse_click_past_right_margin):
 						var new_shotline: Shotline
 						#assert(false, "Current shotline pageline UUIDS: " + str(last_clicked_line_uuid) + " | " + str(last_hovered_line_uuid))
-						assert(last_clicked_line_uuid, "No last clicked line.")
-						assert(last_hovered_line_uuid, "No last hovered line.")
+
+						if (not last_clicked_line_uuid) or (not last_hovered_line_uuid):
+							return
+
 						if not (last_mouse_click_below_bottom_margin or last_mouse_click_above_top_margin):
 							new_shotline = create_new_shotline_obj(
 								last_clicked_line_uuid,
@@ -451,16 +438,18 @@ func _handle_left_click(event: InputEvent) -> void:
 								event.position)
 							
 						elif last_mouse_click_above_top_margin:
+							#assert(false, "Mouse above top?.")
 							# click released past top or bottom margin
 							# give the add_new_shotline the last line of prev page or first line of next page
 
 							var start_uuid: String
 							if cur_page_idx - 1 >= 0:
-								start_uuid = pages[cur_page_idx - 1].pdflines.back().uuid
+								start_uuid = pages[cur_page_idx - 1].pdflines.back().LineUUID
 							else:
 								start_uuid = pages[cur_page_idx].pdflines.front().LineUUID
 							new_shotline = create_new_shotline_obj(start_uuid, last_hovered_line_uuid, event.position)
 						elif last_mouse_click_below_bottom_margin:
+							#assert(false, "Mouse below bottom?")
 							var end_uuid: String
 							if cur_page_idx + 1 < pages.size():
 								end_uuid = pages[cur_page_idx + 1].pdflines.front().LineUUID
@@ -477,12 +466,30 @@ func _handle_left_click(event: InputEvent) -> void:
 			TOOL.MOVE:
 				if is_resizing_shotline:
 					is_resizing_shotline = false
-					last_declicked_line_uuid = last_hovered_line_uuid
+					# FIXME: This is bad, because the resize shotline command reaches out to get the last_declicked line
+					# when instead we should just pass this variable to the resize command
+					if (not last_mouse_click_above_top_margin) and (not last_mouse_click_below_bottom_margin):
+						last_declicked_line_uuid = last_hovered_line_uuid
+					elif last_mouse_click_above_top_margin:
+						if cur_page_idx > 0:
+							var prev_page_lines := ScreenplayDocument.pages[cur_page_idx - 1].pdflines
+							last_declicked_line_uuid = prev_page_lines.back().LineUUID
+							assert(prev_page_lines.back().LineUUID, "Couldn't get last line of previous page.")
+						else:
+							last_declicked_line_uuid = ScreenplayDocument.pages[cur_page_idx].pdflines.front().LineUUID
+					elif last_mouse_click_below_bottom_margin:
+						if cur_page_idx < ScreenplayDocument.pages.size():
+							var next_page_lines := ScreenplayDocument.pages[cur_page_idx + 1].pdflines
+							last_declicked_line_uuid = next_page_lines.front().LineUUID
+						else:
+							last_declicked_line_uuid = ScreenplayDocument.pages[cur_page_idx].pdflines.back().LineUUID
+
+
 					var resize_shotline_cmd: ResizeShotlineCommand = ResizeShotlineCommand.new(
 						[
 							cur_selected_shotline_endcap.is_begin_cap,
 							cur_selected_shotline,
-							EventStateManager.last_mouse_drag_delta.y,
+							last_declicked_line_uuid
 						]
 					)
 					CommandHistory.add_command(resize_shotline_cmd)
@@ -538,18 +545,6 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 					
 					is_dragging_shotline = false
 					
-					# If the mouse has dragged the shotline past the left or right margins,
-					# Put the shotline back where it came from
-					if (
-						(page_node.left_page_margin.global_position.x
-						+ page_node.left_page_margin.size.x)
-						> editor_view.get_global_mouse_position().x
-						or
-						(page_node.right_page_margin.global_position.x)
-						< editor_view.get_global_mouse_position().x
-						):
-						shotline_node.global_position = last_shotline_node_global_pos
-						return
 					var move_shotline_cmd := MoveShotLineCommand.new(
 						[
 							cur_selected_shotline,

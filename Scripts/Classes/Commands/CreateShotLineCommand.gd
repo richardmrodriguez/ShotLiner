@@ -6,6 +6,7 @@ var shotline_obj: Shotline
 var shotline_uuid: String
 var this_shotline_2D: ShotLine2DContainer
 var page_panel: Node
+var y_drag_delta: float
 
 func _init(_params: Array) -> void:
 	shotline_obj = _params.front()

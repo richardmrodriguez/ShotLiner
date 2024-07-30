@@ -7,7 +7,7 @@ var line_index: int
 var label_highlight: ColorRect
 
 func get_uuid() -> String:
-	assert(pdfline, "No PDFLine assigne to this label.")
+	assert(pdfline, "No PDFLine assigned to this label.")
 	return pdfline.LineUUID
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:

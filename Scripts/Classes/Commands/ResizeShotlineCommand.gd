@@ -4,8 +4,6 @@ class_name ResizeShotlineCommand
 
 var is_moved_from_topcap: bool
 
-var y_drag_delta: float
-
 var old_shotline_start_uuid: String
 var old_shotline_end_uuid: String
 
@@ -19,12 +17,19 @@ var shotline_uuid: String
 
 var new_start_end_set: bool = false
 
+var new_uuid_to_resize_to: String
+
 var old_segments: Dictionary = {}
+
+var old_begin_cap_state: bool
+var old_end_cap_state: bool
+var new_begin_cap_state: bool
+var new_end_cap_state: bool
 
 func _init(_params: Array) -> void:
 	is_moved_from_topcap = _params[0]
 	var shotline: Shotline = _params[1]
-	y_drag_delta = _params[2]
+	new_uuid_to_resize_to = _params[2]
 
 	old_shotline_start_uuid = shotline.start_uuid
 	old_shotline_end_uuid = shotline.end_uuid
@@ -32,12 +37,11 @@ func _init(_params: Array) -> void:
 	shotline_uuid = shotline.shotline_uuid
 	old_segments = shotline.segments_filmed_or_unfilmed.duplicate(true)
 
-# FIXME: Keep track of the old dictionary of segments so that the filmed and unfilmed sections can be restored upon undo
 
 func execute() -> bool:
 	var shotline: Shotline = ScreenplayDocument.get_shotline_from_uuid(shotline_uuid)
 	assert(shotline, "Shotline not found.")
-	var uuid_to_resize_to: String = ""
+	var uuid_to_resize_to: String = new_uuid_to_resize_to
 	if new_start_end_set:
 		if not was_inverted:
 			if is_moved_from_topcap:
@@ -49,7 +53,11 @@ func execute() -> bool:
 				uuid_to_resize_to = new_shotline_end_uuid
 			else:
 				uuid_to_resize_to = new_shotline_start_uuid
-	shotline.shotline_node.update_length_from_endcap_drag(is_moved_from_topcap, y_drag_delta, uuid_to_resize_to)
+	shotline.shotline_node.update_length_from_endcap_drag(
+		is_moved_from_topcap,
+		uuid_to_resize_to,
+		
+		)
 	
 	if not new_start_end_set:
 		new_shotline_start_uuid = shotline.start_uuid
@@ -75,10 +83,7 @@ func undo() -> bool:
 	var shotline: Shotline = ScreenplayDocument.get_shotline_from_uuid(shotline_uuid)
 	assert(shotline, "Shotline not found.")
 
-	if not shotline.shotline_node: # WTF is this if block???
-		# FIXME: This block is supposed to handle the case where resizing a shotline results in that shotline being
-		# erased from the current page (i.e. resizing a multipage shotline so that it does not exist on this page)
-		# But this seems probably very wrong; 
+	if not shotline.shotline_node:
 		shotline.start_uuid = old_shotline_start_uuid
 		shotline.end_uuid = old_shotline_end_uuid
 
@@ -89,8 +94,9 @@ func undo() -> bool:
 		if was_inverted:
 			resized_maybe_inverted = not resized_maybe_inverted
 
-		shotline.segments_filmed_or_unfilmed = old_segments.duplicate(true)
-		shotline.shotline_node.update_length_from_endcap_drag(resized_maybe_inverted, y_drag_delta, last_uuid_resized_from)
-		#shotline.shotline_node.construct_shotline_node(shotline)
+		shotline.shotline_node.update_length_from_endcap_drag( # TODO: This is supposed to make undoing a resize preserve the previous state of the segments
+			resized_maybe_inverted,
+			last_uuid_resized_from,
+			old_segments.duplicate(true))
 		
 	return true

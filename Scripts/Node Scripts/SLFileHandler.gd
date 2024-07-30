@@ -68,6 +68,7 @@ func save_file(filepath: String) -> bool:
 		'\t',
 		false,
 		true)
+	
 	fa.store_string(serialized_string)
 	fa.close()
 	return true
@@ -93,13 +94,6 @@ func load_file(filepath: String) -> bool:
 	ScreenplayDocument.registered_tags.assign(doc_as_dict[registered_tags])
 	ScreenplayDocument.scenes.assign(doc_as_dict[scenes])
 	ScreenplayDocument.shotlines.assign(shotlines_from_serialized_arr(doc_as_dict[shotlines]))
-	#var newpages := pages_from_serialized_arr(doc_as_dict[pages])
-	
-	#assert(false)
-
-	# After the data is set
-	#print("PDFLetter: ", newpages[0].pdflines[0].PDFWords[0].PDFLetters[0].Location)
-	#assert(false)
 	ScreenplayDocument.pages.assign(pages_from_serialized_arr(doc_as_dict[pages]))
 	fa.close()
 
@@ -127,7 +121,7 @@ func import_pdf(filepath: String) -> bool:
 	var pdfGD_doc: PDFDocGD = PDFIngester.GetDocGD(filepath)
 	if not pdfGD_doc:
 		return false
-	
+	CommandHistory.clear_history()
 	ScreenplayDocument.clear()
 
 	var page_node := EventStateManager.page_node
@@ -137,6 +131,34 @@ func import_pdf(filepath: String) -> bool:
 		0
 	)
 	EventStateManager.cur_page_idx = 0
+
+	#print_debug("strings from PDFGD doc:")
+	#for page: PDFPage in pdfGD_doc.PDFPages:
+	#	print("-----------------PAGE-------------")
+	#	var table: String = "[table=3]"
+	#	# TODO: Handle vertical offset between lines, insert "blank lines" in between for spacing
+	#	for line: PDFLineFN in page.PDFLines:
+	#		var letter_width: float = line.PDFWords[0].PDFLetters[0].Width
+	#		var letter_point_size: float = line.PDFWords[0].PDFLetters[0].PointSize
+	#		line.LineState = PDFScreenplayParser.get_PDFLine_body_state(
+	#			line,
+	#			page.PageSizeInPoints,
+	#			letter_point_size,
+	#			letter_width
+	#			)
+	#		var line_string: String = PDFScreenplayParser.get_normalized_body_text(
+	#			line,
+	#			page.PageSizeInPoints)
+	#
+	#		table += "[cell]%s[/cell]" % (
+	#			PDFScreenplayParser.PDF_LINE_STATE.keys()[line.LineState]
+	#			)
+	#		table += "[cell]%s[/cell]" % (line.GetLinePosition())
+	#		table += "[cell]%s[/cell]" % ("\t" + line_string)
+	#		#print(line.GetLineString())
+	#		#print(line.GetLinePosition(), " | ", line.GetLineString())
+	#	table += "[/table]"
+	#	print_rich(table)
 	
 	return true
 
@@ -181,8 +203,8 @@ func shotlines_from_serialized_arr(arr: Array) -> Array[Shotline]:
 	for element: Dictionary in arr:
 		var new_sl: Shotline = Shotline.new()
 
-		new_sl.start_page_index = element["start_page_index"]
-		new_sl.end_page_index = element["end_page_index"]
+		#new_sl.start_page_index = element["start_page_index"]
+		#new_sl.end_page_index = element["end_page_index"]
 		new_sl.start_uuid = element["start_uuid"]
 		new_sl.end_uuid = element["end_uuid"]
 		new_sl.x_position = element["x_position"]

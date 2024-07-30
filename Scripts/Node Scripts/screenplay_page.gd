@@ -18,8 +18,8 @@ class_name ScreenplayPage
 @onready var top_page_margin: Node = %TopPageMarginRegion
 @onready var background_color_rect: ColorRect = %PageBackground
 
-const uuid_util = preload ("res://addons/uuid/uuid.gd")
-const page_margin_region: PackedScene = preload ("res://Components/PageMarginRegion.tscn")
+const uuid_util = preload("res://addons/uuid/uuid.gd")
+const page_margin_region: PackedScene = preload("res://Components/PageMarginRegion.tscn")
 
 var current_page_number: int = 0
 var shotlines_for_pages: Dictionary = {}
@@ -37,15 +37,15 @@ signal page_lines_populated
 
 func _ready() -> void:
 	EventStateManager.page_node = self
-	left_page_margin.color = Color.TRANSPARENT
-	right_page_margin.color = Color.TRANSPARENT
-	top_page_margin.color = Color.TRANSPARENT
-	bottom_page_margin.color = Color.TRANSPARENT
-	ready.connect(EventStateManager._on_page_node_ready)
+	#left_page_margin.color = Color.TRANSPARENT
+	#right_page_margin.color = Color.TRANSPARENT
+	#top_page_margin.color = Color.TRANSPARENT
+	#bottom_page_margin.color = Color.TRANSPARENT
 	
-func replace_current_page(page_content: PageContent, new_page_number: int=0) -> void:
+func replace_current_page(page_content: PageContent, new_page_number: int = 0) -> void:
 	for child in page_container.get_children():
-		page_container.remove_child(child)
+		if child is PageLineLabel:
+			page_container.remove_child(child)
 	for shotline_container: Node in page_panel.get_children():
 		if shotline_container is ShotLine2DContainer:
 			page_panel.remove_child(shotline_container)
@@ -54,7 +54,7 @@ func replace_current_page(page_content: PageContent, new_page_number: int=0) -> 
 	populate_container_with_page_lines(page_content, new_page_number)
 	populate_page_panel_with_shotlines_for_page()
 
-func populate_container_with_page_lines(cur_page_content: PageContent, page_number: int=0) -> void:
+func populate_container_with_page_lines(cur_page_content: PageContent, page_number: int = 0) -> void:
 	current_page_number = page_number
 	var pdf_height: float = cur_page_content.page_size.y
 
@@ -93,7 +93,7 @@ func populate_container_with_page_lines(cur_page_content: PageContent, page_numb
 
 	page_lines_populated.emit()
 
-func construct_pdfline_label(pageline: PDFLineFN, line_idx: int=0) -> Label:
+func construct_pdfline_label(pageline: PDFLineFN, line_idx: int = 0) -> Label:
 	assert(pageline, "Pageline not passed through.")
 
 	var new_label: PageLineLabel = PageLineLabel.new()
@@ -114,13 +114,13 @@ func populate_page_panel_with_shotlines_for_page() -> void:
 
 	for sl: Shotline in ScreenplayDocument.shotlines:
 		if (
-			sl.start_page_index == cur_page_idx # starts on this page
-			or sl.end_page_index == cur_page_idx # ends on this page
+			sl.get_start_idx().x == cur_page_idx # starts on this page
+			or sl.get_end_idx().x == cur_page_idx # ends on this page
 			) or (
-				sl.start_page_index < cur_page_idx
-				and sl.end_page_index > cur_page_idx # Starts before this page and ends after this page
-			):
-				if sl.end_page_index < cur_page_idx:
+				sl.get_start_idx().x < cur_page_idx
+				and sl.get_end_idx().x > cur_page_idx
+			): # Starts before this page and ends after this page
+				if sl.get_end_idx().x < cur_page_idx:
 					break
 				shotlines_in_page.append(sl)
 
@@ -128,19 +128,21 @@ func populate_page_panel_with_shotlines_for_page() -> void:
 		var create_shotline_command: CreateShotLineCommand = CreateShotLineCommand.new([sl])
 		create_shotline_command.execute()
 
-func set_color_of_all_page_margins(color: Color=Color.TRANSPARENT) -> void:
+func set_color_of_all_page_margins(color: Color = Color.TRANSPARENT) -> void:
 	left_page_margin.color = color
 	right_page_margin.color = color
 	bottom_page_margin.color = color
 	top_page_margin.color = color
 
 func get_pageline_from_lineuuid(uuid: String) -> PageLineLabel:
-	for pll: PageLineLabel in page_container.get_children():
+	for pll: Node in page_container.get_children():
 		if not pll is PageLineLabel:
 			continue
 		if pll.get_uuid() == uuid:
 			return pll
-	
+
+	print_debug("UUID: ", uuid)
+	print_debug("UUID Vec :", ScreenplayDocument.get_pdfline_vector_from_uuid(uuid))
 	assert(false, "Could not find pageline label.")
 	return null
 
