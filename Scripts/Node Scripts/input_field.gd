@@ -80,10 +80,10 @@ func _on_line_edit_gui_input(_event: InputEvent) -> void:
 func _on_field_text_changed(new_text: String) -> void:
 	text_changed.emit(new_text, field_category)
 
-func set_text(text: String) -> void:
+func set_text(text: String = "") -> void:
 	line_edit.text = text
 
-func get_text(text: String) -> String:
+func get_text() -> String:
 	return line_edit.text
 
 func _on_focus_entered() -> void:

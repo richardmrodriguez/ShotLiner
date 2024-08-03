@@ -85,7 +85,6 @@ func get_pdfline_vector_from_uuid(uuid: String) -> Vector2i:
 	assert(false, "B - Could not find PDFLine Vector.")
 	return Vector2i()
 
-# FIXME: This func is no worky lmao
 func get_scene_num_from_global_line_idx(pdfline_idx: Vector2i) -> String:
 	var last_valid_scene_num: String = ""
 	var last_valid_scene_idx: Vector2i
@@ -98,7 +97,6 @@ func get_scene_num_from_global_line_idx(pdfline_idx: Vector2i) -> String:
 			last_valid_scene_num = scene.scene_num_nominal
 			last_valid_scene_idx = scene_idx
 		elif scene_idx.x == pdfline_idx.x:
-			# in this block, the y value CANNOT be equal, only less than, because the equal case was caught in the earliest if block
 			if scene_idx.y < pdfline_idx.y:
 				last_valid_scene_idx = scene_idx
 				last_valid_scene_num = scene.scene_num_nominal

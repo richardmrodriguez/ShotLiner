@@ -39,6 +39,10 @@ func populate_fields_from_shotline(shotline: Shotline) -> void:
 	group.set_text(shotline.group)
 	#tags.set_text(shotline.tags)
 
+func clear_fields() -> void:
+	for field: Control in fields:
+		field.set_text()
+
 func on_field_text_changed(new_text: String, field_category: TextInputField.FIELD_CATEGORY) -> void:
 	#print(new_text, " | ", TextInputField.FIELD_CATEGORY.keys()[field_category])
 	field_text_changed.emit(new_text, field_category)

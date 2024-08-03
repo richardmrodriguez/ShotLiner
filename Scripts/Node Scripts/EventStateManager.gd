@@ -504,7 +504,7 @@ func _on_new_shotline_added(shotline_struct: Shotline) -> void:
 	cur_selected_shotline = shotline_struct
 
 func _on_inspector_panel_field_text_changed(new_text: String, field_category: TextInputField.FIELD_CATEGORY) -> void:
-	if (not cur_selected_shotline) or ScreenplayDocument.shotlines == []:
+	if (not is_instance_valid(cur_selected_shotline)) or ScreenplayDocument.shotlines == [] or (not cur_selected_shotline.shotline_node):
 		return
 	await get_tree().process_frame
 	match field_category:

@@ -40,11 +40,11 @@ func execute() -> bool:
 		EventStateManager.last_shot_number = 1
 	shotline_obj.shot_number = str(EventStateManager.last_shot_number)
 	EventStateManager.last_shot_number += 1
-
+	EventStateManager.inpsector_panel_node.populate_fields_from_shotline(shotline_obj)
 	return true
 	
 func undo() -> bool:
-
+	EventStateManager.last_shot_number -= 1
 	# to undo:
 	# 1. get shotline container by uuid, queue free
 	# 2. remove shotline obj from array by uuid
@@ -58,7 +58,7 @@ func undo() -> bool:
 				page_panel.remove_child(shotline_container)
 				shotline_container.queue_free()
 		ScreenplayDocument.shotlines.erase(shotline_obj)
-
+		EventStateManager.inpsector_panel_node.clear_fields()
 		return true
 	return false
 	#this_shotline_2D.queue_free()
