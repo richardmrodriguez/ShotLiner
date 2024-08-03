@@ -28,10 +28,42 @@ func load_screenplay(filename: String) -> String:
 func get_pages_from_pdfdocgd(pdf: PDFDocGD) -> Array[PageContent]:
 	var pagearray: Array[PageContent] = []
 	
+	var last_scene_num_nominal: String = ""
+	var last_scene_num_counter: int = 1
 	for page: PDFPage in pdf.PDFPages:
 		var cur_page: PageContent = PageContent.new()
+		var pagesize_points: Vector2 = page.PageSizeInPoints
+		
+		# Do PDF PARSING in this for loop, for each line
 		for line: PDFLineFN in page.PDFLines:
-			line.LineUUID = EventStateManager.uuid_util.v4()
+			if line.LineUUID == "": # only reassign the UUID if it hasn't been assigned yet;
+				# 	This is important so that a script can be re-parsed by the user 
+				#	even if the entire document has shotlines on it
+				line.LineUUID = EventStateManager.uuid_util.v4()
+			line.LineElement = PDFScreenplayParser.parse_pdfline(line, pagesize_points)
+			match line.LineElement:
+				PDFScreenplayParser.ELEMENT.SCENE_HEADING:
+					var scene_num_result: String = PDFScreenplayParser.get_nominal_scene_num(line, pagesize_points)
+					if scene_num_result != "":
+						line.NominalSceneNum = scene_num_result
+						last_scene_num_nominal = scene_num_result
+					else: # no scene num in line
+						if last_scene_num_nominal == "":
+							last_scene_num_nominal = str(last_scene_num_counter)
+							line.NominalSceneNum = last_scene_num_nominal
+							last_scene_num_counter += 1
+						else:
+							last_scene_num_counter = int(last_scene_num_nominal) + 1
+							last_scene_num_nominal = str(last_scene_num_counter)
+							line.NominalSceneNum = last_scene_num_nominal
+							last_scene_num_counter += 1
+					var new_scene: ScreenplayScene = ScreenplayScene.new()
+					new_scene.scene_line_id = line.LineUUID
+					new_scene.scene_num_nominal = last_scene_num_nominal
+					# TODO: assign other metadata to scene
+					scenes.append(new_scene)
+
+
 			cur_page.pdflines.append(line)
 		
 		pagearray.append(cur_page)
@@ -48,10 +80,37 @@ func get_pdfline_vector_from_uuid(uuid: String) -> Vector2i:
 			for line: PDFLineFN in page.pdflines:
 				if line.LineUUID == uuid:
 					var result: Vector2i = Vector2i(pages.find(page), page.pdflines.find(line))
-					assert((result.x != - 1 and result.y != - 1), "A - Could not find PDFLine Vector: " + str(result))
+					assert((result.x != -1 and result.y != -1), "A - Could not find PDFLine Vector: " + str(result))
 					return Vector2i(pages.find(page), page.pdflines.find(line))
 	assert(false, "B - Could not find PDFLine Vector.")
 	return Vector2i()
+
+# FIXME: This func is no worky lmao
+func get_scene_num_from_global_line_idx(pdfline_idx: Vector2i) -> String:
+	var last_valid_scene_num: String = ""
+	var last_valid_scene_idx: Vector2i
+	for scene: ScreenplayScene in scenes:
+		print_debug("Current scene num: ", scene.scene_num_nominal)
+		var scene_idx: Vector2i = get_pdfline_vector_from_uuid(scene.scene_line_id)
+		if scene_idx == pdfline_idx:
+			return scene.scene_num_nominal
+		if (scene_idx.x < pdfline_idx.x):
+			last_valid_scene_num = scene.scene_num_nominal
+			last_valid_scene_idx = scene_idx
+		elif scene_idx.x == pdfline_idx.x:
+			# in this block, the y value CANNOT be equal, only less than, because the equal case was caught in the earliest if block
+			if scene_idx.y < pdfline_idx.y:
+				last_valid_scene_idx = scene_idx
+				last_valid_scene_num = scene.scene_num_nominal
+
+			else:
+				return last_valid_scene_num
+		else:
+			return last_valid_scene_num
+		
+	# this should never escape past the for loop, but for some reason it does sometimes
+	assert(false, "Could not get a scene number for the selected pageline at index: " + str(pdfline_idx))
+	return ""
 
 func get_shotline_from_uuid(uuid: String) -> Shotline:
 	for shotline: Shotline in shotlines:

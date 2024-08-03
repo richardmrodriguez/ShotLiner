@@ -7,11 +7,13 @@ var shotline_uuid: String
 var this_shotline_2D: ShotLine2DContainer
 var page_panel: Node
 var y_drag_delta: float
+var prev_global_scene_num_nominal: String
 
 func _init(_params: Array) -> void:
 	shotline_obj = _params.front()
 	page_panel = EventStateManager.page_node.page_panel
 	shotline_uuid = shotline_obj.shotline_uuid
+	prev_global_scene_num_nominal = EventStateManager.last_selected_scene_num_nominal
 	#shotline_uuid = params.front().shotline_uuid
 
 func execute() -> bool:
@@ -27,6 +29,17 @@ func execute() -> bool:
 	this_shotline_2D.construct_shotline_node(shotline_obj)
 	shotline_obj.shotline_node = this_shotline_2D
 	EventStateManager.cur_selected_shotline = shotline_obj
+	var scene_num_nominal: String = ScreenplayDocument.get_scene_num_from_global_line_idx(shotline_obj.get_start_idx())
+	EventStateManager.last_selected_scene_num_nominal = scene_num_nominal
+	shotline_obj.scene_number = EventStateManager.last_selected_scene_num_nominal
+	# TODO: create a func in ScreenplayScene to get the current amount of shotlines that start
+	# In a particular scene,
+	# and especially the highest shot number of those shotlines
+	#FIXME: 
+	if EventStateManager.last_selected_scene_num_nominal != prev_global_scene_num_nominal:
+		EventStateManager.last_shot_number = 1
+	shotline_obj.shot_number = str(EventStateManager.last_shot_number)
+	EventStateManager.last_shot_number += 1
 
 	return true
 	

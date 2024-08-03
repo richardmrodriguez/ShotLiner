@@ -51,10 +51,10 @@ func replace_current_page(page_content: PageContent, new_page_number: int = 0) -
 			page_panel.remove_child(shotline_container)
 			shotline_container.queue_free()
 	await get_tree().process_frame
-	populate_container_with_page_lines(page_content, new_page_number)
+	populate_page_container_with_page_lines(page_content, new_page_number)
 	populate_page_panel_with_shotlines_for_page()
 
-func populate_container_with_page_lines(cur_page_content: PageContent, page_number: int = 0) -> void:
+func populate_page_container_with_page_lines(cur_page_content: PageContent, page_number: int = 0) -> void:
 	current_page_number = page_number
 	var pdf_height: float = cur_page_content.page_size.y
 
@@ -90,6 +90,11 @@ func populate_container_with_page_lines(cur_page_content: PageContent, page_numb
 		screenplay_line.z_index = 0
 		line_bg.z_index = 1
 		line_bg.visible = false
+
+		match pageline.LineElement:
+			PDFScreenplayParser.ELEMENT.SCENE_HEADING:
+				screenplay_line.text = "SCENE NUMBER: " + pageline.NominalSceneNum
+			#PDFScreenplayParser.ELEMENT.
 
 	page_lines_populated.emit()
 

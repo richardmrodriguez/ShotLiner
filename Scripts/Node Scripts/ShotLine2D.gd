@@ -438,8 +438,8 @@ func update_length_from_endcap_drag(
 			print_debug("Shotline not on page, removing....")
 			queue_free()
 			return
-	var new_start_idx: Vector2 = ScreenplayDocument.get_pdfline_vector_from_uuid(shotline_obj.start_uuid)
-	var new_end_idx: Vector2 = ScreenplayDocument.get_pdfline_vector_from_uuid(shotline_obj.end_uuid)
+	#var new_start_idx: Vector2 = ScreenplayDocument.get_pdfline_vector_from_uuid(shotline_obj.start_uuid)
+	#var new_end_idx: Vector2 = ScreenplayDocument.get_pdfline_vector_from_uuid(shotline_obj.end_uuid)
 	#assert(false, str(new_start_idx) + " | " + str(new_end_idx))
 	# Finally, the new shotline positions do include somewhere on this page, reconstruct
 	if old_segments != {}:

@@ -14,6 +14,8 @@ public partial class PDFLineFN : GodotObject
     public int LineState = 0; //PDFParser.PDF_LINE_STATE enum
     public string NormalizedLine = "";
 
+    public int LineElement = 0;
+
     public string GetLineString()
     {
         string newLineString = "";

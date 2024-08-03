@@ -58,6 +58,10 @@ var cur_selected_shotline: Shotline
 var cur_selected_shotline_container: ShotLine2DContainer
 var cur_selected_shotline_endcap: EndcapGrabRegion
 
+# ------ SHOTLINE STATUS ------
+var last_selected_scene_num_nominal: String = ""
+var last_shot_number: int = 1
+
 # ------ PAGE STATUS ------
 
 var cur_page_idx: int = 0

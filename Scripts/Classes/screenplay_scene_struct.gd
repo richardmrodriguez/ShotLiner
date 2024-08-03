@@ -1,6 +1,8 @@
 class_name ScreenplayScene
 
-var scene_num: String
+var scene_line_id: String
+var scene_num_nominal: String
+var page_num_start_nominal: String
 #var section: PagelineSection
 var scene_location: String
 var scene_time_of_day: String

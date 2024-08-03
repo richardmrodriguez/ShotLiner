@@ -42,8 +42,8 @@ These are features that are critical to the eventual 1.0 release:
   - i.e. User can create their own tags such as "Magnifying glass prop" or "Big car VFX" and then recall them from a drop-down menu
 - Quality of Life
   - Auto-populate ShotLine fields with relevant metadata
-    - Automatic nominal scene number and page number detection
-    - Automatically assign next shot number in sequence
+	- Automatic nominal scene number and page number detection
+	- Automatically assign next shot number in sequence
 - Filterable output based upon scenes or tags
   - Export only a CSV of chosen, relevant shots
 
