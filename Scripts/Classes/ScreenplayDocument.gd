@@ -86,29 +86,34 @@ func get_pdfline_vector_from_uuid(uuid: String) -> Vector2i:
 	return Vector2i()
 
 func get_scene_num_from_global_line_idx(pdfline_idx: Vector2i) -> String:
-	var last_valid_scene_num: String = ""
-	var last_valid_scene_idx: Vector2i
+	var result := get_scene_from_global_line_idx(pdfline_idx)
+	if result:
+		return result.scene_num_nominal
+	else:
+		return ""
+		
+
+func get_scene_from_global_line_idx(pdfline_idx: Vector2i) -> ScreenplayScene:
+	var last_valid_scene: ScreenplayScene
 	for scene: ScreenplayScene in scenes:
 		print_debug("Current scene num: ", scene.scene_num_nominal)
 		var scene_idx: Vector2i = get_pdfline_vector_from_uuid(scene.scene_line_id)
 		if scene_idx == pdfline_idx:
-			return scene.scene_num_nominal
+			return scene
 		if (scene_idx.x < pdfline_idx.x):
-			last_valid_scene_num = scene.scene_num_nominal
-			last_valid_scene_idx = scene_idx
+			last_valid_scene = scene
 		elif scene_idx.x == pdfline_idx.x:
 			if scene_idx.y < pdfline_idx.y:
-				last_valid_scene_idx = scene_idx
-				last_valid_scene_num = scene.scene_num_nominal
+				last_valid_scene = scene
 
 			else:
-				return last_valid_scene_num
+				return last_valid_scene
 		else:
-			return last_valid_scene_num
+			return last_valid_scene
 		
 	# this should never escape past the for loop, but for some reason it does sometimes
-	assert(false, "Could not get a scene number for the selected pageline at index: " + str(pdfline_idx))
-	return ""
+	assert(false, "Could not find scene for selected pageline at index: " + str(pdfline_idx))
+	return null
 
 func get_shotline_from_uuid(uuid: String) -> Shotline:
 	for shotline: Shotline in shotlines:

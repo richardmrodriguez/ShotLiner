@@ -8,6 +8,8 @@ var this_shotline_2D: ShotLine2DContainer
 var page_panel: Node
 var y_drag_delta: float
 var prev_global_scene_num_nominal: String
+var prev_highest_shot_number: String
+var scene_for_shotline: ScreenplayScene
 
 func _init(_params: Array) -> void:
 	shotline_obj = _params.front()
@@ -15,6 +17,9 @@ func _init(_params: Array) -> void:
 	shotline_uuid = shotline_obj.shotline_uuid
 	prev_global_scene_num_nominal = EventStateManager.last_selected_scene_num_nominal
 	#shotline_uuid = params.front().shotline_uuid
+	scene_for_shotline = ScreenplayDocument.get_scene_from_global_line_idx(shotline_obj.get_start_idx())
+	if scene_for_shotline:
+		prev_highest_shot_number = scene_for_shotline.get_highest_shot_number_for_scene()
 
 func execute() -> bool:
 		
@@ -29,22 +34,24 @@ func execute() -> bool:
 	this_shotline_2D.construct_shotline_node(shotline_obj)
 	shotline_obj.shotline_node = this_shotline_2D
 	EventStateManager.cur_selected_shotline = shotline_obj
-	var scene_num_nominal: String = ScreenplayDocument.get_scene_num_from_global_line_idx(shotline_obj.get_start_idx())
-	EventStateManager.last_selected_scene_num_nominal = scene_num_nominal
-	shotline_obj.scene_number = EventStateManager.last_selected_scene_num_nominal
+
 	# TODO: create a func in ScreenplayScene to get the current amount of shotlines that start
 	# In a particular scene,
 	# and especially the highest shot number of those shotlines
-	#FIXME: 
-	if EventStateManager.last_selected_scene_num_nominal != prev_global_scene_num_nominal:
-		EventStateManager.last_shot_number = 1
-	shotline_obj.shot_number = str(EventStateManager.last_shot_number)
-	EventStateManager.last_shot_number += 1
+	if scene_for_shotline:
+		EventStateManager.last_selected_scene_num_nominal = scene_for_shotline.scene_num_nominal
+		shotline_obj.scene_number = EventStateManager.last_selected_scene_num_nominal
+			
+		var highest_shot_num: int = int(prev_highest_shot_number)
+		shotline_obj.shot_number = str((highest_shot_num + 1))
+	else:
+		shotline_obj.shot_number = str(1)
 	EventStateManager.inpsector_panel_node.populate_fields_from_shotline(shotline_obj)
 	return true
 	
 func undo() -> bool:
-	EventStateManager.last_shot_number -= 1
+	
+
 	# to undo:
 	# 1. get shotline container by uuid, queue free
 	# 2. remove shotline obj from array by uuid
