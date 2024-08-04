@@ -3,7 +3,14 @@
 
 ShotLiner is a free and open-source tool for creating shotlists from a screenplay PDF.
 
-The current alpha release is 0.1.1, and provides barebones, basic functionality.
+## Current Release: 0.2.0
+
+New in 0.2.0:
+
+- Auto-populate ShotLine fields with Scene Number and Shot Numbers
+				- Automatic nominal scene number detection
+				- Automatically assign next shot number in sequence when creating multiple shotlines 
+
 
 I am currently developing this solo, and would greatly appreciate any and all feedback. Please open a GitHub issue, or send me an e-mail for a feature request or bug report: 
 
@@ -32,30 +39,6 @@ I am currently developing this solo, and would greatly appreciate any and all fe
   - Move shotlines horizontally on page
 
 
-## Feature Roadmap
-
-### v1.0 
-These are features that are critical to the eventual 1.0 release:
-- Keyboard Shortcuts
-- Document highlighting / Tagging
-- User registered / searchable tags
-  - i.e. User can create their own tags such as "Magnifying glass prop" or "Big car VFX" and then recall them from a drop-down menu
-- Quality of Life
-  - Auto-populate ShotLine fields with relevant metadata
-	- Automatic nominal scene number and page number detection
-	- Automatically assign next shot number in sequence
-- Filterable output based upon scenes or tags
-  - Export only a CSV of chosen, relevant shots
-
-### v2.0
-Some of these features may not be implemented until a 2.x release.
-
-- Screenplay Draft merge-forward
-  - Ability to merge current shotlines onto a new draft of the screenplay
-	- Because Shotliner stores each pageline with a unique UUID, it should be feasable to diff the current screenplay content with a newly imported draft. 
-	- Shotlines that are only on excised pages will be simply removed, but perhaps with a warning or "ghost" shotline to show what was lost
-	- Some shotlines may be partially cut off, i.e. start on a deleted page but end on a page that is not excised.
-	  - these shotline fragments will be marked with a special color or outline or label, so the user can intervene manually
 
 ## DEPENDENCIES / ATTRIBUTION
 - [PdfPig](https://github.com/UglyToad/PdfPig)
