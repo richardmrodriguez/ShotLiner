@@ -16,6 +16,13 @@ I am currently developing this solo, and would greatly appreciate any and all fe
 
 `richardmamarilrodriguez@gmail.com`
 
+Please include the following information, if filing a bug report:
+
+- Platform (Windows, Mac, Linux, etc.)
+- Hardware (Computer Model number, or a detailed list of components)
+- ShotLiner version
+- ***Steps to repeat bug or failure (!)***
+
 ## Current Features
 - Import any screenplay-formatted PDF
 - Create multiple ShotLines per page
