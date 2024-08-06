@@ -3,13 +3,21 @@
 
 ShotLiner is a free and open-source tool for creating shotlists from a screenplay PDF.
 
-## Current Release: 0.2.0
+## Current Release: 0.3.0
 
-New in 0.2.0:
+New in 0.3.0:
 
-- Auto-populate ShotLine fields with Scene Number and Shot Numbers
-				- Automatic nominal scene number detection
-				- Automatically assign next shot number in sequence when creating multiple shotlines 
+- **User Input**
+			- Abstract user input using Godot input mapping, prepare for touch-screen based input
+			- Add basic keyboard shortcuts
+				- `Ctrl`+`Z` - Undo
+				- `Ctrl`+`Shift`+`Z` - Redo
+				- `Ctrl`+`I` - Import PDF
+				- `Ctrl`+`S` - Save to ShotLiner (.sl) Document
+				- `Ctrl`+`O` - Open ShotLiner (.sl) Document
+				- `Ctrl`+`E` - Export to CSV
+			- Shotline Control Change
+				- Hold `Alt` while drawing to invert filmed segments of shotlines, instead of right click
 
 
 I am currently developing this solo, and would greatly appreciate any and all feedback. Please open a GitHub issue, or send me an e-mail for a feature request or bug report: 
