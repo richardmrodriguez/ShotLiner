@@ -3,9 +3,9 @@
 
 ShotLiner is a free and open-source tool for creating shotlists from a screenplay PDF.
 
-## Current Release: 0.3.1
+## Current Release: 0.3.2
 
-New in 0.3.1:
+New in 0.3.x:
 
 - **User Input**		
   - Abstract user input using Godot input mapping, prepare for touch-screen based input
@@ -21,9 +21,11 @@ New in 0.3.1:
 
 	- Hold `Alt` while drawing to invert filmed segments of shotlines, instead of right click
 
-- Hotfix:
+- 0.3.1 - Hotfix:
   - Fixed bug that caused file dialog to no longer show up after completing a single file open or close operation
 
+- 0.3.2 - Bugfix
+  - Commented out a debug line that caused scene numbers to be overwritten by placeholder text
 
 I am currently developing this solo, and would greatly appreciate any and all feedback. Please open a GitHub issue, or send me an e-mail for a feature request or bug report: 
 
