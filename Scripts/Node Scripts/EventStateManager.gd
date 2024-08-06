@@ -235,25 +235,25 @@ func _get_top_and_bottom_margins_from_current_page() -> Array[float]:
 
 
 # ----------------- GLOBAL INPUTS (KEYBOARD SHORTCUTS) ----------------
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 
-	if event.is_action_pressed("Save", true):
+	if event.is_action_pressed("Save", false, true):
 		SLFileHandler.open_file_dialog(
 			FileDialog.FILE_MODE_SAVE_FILE,
 			SLFileAction.FILE_ACTION.SAVE_FILE)
 	
-	if event.is_action_pressed("ImportPDF", true):
+	if event.is_action_pressed("ImportPDF", false, true):
 		SLFileHandler.open_file_dialog(
 			FileDialog.FILE_MODE_OPEN_FILE,
 			SLFileAction.FILE_ACTION.IMPORT_PDF
 		)
 
-	if event.is_action_pressed("Open", true):
+	if event.is_action_pressed("Open", false, true):
 		SLFileHandler.open_file_dialog(
 			FileDialog.FILE_MODE_OPEN_FILE,
 			SLFileAction.FILE_ACTION.LOAD_FILE
 		)
-	if event.is_action_pressed("ExportCSV", true):
+	if event.is_action_pressed("ExportCSV", false, true):
 		SLFileHandler.open_file_dialog(
 			FileDialog.FILE_MODE_SAVE_FILE,
 			SLFileAction.FILE_ACTION.EXPORT_CSV
