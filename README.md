@@ -19,7 +19,7 @@ New in 0.3.1:
 
   - Shotline Control Change
 
-    - Hold `Alt` while drawing to invert filmed segments of shotlines, instead of right click
+	- Hold `Alt` while drawing to invert filmed segments of shotlines, instead of right click
 
 - Hotfix:
   - Fixed bug that caused file dialog to no longer show up after completing a single file open or close operation

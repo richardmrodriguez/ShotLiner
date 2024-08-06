@@ -93,7 +93,8 @@ func populate_page_container_with_page_lines(cur_page_content: PageContent, page
 
 		match pageline.LineElement:
 			PDFScreenplayParser.ELEMENT.SCENE_HEADING:
-				screenplay_line.text = "SCENE NUMBER: " + pageline.NominalSceneNum
+				pass
+				#screenplay_line.text = "SCENE NUMBER: " + pageline.NominalSceneNum
 			#PDFScreenplayParser.ELEMENT.
 
 	page_lines_populated.emit()
