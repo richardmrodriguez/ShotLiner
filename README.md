@@ -7,17 +7,20 @@ ShotLiner is a free and open-source tool for creating shotlists from a screenpla
 
 New in 0.3.1:
 
-- **User Input**
-			- Abstract user input using Godot input mapping, prepare for touch-screen based input
-			- Add basic keyboard shortcuts
-				- `Ctrl`+`Z` - Undo
-				- `Ctrl`+`Shift`+`Z` - Redo
-				- `Ctrl`+`I` - Import PDF
-				- `Ctrl`+`S` - Save to ShotLiner (.sl) Document
-				- `Ctrl`+`O` - Open ShotLiner (.sl) Document
-				- `Ctrl`+`E` - Export to CSV
-			- Shotline Control Change
-				- Hold `Alt` while drawing to invert filmed segments of shotlines, instead of right click
+- **User Input**		
+  - Abstract user input using Godot input mapping, prepare for touch-screen based input
+  - Add basic keyboard shortcuts
+    - `Ctrl`+`Z` - Undo
+		- `Ctrl`+`Shift`+`Z` - Redo
+		- `Ctrl`+`I` - Import PDF
+		- `Ctrl`+`S` - Save to ShotLiner (.sl) Document
+		- `Ctrl`+`O` - Open ShotLiner (.sl) Document
+		- `Ctrl`+`E` - Export to CSV
+
+  - Shotline Control Change
+
+    - Hold `Alt` while drawing to invert filmed segments of shotlines, instead of right click
+
 - Hotfix:
   - Fixed bug that caused file dialog to no longer show up after completing a single file open or close operation
 
