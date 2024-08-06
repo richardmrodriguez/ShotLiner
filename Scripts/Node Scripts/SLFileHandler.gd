@@ -11,6 +11,8 @@ signal file_saved(successful: bool)
 signal file_loaded(successful: bool)
 signal spreadsheet_exported(successful: bool)
 
+var file_dialog_opened: bool = false
+
 func get_default_directory() -> String:
 
 	match OS.get_name():
@@ -239,11 +241,23 @@ func get_file_dialog(
 	fd.initial_position = Window.WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN
 	fd.current_dir = get_default_directory()
 
+	fd.canceled.connect(func() -> void:
+		file_dialog_opened = false
+		)
+	fd.file_selected.connect(func() -> void:
+		file_dialog_opened = false
+		)
+	
 	fd.canceled.connect(EventStateManager._on_file_dialog_cancelled.bind(fd))
 	fd.file_selected.connect(EventStateManager._on_file_dialog_file_selected.bind(sl_fileaction, fd))
 	return fd
 
 func open_file_dialog(file_mode: FileDialog.FileMode, sl_file_action: SLFileAction.FILE_ACTION) -> void:
+	
+	if file_dialog_opened:
+		return
+
+	file_dialog_opened = true
 	var fd: FileDialog = SLFileHandler.get_file_dialog(
 		file_mode,
 		sl_file_action

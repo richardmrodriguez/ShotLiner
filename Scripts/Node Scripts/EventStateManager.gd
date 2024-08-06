@@ -29,6 +29,7 @@ var is_resizing_shotline: bool = false
 var is_dragging_shotline: bool = false
 
 var cur_tool: TOOL = TOOL.DRAW
+var buffered_tool: TOOL
 
 var cur_highlighted_pageline_uuids: Array[String] = []
 var cur_already_marked_shotline_segments: Dictionary
@@ -215,66 +216,67 @@ func _highlight_pageline_if_hovered(pageline_labels: Array, event_global_pos: Ve
 			if not (is_drawing or is_inverting_line):
 				pageline.label_highlight.visible = false
 
+func _get_top_and_bottom_margins_from_current_page() -> Array[float]:
+	var bottom_margin: float = 0
+	var top_margin: float = 20000
+	var pageline_height: float
+	var height_set: bool = false
+	for pll: Node in page_node.page_container.get_children():
+		if not pll is PageLineLabel:
+			continue
+		if not height_set:
+			pageline_height = pll.size.y
+		if pll.global_position.y > bottom_margin:
+			bottom_margin = pll.global_position.y
+		if pll.global_position.y < top_margin:
+			top_margin = pll.global_position.y
+
+	return [top_margin, bottom_margin, pageline_height]
+# ----------------- GLOBAL INPUTS (KEYBOARD SHORTCUTS) ----------------
+func _input(event: InputEvent) -> void:
+
+	if event.is_action("Save", true):
+		SLFileHandler.open_file_dialog(
+			FileDialog.FILE_MODE_SAVE_FILE,
+			SLFileAction.FILE_ACTION.SAVE_FILE)
+	
+	if event.is_action("ImportPDF", true):
+		SLFileHandler.open_file_dialog(
+			FileDialog.FILE_MODE_OPEN_FILE,
+			SLFileAction.FILE_ACTION.IMPORT_PDF
+		)
+
+	if event.is_action("Open", true):
+		SLFileHandler.open_file_dialog(
+			FileDialog.FILE_MODE_OPEN_FILE,
+			SLFileAction.FILE_ACTION.LOAD_FILE
+		)
+	if event.is_action("ExportCSV", true):
+		SLFileHandler.open_file_dialog(
+			FileDialog.FILE_MODE_SAVE_FILE,
+			SLFileAction.FILE_ACTION.EXPORT_CSV
+		)
+
 func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 	
-	if event is InputEventMouseButton:
-		var cur_global_pos: Vector2 = event.global_position
-		#if page_node.bottom_page_margin:
-		#	last_mouse_click_below_bottom_margin = (
-		#		page_node.bottom_page_margin.global_position.y
-		#		< cur_global_pos.y
-		#		)
-		#if page_node.top_page_margin:
-		#	last_mouse_click_above_top_margin = (
-		#		page_node.top_page_margin.global_position.y +
-		#		page_node.top_page_margin.size.y
-		#		> cur_global_pos.y
-		#		)
-		#if page_node.left_page_margin:
-		#	last_mouse_click_past_left_margin = (
-		#			page_node.left_page_margin.global_position.x +
-		#			page_node.left_page_margin.size.x
-		#			> cur_global_pos.x
-		#		)
-		#if page_node.right_page_margin:
-		#	last_mouse_click_past_right_margin = (
-		#		page_node.right_page_margin.global_position.x
-		#		< cur_global_pos.x
-		#		)
-		# TODO: Instead of the above blocks, just handle the mouse being above or below the
-		# first or last pageline in the page when clicked
+	var top_bottom_plh: Array[float] = _get_top_and_bottom_margins_from_current_page()
+	var top_margin: float = top_bottom_plh[0]
+	var bottom_margin: float = top_bottom_plh[1]
+	var pageline_height: float = top_bottom_plh[2]
+	
+	# --- handle touch input positions ---
+	if event is InputEventScreenTouch or event is InputEventMouseButton:
+		if not event.is_pressed():
+			last_mouse_click_above_top_margin = event.position.y < top_margin
+			last_mouse_click_below_bottom_margin = event.position.y > bottom_margin + pageline_height
 
-		if not event.pressed:
-			var bottom_margin: float = 0
-			var top_margin: float = 20000
-			var pageline_height: float
-			var height_set: bool = false
-			for pll: Node in page_node.page_container.get_children():
-				if not pll is PageLineLabel:
-					continue
-				if not height_set:
-					pageline_height = pll.size.y
-				if pll.global_position.y > bottom_margin:
-					bottom_margin = pll.global_position.y
-				if pll.global_position.y < top_margin:
-					top_margin = pll.global_position.y
-			
-			#top_margin = top_margin - pageline_height
-			
-			if event.global_position.y > top_margin and event.global_position.y < bottom_margin + pageline_height:
-				last_mouse_click_above_top_margin = false
-				last_mouse_click_below_bottom_margin = false
-			elif event.global_position.y > bottom_margin + pageline_height:
-				last_mouse_click_below_bottom_margin = true
-				last_mouse_click_above_top_margin = false
-			elif event.global_position.y < top_margin:
-				last_mouse_click_above_top_margin = true
-				last_mouse_click_below_bottom_margin = false
-			
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			_handle_left_click(event)
-		if event.button_index == MOUSE_BUTTON_RIGHT:
-			_handle_right_click(event)
+
+	if event.is_action("TouchDown", true):
+		_handle_pointer_touch(event)
+	if event.is_action("TouchContext", true):
+		_handle_pointer_touch_context(event)
+	if event.is_action("DrawInvert", true):
+		_handle_draw_inverted(event)
 
 	if event is InputEventMouseMotion:
 		var pageline_labels: Array = page_node.page_container.get_children().filter(
@@ -370,21 +372,16 @@ func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 										pageline.label_highlight.visible = true
 									else:
 										pageline.label_highlight.visible = false
-								else:
-									pass
 								#print("This didn't match: ", pageline.fnline.uuid, " | ", pageline_uuid)
 
-func _handle_right_click(event: InputEvent) -> void:
-	var pages: Array[PageContent] = ScreenplayDocument.pages
+func _handle_draw_inverted(event: InputEvent) -> void:
 	if event.is_pressed():
 		match cur_tool:
 			TOOL.DRAW:
-				if not last_mouse_click_past_left_margin or last_mouse_click_past_right_margin:
-					if not is_inverting_line:
-						is_inverting_line = true
-						#page_node.page_panel.add_child(selection_box_rect)
-						selection_box_rect.global_position = page_node.get_global_mouse_position()
-						selection_box_rect.size = Vector2(100, 100)
+				if not is_inverting_line:
+					is_inverting_line = true
+					selection_box_rect.global_position = page_node.get_global_mouse_position()
+					selection_box_rect.size = Vector2(100, 100)
 	if event.is_released():
 		match cur_tool:
 			TOOL.DRAW:
@@ -396,76 +393,79 @@ func _handle_right_click(event: InputEvent) -> void:
 							cur_already_marked_shotline_segments.duplicate(true)
 						]
 					)
-
-					print_debug("Adding bulk segments change........", CommandHistory.add_command(bulk_segments_cmd))
+					CommandHistory.add_command(bulk_segments_cmd)
 
 					cur_already_marked_shotline_segments.clear()
 					cur_segment_change_cmds.clear()
-					#page_node.page_panel.remove_child(selection_box_rect)
 	print("Is inverting_line: ", is_inverting_line)
 
-func _handle_left_click(event: InputEvent) -> void:
+
+func _handle_pointer_touch_context(event: InputEvent) -> void:
+	pass # TODO: handle right clicks
+	# When right-clicking:
+		# Get the UI element that was right clicked
+		# handle each case in a long match case or if-else block
+
+# TODO: make these "left_click" and "right_click" funcs more abstract
+func _handle_pointer_touch(event: InputEvent) -> void:
 	var pages: Array[PageContent] = ScreenplayDocument.pages
-	if event.is_pressed():
-		last_mouse_click_point = page_node.get_global_mouse_position()
+	if event.is_action_pressed("TouchDown", false, true):
+		last_mouse_click_point = event.position
 		match cur_tool:
 			TOOL.DRAW:
-				if not last_mouse_click_past_left_margin or last_mouse_click_past_right_margin:
-					#print("imma clicking")
-					if not is_drawing:
-						is_drawing = true
-						last_mouse_hover_position = event.position
-						last_clicked_line_uuid = last_hovered_line_uuid
-						#print("last hovered line: ", last_hovered_line_uuid)
-						#print(event.position)
-	if event.is_released():
-		last_mouse_release_point = page_node.get_global_mouse_position()
+				#print("imma clicking")
+				if not is_drawing:
+					is_drawing = true
+					last_mouse_hover_position = event.position
+					last_clicked_line_uuid = last_hovered_line_uuid
+					#print("last hovered line: ", last_hovered_line_uuid)
+					#print(event.position)
+	if event.is_action_released("TouchDown", true):
+		last_mouse_release_point = event.position
 		last_mouse_drag_delta = last_mouse_release_point - last_mouse_click_point
 		match cur_tool:
 			TOOL.DRAW:
-				if is_drawing:
-					is_drawing = false
-					#page_node.set_color_of_all_page_margins()
-					if not (
-						last_mouse_click_past_left_margin or
-						last_mouse_click_past_right_margin):
-						var new_shotline: Shotline
-						#assert(false, "Current shotline pageline UUIDS: " + str(last_clicked_line_uuid) + " | " + str(last_hovered_line_uuid))
+				if not is_drawing:
+					return
+				is_drawing = false
+				
+				if (not last_clicked_line_uuid) or (not last_hovered_line_uuid):
+					return
 
-						if (not last_clicked_line_uuid) or (not last_hovered_line_uuid):
-							return
+				var new_shotline: Shotline
+				
 
-						if not (last_mouse_click_below_bottom_margin or last_mouse_click_above_top_margin):
-							new_shotline = create_new_shotline_obj(
-								last_clicked_line_uuid,
-								last_hovered_line_uuid,
-								event.position)
-							
-						elif last_mouse_click_above_top_margin:
-							#assert(false, "Mouse above top?.")
-							# click released past top or bottom margin
-							# give the add_new_shotline the last line of prev page or first line of next page
+				if not (last_mouse_click_below_bottom_margin or last_mouse_click_above_top_margin):
+					new_shotline = create_new_shotline_obj(
+						last_clicked_line_uuid,
+						last_hovered_line_uuid,
+						event.position)
+					
+				elif last_mouse_click_above_top_margin:
+					#assert(false, "Mouse above top?.")
+					# click released past top or bottom margin
+					# give the add_new_shotline the last line of prev page or first line of next page
 
-							var start_uuid: String
-							if cur_page_idx - 1 >= 0:
-								start_uuid = pages[cur_page_idx - 1].pdflines.back().LineUUID
-							else:
-								start_uuid = pages[cur_page_idx].pdflines.front().LineUUID
-							new_shotline = create_new_shotline_obj(start_uuid, last_hovered_line_uuid, event.position)
-						elif last_mouse_click_below_bottom_margin:
-							#assert(false, "Mouse below bottom?")
-							var end_uuid: String
-							if cur_page_idx + 1 < pages.size():
-								end_uuid = pages[cur_page_idx + 1].pdflines.front().LineUUID
-							else:
-								end_uuid = pages[cur_page_idx].pdflines.back().LineUUID
-							new_shotline = create_new_shotline_obj(
-								last_clicked_line_uuid,
-								end_uuid,
-								event.position)
+					var start_uuid: String
+					if cur_page_idx - 1 >= 0:
+						start_uuid = pages[cur_page_idx - 1].pdflines.back().LineUUID
+					else:
+						start_uuid = pages[cur_page_idx].pdflines.front().LineUUID
+					new_shotline = create_new_shotline_obj(start_uuid, last_hovered_line_uuid, event.position)
+				elif last_mouse_click_below_bottom_margin:
+					#assert(false, "Mouse below bottom?")
+					var end_uuid: String
+					if cur_page_idx + 1 < pages.size():
+						end_uuid = pages[cur_page_idx + 1].pdflines.front().LineUUID
+					else:
+						end_uuid = pages[cur_page_idx].pdflines.back().LineUUID
+					new_shotline = create_new_shotline_obj(
+						last_clicked_line_uuid,
+						end_uuid,
+						event.position)
 
-							#print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
-						create_and_add_shotline_node_to_page(new_shotline)
+					#print("Clicked and hovered: ", last_clicked_line_idx, ",   ", last_hovered_line_idx)
+				create_and_add_shotline_node_to_page(new_shotline)
 								
 			TOOL.MOVE:
 				if is_resizing_shotline:
