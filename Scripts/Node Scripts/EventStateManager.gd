@@ -232,31 +232,39 @@ func _get_top_and_bottom_margins_from_current_page() -> Array[float]:
 			top_margin = pll.global_position.y
 
 	return [top_margin, bottom_margin, pageline_height]
+
+
 # ----------------- GLOBAL INPUTS (KEYBOARD SHORTCUTS) ----------------
 func _input(event: InputEvent) -> void:
 
-	if event.is_action("Save", true):
+	if event.is_action_pressed("Save", true):
 		SLFileHandler.open_file_dialog(
 			FileDialog.FILE_MODE_SAVE_FILE,
 			SLFileAction.FILE_ACTION.SAVE_FILE)
 	
-	if event.is_action("ImportPDF", true):
+	if event.is_action_pressed("ImportPDF", true):
 		SLFileHandler.open_file_dialog(
 			FileDialog.FILE_MODE_OPEN_FILE,
 			SLFileAction.FILE_ACTION.IMPORT_PDF
 		)
 
-	if event.is_action("Open", true):
+	if event.is_action_pressed("Open", true):
 		SLFileHandler.open_file_dialog(
 			FileDialog.FILE_MODE_OPEN_FILE,
 			SLFileAction.FILE_ACTION.LOAD_FILE
 		)
-	if event.is_action("ExportCSV", true):
+	if event.is_action_pressed("ExportCSV", true):
 		SLFileHandler.open_file_dialog(
 			FileDialog.FILE_MODE_SAVE_FILE,
 			SLFileAction.FILE_ACTION.EXPORT_CSV
 		)
 
+	if event.is_action_pressed("ui_undo", false, true):
+		CommandHistory.undo()
+	elif event.is_action_pressed("ui_redo", false, true):
+		CommandHistory.redo()
+
+# --------------- SCREENPLAY PAGE INPUTS --------------------
 func _on_screenplay_page_gui_input(event: InputEvent) -> void:
 	
 	var top_bottom_plh: Array[float] = _get_top_and_bottom_margins_from_current_page()
@@ -503,6 +511,7 @@ func _on_new_shotline_added(shotline_struct: Shotline) -> void:
 	inpsector_panel_node.populate_fields_from_shotline(shotline_struct)
 	cur_selected_shotline = shotline_struct
 
+# ------------------------ INSPECTOR PANEL -------------------------
 func _on_inspector_panel_field_text_changed(new_text: String, field_category: TextInputField.FIELD_CATEGORY) -> void:
 	if (not is_instance_valid(cur_selected_shotline)) or ScreenplayDocument.shotlines == [] or (not cur_selected_shotline.shotline_node):
 		return
@@ -527,14 +536,13 @@ func _on_inspector_panel_field_text_changed(new_text: String, field_category: Te
 func _on_shotline_clicked(shotline_node: ShotLine2DContainer, button_index: int) -> void:
 	match cur_tool:
 		TOOL.MOVE:
-			match button_index:
-				1:
-					inpsector_panel_node.populate_fields_from_shotline(shotline_node.shotline_obj)
-					cur_selected_shotline = shotline_node.shotline_obj
-					is_dragging_shotline = true
-					cur_mouse_global_position_delta = shotline_node.global_position - editor_view.get_global_mouse_position()
-					last_shotline_node_global_pos = shotline_node.global_position
-					print(is_dragging_shotline)
+	
+			inpsector_panel_node.populate_fields_from_shotline(shotline_node.shotline_obj)
+			cur_selected_shotline = shotline_node.shotline_obj
+			is_dragging_shotline = true
+			cur_mouse_global_position_delta = shotline_node.global_position - editor_view.get_global_mouse_position()
+			last_shotline_node_global_pos = shotline_node.global_position
+			print(is_dragging_shotline)
 
 # TODO: simulate a mouse button release whenever the mouse leaves the window
 
@@ -572,8 +580,6 @@ func _on_shotline_released(shotline_node: ShotLine2DContainer, button_index: int
 					CommandHistory.add_command(erase_command)
 
 func _on_shotline_hovered_over(shotline_container: ShotLine2DContainer) -> void:
-	pass
-	#print("Shotline Hovered changed: ", shotline_node, shotline_node.is_hovered_over)
 	last_hovered_shotline_node = shotline_container
 
 func _on_shotline_endcap_clicked(

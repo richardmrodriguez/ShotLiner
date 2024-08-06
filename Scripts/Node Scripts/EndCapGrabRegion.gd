@@ -26,7 +26,7 @@ func _ready() -> void:
 	endcap_clicked.connect(EventStateManager._on_shotline_endcap_clicked)
 	endcap_released.connect(EventStateManager._on_shotline_endcap_released)
 
-func toggle_open_endcap(open_state: bool=false) -> void:
+func toggle_open_endcap(open_state: bool = false) -> void:
 	if open_state:
 		is_open = true
 
@@ -45,7 +45,7 @@ func _input(event: InputEvent) -> void:
 		else:
 			cap_region_is_hovered_over = false
 			color = Color.TRANSPARENT
-	if event is InputEventMouseButton:
+	if event.is_action("TouchDown", true):
 		if event.is_pressed():
 			if cap_region_is_hovered_over:
 				endcap_clicked.emit(
@@ -60,7 +60,3 @@ func _input(event: InputEvent) -> void:
 					shotline_container,
 					event.button_index
 					)
-		if get_global_rect().has_point(get_global_mouse_position()):
-			if event.button_index == MOUSE_BUTTON_LEFT:
-				if event.is_pressed():
-					print("Endcap clicked on")

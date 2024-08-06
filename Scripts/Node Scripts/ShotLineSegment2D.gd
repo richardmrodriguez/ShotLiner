@@ -34,8 +34,6 @@ func set_straight_or_jagged(straight: bool) -> void:
 		straight_line.visible = false
 		jagged_line.visible = true
 	
-	if straight_line.visible and jagged_line.visible:
-		print("BOTH VISIBLE")
 
 func set_segment_height(height: float) -> void:
 	custom_minimum_size = Vector2(size.x, height)
@@ -50,7 +48,7 @@ func set_segment_height(height: float) -> void:
 		[
 			Vector2(0, 0),
 			Vector2(8, (height / 3)),
-			Vector2( - 8, 2 * (height / 3)),
+			Vector2(-8, 2 * (height / 3)),
 			Vector2(0, height)
 		]
 	))
@@ -68,13 +66,11 @@ func _input(event: InputEvent) -> void:
 		else:
 			is_hovered_over = false
 			set_segment_line_width(shotline_container.line_width)
-	if event is InputEventMouseButton:
+	if event.is_action("DrawInvert", true):
 		if event.is_pressed():
 			return
 			# TODO: Add back single click segment inversion
-			if event.button_index == MOUSE_BUTTON_RIGHT:
-				if EventStateManager.cur_tool == EventStateManager.TOOL.DRAW:
-					if is_hovered_over:
-						var toggle_straight_command := ToggleSegmentUnfilmedCommand.new([self])
-						CommandHistory.add_command(toggle_straight_command)
-	
+			if EventStateManager.cur_tool == EventStateManager.TOOL.DRAW:
+				if is_hovered_over:
+					var toggle_straight_command := ToggleSegmentUnfilmedCommand.new([self])
+					CommandHistory.add_command(toggle_straight_command)

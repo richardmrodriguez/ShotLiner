@@ -451,20 +451,14 @@ func update_length_from_endcap_drag(
 # -------------LOCAL INPUT ------------------
 
 func _input(event: InputEvent) -> void:
-
+	
 	if event is InputEventMouseMotion:
 		if is_hovered_over():
-			if not line_is_hovered_over:
-				line_is_hovered_over = true
 				EventStateManager.last_hovered_shotline_node = self
-		else:
-			if line_is_hovered_over:
-				line_is_hovered_over = false
 
-	if event is InputEventMouseButton:
+	if event.is_action("TouchDown", true):
 		if is_hovered_over():
-			if event.button_index == MOUSE_BUTTON_LEFT:
-				if event.pressed:
-					mouse_clicked_on_shotline.emit(self, event.button_index)
-				else:
-					mouse_released_on_shotline.emit(self, event.button_index)
+			if event.pressed:
+				mouse_clicked_on_shotline.emit(self, event.button_index)
+			else:
+				mouse_released_on_shotline.emit(self, event.button_index)
