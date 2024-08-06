@@ -10,12 +10,12 @@ New in 0.3.1:
 - **User Input**		
   - Abstract user input using Godot input mapping, prepare for touch-screen based input
   - Add basic keyboard shortcuts
-    - `Ctrl`+`Z` - Undo
-		- `Ctrl`+`Shift`+`Z` - Redo
-		- `Ctrl`+`I` - Import PDF
-		- `Ctrl`+`S` - Save to ShotLiner (.sl) Document
-		- `Ctrl`+`O` - Open ShotLiner (.sl) Document
-		- `Ctrl`+`E` - Export to CSV
+	- `Ctrl`+`Z` - Undo
+	- `Ctrl`+`Shift`+`Z` - Redo
+	- `Ctrl`+`I` - Import PDF
+	- `Ctrl`+`S` - Save to ShotLiner (.sl) Document
+	- `Ctrl`+`O` - Open ShotLiner (.sl) Document
+	- `Ctrl`+`E` - Export to CSV
 
   - Shotline Control Change
 
