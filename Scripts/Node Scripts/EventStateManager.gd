@@ -19,6 +19,7 @@ enum TOOL {
 @onready var editor_view: Node
 @onready var selection_box_rect: ColorRect = ColorRect.new()
 @onready var toolbar_page_num_field: Node
+@onready var shotline_context_menu: PopupMenu = PopupMenu.new()
 
 # ------ STATES ------
 var is_drawing: bool = false
@@ -75,6 +76,20 @@ signal page_changed
 
 func _ready() -> void:
 	selection_box_rect.color = Color(0.4, 0.4, 0.4, 0.4)
+
+	shotline_context_menu.transient = true
+	shotline_context_menu.set_unparent_when_invisible(true)
+	for string: String in Array([
+		"XWS",
+		"WS",
+		"MWS",
+		"MS",
+		"MCU",
+		"CU",
+		"XCU",
+		]):
+		shotline_context_menu.add_item(string)
+	
 
 # ----- UITIL FUNCS ------
 

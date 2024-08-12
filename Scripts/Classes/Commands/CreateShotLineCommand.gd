@@ -11,6 +11,8 @@ var prev_global_scene_num_nominal: String
 var prev_highest_shot_number: String
 var scene_for_shotline: ScreenplayScene
 
+var shot_chooser_popup_menu: PopupMenu
+
 func _init(_params: Array) -> void:
 	shotline_obj = _params.front()
 	page_panel = EventStateManager.page_node.page_panel
@@ -20,6 +22,8 @@ func _init(_params: Array) -> void:
 	scene_for_shotline = ScreenplayDocument.get_scene_from_global_line_idx(shotline_obj.get_start_idx())
 	if scene_for_shotline:
 		prev_highest_shot_number = scene_for_shotline.get_highest_shot_number_for_scene()
+	
+	shot_chooser_popup_menu = EventStateManager.shotline_context_menu
 
 func execute() -> bool:
 		
@@ -47,6 +51,40 @@ func execute() -> bool:
 	else:
 		shotline_obj.shot_number = str(1)
 	EventStateManager.inpsector_panel_node.populate_fields_from_shotline(shotline_obj)
+	# TODO: Implement a pop-up / dropdown menu whenever a shotline is created, 
+	# then the user can simply press a key (probably from the number row by default),
+	# to quickly choose a shot type for that shot line
+	# W: XWS
+	# S: WS
+	# X: MLS
+	# D: MS
+	# R: MCU
+	# F: CU
+	# V: XCU
+	EventStateManager.page_node.page_panel.add_child(shot_chooser_popup_menu)
+
+	var panel_shot_type: TextInputField = EventStateManager.inpsector_panel_node.shot_type
+
+	shot_chooser_popup_menu.index_pressed.connect(func(index: int) -> void:
+		var new_text: String = shot_chooser_popup_menu.get_item_text(index)
+		panel_shot_type.set_text(new_text)
+		panel_shot_type._on_field_text_changed(new_text)
+		)
+	shot_chooser_popup_menu.window_input.connect(func(event: InputEvent) -> void:
+		var text: String = ""
+		var shot_select_input_names: Array = []
+		for n: int in range(7):
+			shot_select_input_names.append("ShotSelect" + str(n))
+			
+		for action_name: String in shot_select_input_names:
+			if event.is_action(action_name, true):
+				shot_chooser_popup_menu.set_focused_item(int(action_name))
+		)
+
+
+	shot_chooser_popup_menu.popup_on_parent(Rect2(this_shotline_2D.position + Vector2(this_shotline_2D.size.x, 0), Vector2.ZERO))
+
+
 	return true
 	
 func undo() -> bool:

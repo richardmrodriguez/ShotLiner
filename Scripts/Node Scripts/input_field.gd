@@ -58,6 +58,11 @@ func _ready() -> void:
 		line_edit.text = field_text
 		line_edit.placeholder_text = field_placeholder
 
+func grab_field_focus() -> void:
+	if line_edit:
+		line_edit.grab_focus()
+
+
 func _on_line_edit_gui_input(_event: InputEvent) -> void:
 	pass
 	#if event is InputEventKey:
